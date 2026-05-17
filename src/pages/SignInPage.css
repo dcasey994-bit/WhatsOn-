@@ -143,68 +143,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* Role picker */
-.role-cards {
-  width: 100%;
-  max-width: 360px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 1;
-}
-
-.role-card {
-  width: 100%;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  text-align: left;
-  transition: border-color 0.15s, transform 0.1s;
-}
-
-.role-card:active {
-  transform: scale(0.98);
-  border-color: var(--accent);
-}
-
-.role-icon {
-  font-size: 32px;
-  flex-shrink: 0;
-}
-
-.role-text {
-  flex: 1;
-}
-
-.role-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 4px;
-}
-
-.role-desc {
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.role-arrow {
-  font-size: 18px;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.role-note {
-  font-size: 12px;
-  color: var(--text-muted);
-  z-index: 1;
-}
-
 /* Terms */
 .signin-terms {
   font-size: 12px;
