@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { getUser, setRole, signOut, subscribe } from '../data/authStore.js'
 import './Header.css'
@@ -6,9 +7,22 @@ import './Header.css'
 export default function Header({ title, children }) {
   const [user, setUser] = useState(() => getUser())
   const [menu, setMenu] = useState(false)
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
+  const avatarRef = useRef(null)
   const navigate = useNavigate()
 
   useEffect(() => subscribe(() => setUser(getUser())), [])
+
+  function openMenu() {
+    if (avatarRef.current) {
+      const rect = avatarRef.current.getBoundingClientRect()
+      setMenuPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      })
+    }
+    setMenu(true)
+  }
 
   function handleRoleToggle(role) {
     setRole(role)
@@ -27,45 +41,47 @@ export default function Header({ title, children }) {
         {children}
         {user && (
           <div className="avatar-wrap">
-            <button className="avatar-btn" onClick={() => setMenu(m => !m)}>
+            <button ref={avatarRef} className="avatar-btn" onClick={openMenu}>
               {user.avatar}
             </button>
-            {menu && (
-              <>
-                <div className="avatar-backdrop" onClick={() => setMenu(false)} />
-                <div className="avatar-menu">
-                  <p className="avatar-name">{user.name}</p>
-                  <p className="avatar-email">{user.email}</p>
-
-                  <hr className="avatar-divider" />
-
-                  <p className="mode-label">Mode</p>
-                  <div className="mode-toggle">
-                    <button
-                      className={`mode-btn ${user.role !== 'venue' ? 'active' : ''}`}
-                      onClick={() => handleRoleToggle('customer')}
-                    >
-                      🗺️ Going out
-                    </button>
-                    <button
-                      className={`mode-btn ${user.role === 'venue' ? 'active' : ''}`}
-                      onClick={() => handleRoleToggle('venue')}
-                    >
-                      🏠 My venue
-                    </button>
-                  </div>
-
-                  <hr className="avatar-divider" />
-
-                  <button className="signout-btn" onClick={() => { signOut(); setMenu(false) }}>
-                    Sign out
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         )}
       </div>
+
+      {menu && user && createPortal(
+        <>
+          <div className="avatar-backdrop" onClick={() => setMenu(false)} />
+          <div className="avatar-menu" style={{ top: menuPos.top, right: menuPos.right }}>
+            <p className="avatar-name">{user.name}</p>
+            <p className="avatar-email">{user.email}</p>
+
+            <hr className="avatar-divider" />
+
+            <p className="mode-label">Mode</p>
+            <div className="mode-toggle">
+              <button
+                className={`mode-btn ${user.role !== 'venue' ? 'active' : ''}`}
+                onClick={() => handleRoleToggle('customer')}
+              >
+                🗺️ Going out
+              </button>
+              <button
+                className={`mode-btn ${user.role === 'venue' ? 'active' : ''}`}
+                onClick={() => handleRoleToggle('venue')}
+              >
+                🏠 My venue
+              </button>
+            </div>
+
+            <hr className="avatar-divider" />
+
+            <button className="signout-btn" onClick={() => { signOut(); setMenu(false) }}>
+              Sign out
+            </button>
+          </div>
+        </>,
+        document.body
+      )}
     </header>
   )
 }
