@@ -14,7 +14,7 @@ export default function BrowsePage() {
   return (
     <div className="browse-page">
       <Header>
-        <span className="event-count">{filtered.length} events</span>
+        <span className="event-count">{filtered.length} events tonight</span>
       </Header>
       <CategoryFilter active={category} onChange={setCategory} />
       <div className="browse-list">

@@ -22,7 +22,11 @@ export default function EventCard({ event }) {
         <span className="cat-badge" style={{ background: cat.bg, color: cat.color }}>
           {cat.label}
         </span>
-        <button className={`heart-btn ${saved ? 'saved' : ''}`} onClick={handleSave} aria-label="Save event">
+        <button
+          className={`heart-btn ${saved ? 'saved' : ''}`}
+          onClick={handleSave}
+          aria-label={saved ? 'Unsave event' : 'Save event'}
+        >
           {saved ? '♥' : '♡'}
         </button>
       </div>
@@ -33,13 +37,16 @@ export default function EventCard({ event }) {
       <div className="card-meta">
         <span className="meta-item">🕐 {event.time}</span>
         <span className="meta-item">📍 {event.distance}</span>
-        <span className="meta-price" style={{ color: event.price === 0 ? '#00ff88' : '#e8e8f0' }}>
+        <span
+          className="meta-price"
+          style={{ color: event.price === 0 ? 'var(--cat-music)' : 'var(--text)' }}
+        >
           {event.price === 0 ? 'Free' : `€${event.price}`}
         </span>
       </div>
 
       {event.ticketsLeft !== null && event.ticketsLeft < 30 && (
-        <p className="low-tickets">Only {event.ticketsLeft} tickets left</p>
+        <p className="low-tickets">⚡ Only {event.ticketsLeft} tickets left</p>
       )}
     </div>
   )

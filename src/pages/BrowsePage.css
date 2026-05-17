@@ -9,9 +9,16 @@
   font-size: 13px;
   color: var(--text-muted);
   font-weight: 500;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 20px;
 }
 
 .browse-list {
-  padding: 12px 16px;
+  padding: 12px 16px 16px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }

@@ -3,183 +3,119 @@
   padding-bottom: 32px;
 }
 
+.detail-missing {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
 .detail-hero {
+  padding: 52px 20px 20px;
   position: relative;
-  padding: 60px 20px 28px;
 }
 
 .back-btn {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: 14px;
+  left: 14px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   padding: 6px 12px;
-  background: rgba(0,0,0,0.3);
+  background: var(--card);
   border-radius: 20px;
+  border: 1px solid var(--border);
 }
 
-.hero-content {
-  margin-top: 8px;
-}
-
-.cat-badge-lg {
+.detail-cat {
   font-size: 12px;
   font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 20px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-block;
-  margin-bottom: 12px;
+  letter-spacing: 0.6px;
+  display: block;
+  margin-bottom: 8px;
 }
 
-.detail-title {
+.detail-name {
   font-size: 26px;
   font-weight: 800;
   line-height: 1.2;
-  color: var(--text);
   margin-bottom: 8px;
 }
 
 .detail-venue {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
   color: var(--text-muted);
-}
-
-.detail-address {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 2px;
 }
 
 .detail-body {
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-.detail-meta-row {
+.info-row {
   display: flex;
   gap: 10px;
 }
 
-.meta-box {
+.info-box {
   flex: 1;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 12px;
+  padding: 14px 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
   align-items: center;
+  gap: 4px;
 }
 
-.meta-box-label {
+.info-label {
   font-size: 11px;
   color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
-.meta-box-value {
+.info-val {
   font-size: 18px;
   font-weight: 700;
 }
 
-.tickets-banner {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.detail-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.going-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--accent);
-  color: #000;
-  font-size: 16px;
-  font-weight: 800;
-  transition: opacity 0.15s, transform 0.1s;
-}
-
-.going-btn.active {
-  background: var(--accent-dim);
-  color: var(--accent);
-}
-
-.going-btn:active {
-  transform: scale(0.97);
-}
-
-.save-btn {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.1s;
-}
-
-.save-btn.saved {
-  color: #ff4081;
-}
-
-.save-btn:active {
-  transform: scale(1.15);
-}
-
-.social-proof {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.detail-section h2 {
-  font-size: 16px;
+.detail-body section h2 {
+  font-size: 15px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   margin-bottom: 10px;
 }
 
-.detail-section p {
-  font-size: 14px;
+.detail-body section p {
+  font-size: 15px;
   line-height: 1.6;
-  color: var(--text-muted);
+  color: var(--text);
 }
 
-.lineup-list {
-  list-style: none;
+.detail-body section ul {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  list-style: none;
 }
 
-.lineup-item {
+.detail-body section ul li {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
-  color: var(--text);
+  font-size: 15px;
 }
 
 .lineup-dot {
@@ -189,27 +125,13 @@
   flex-shrink: 0;
 }
 
-.venue-section {
+.ticket-note {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-}
-
-.venue-name {
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  color: var(--text) !important;
-  margin-bottom: 4px;
-}
-
-.venue-addr, .venue-cap {
-  font-size: 13px !important;
-  color: var(--text-muted) !important;
-}
-
-.detail-error {
-  padding: 40px 20px;
-  text-align: center;
+  border-left-width: 3px;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-muted);
 }

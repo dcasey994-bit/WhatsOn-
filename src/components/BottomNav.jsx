@@ -1,19 +1,64 @@
 import { NavLink } from 'react-router-dom'
 import './BottomNav.css'
 
+function IconMap() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+      <line x1="9" y1="3" x2="9" y2="18"/>
+      <line x1="15" y1="6" x2="15" y2="21"/>
+    </svg>
+  )
+}
+
+function IconList() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="6" x2="21" y2="6"/>
+      <line x1="8" y1="12" x2="21" y2="12"/>
+      <line x1="8" y1="18" x2="21" y2="18"/>
+      <line x1="3" y1="6" x2="3.01" y2="6"/>
+      <line x1="3" y1="12" x2="3.01" y2="12"/>
+      <line x1="3" y1="18" x2="3.01" y2="18"/>
+    </svg>
+  )
+}
+
+function IconHeart() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  )
+}
+
+function IconBuilding() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M3 9h18"/>
+      <path d="M9 21V9"/>
+    </svg>
+  )
+}
+
 const tabs = [
-  { to: '/discover', label: 'Discover', icon: '🗺️' },
-  { to: '/browse', label: 'Browse', icon: '🎟️' },
-  { to: '/saved', label: 'Saved', icon: '♥' },
-  { to: '/venue', label: 'Venues', icon: '🏠' },
+  { to: '/discover', label: 'Discover', Icon: IconMap },
+  { to: '/browse', label: 'Browse', Icon: IconList },
+  { to: '/saved', label: 'Saved', Icon: IconHeart },
+  { to: '/venue', label: 'Venues', Icon: IconBuilding },
 ]
 
 export default function BottomNav() {
   return (
     <nav className="bottom-nav">
-      {tabs.map(({ to, label, icon }) => (
-        <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-tab active' : 'nav-tab'}>
-          <span className="nav-icon">{icon}</span>
+      {tabs.map(({ to, label, Icon }) => (
+        <NavLink
+          key={to}
+          to={to}
+          className={({ isActive }) => isActive ? 'nav-tab active' : 'nav-tab'}
+        >
+          <Icon />
           <span className="nav-label">{label}</span>
         </NavLink>
       ))}
