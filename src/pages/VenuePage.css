@@ -10,11 +10,17 @@
   background: var(--accent-dim);
   padding: 4px 10px;
   border-radius: 20px;
+  border: 1px solid var(--accent-border);
 }
 
+/* Tabs */
 .venue-tabs {
   display: flex;
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: var(--header-height);
+  background: var(--bg);
+  z-index: 5;
 }
 
 .vtab {
@@ -32,6 +38,7 @@
   border-bottom-color: var(--accent);
 }
 
+/* Dashboard */
 .venue-dashboard {
   padding: 16px;
 }
@@ -39,25 +46,30 @@
 .stats-row {
   display: flex;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .stat-box {
   flex: 1;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 14px;
+  padding: 14px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
 }
 
+.stat-box-wide {
+  border-radius: 14px;
+}
+
 .stat-num {
   font-size: 24px;
   font-weight: 800;
   color: var(--accent);
+  line-height: 1;
 }
 
 .stat-label {
@@ -65,53 +77,78 @@
   color: var(--text-muted);
   font-weight: 600;
   text-align: center;
-}
-
-.section-heading {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.no-events {
-  font-size: 14px;
+.section-heading {
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-muted);
+  margin: 20px 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.no-events {
   text-align: center;
   padding: 32px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.no-events p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.add-first-btn {
+  padding: 10px 20px;
+  background: var(--accent);
+  color: #000;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.event-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .venue-event-row {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 10px;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.vc-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+.vc-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
 .vc-info {
   flex: 1;
+  min-width: 0;
 }
 
 .vc-name {
   font-size: 14px;
   font-weight: 700;
-  margin-bottom: 2px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
 }
 
 .vc-meta {
@@ -119,11 +156,22 @@
   color: var(--text-muted);
 }
 
+.vc-cat {
+  font-weight: 700;
+}
+
 .vc-stats {
   display: flex;
   gap: 10px;
   font-size: 12px;
   color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.vc-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 /* Form */
@@ -140,10 +188,12 @@
 .add-event-form label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .add-event-form input,
@@ -152,7 +202,7 @@
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 12px;
+  padding: 12px 14px;
   color: var(--text);
   font-size: 15px;
   font-family: inherit;
@@ -170,6 +220,14 @@
   appearance: none;
 }
 
+.add-event-form select option {
+  background: var(--card);
+}
+
+.add-event-form textarea {
+  resize: vertical;
+}
+
 .form-row {
   display: flex;
   gap: 12px;
@@ -184,9 +242,10 @@
   border-radius: 12px;
   background: var(--accent);
   color: #000;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   transition: opacity 0.15s;
+  width: 100%;
 }
 
 .post-btn:active {
@@ -196,12 +255,13 @@
 .success-banner {
   background: var(--accent-dim);
   color: var(--accent);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--accent-border);
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 14px 16px;
   font-weight: 700;
   text-align: center;
   margin-bottom: 16px;
+  font-size: 15px;
   animation: fadeIn 0.2s ease;
 }
 
