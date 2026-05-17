@@ -17,25 +17,21 @@ export function getUser() {
 
 export function signIn(provider) {
   const mockUsers = {
-    google: {
-      id: 'g_001',
-      name: 'Kate McCarthy',
-      email: 'kate@gmail.com',
-      avatar: 'KM',
-      provider: 'google',
-    },
-    apple: {
-      id: 'a_001',
-      name: 'Kate McCarthy',
-      email: 'kate@icloud.com',
-      avatar: 'KM',
-      provider: 'apple',
-    },
+    google: { id: 'g_001', name: 'Kate McCarthy', email: 'kate@gmail.com', avatar: 'KM', provider: 'google', role: null },
+    apple:  { id: 'a_001', name: 'Kate McCarthy', email: 'kate@icloud.com', avatar: 'KM', provider: 'apple', role: null },
   }
   const user = mockUsers[provider]
   localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
   notify()
   return user
+}
+
+export function setRole(role) {
+  const user = getUser()
+  if (!user) return
+  const updated = { ...user, role }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+  notify()
 }
 
 export function signOut() {

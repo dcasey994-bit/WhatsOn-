@@ -1,36 +1,42 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signIn } from '../data/authStore.js'
+import { signIn, setRole } from '../data/authStore.js'
 import './SignInPage.css'
 
 export default function SignInPage() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(null)
+  const [step, setStep] = useState('signin') // 'signin' | 'role'
 
   function handleSignIn(provider) {
     setLoading(provider)
     setTimeout(() => {
       signIn(provider)
-      navigate('/discover', { replace: true })
+      setLoading(null)
+      setStep('role')
     }, 900)
+  }
+
+  function handleRole(role) {
+    setRole(role)
+    navigate(role === 'venue' ? '/venue' : '/discover', { replace: true })
+  }
+
+  if (step === 'role') {
+    return <RolePicker onSelect={handleRole} />
   }
 
   return (
     <div className="signin-page">
-      {/* Background glow */}
       <div className="signin-glow" />
 
-      {/* Logo */}
       <div className="signin-hero">
-        <div className="signin-logo">
-          WhatsOn<span className="logo-q">?</span>
-        </div>
+        <div className="signin-logo">WhatsOn<span className="logo-q">?</span></div>
         <p className="signin-tagline">
           Everything happening tonight,<br />right where you are.
         </p>
       </div>
 
-      {/* Preview pins graphic */}
       <div className="signin-pins">
         <span className="pin pin-music">🎵</span>
         <span className="pin pin-comedy">😂</span>
@@ -39,18 +45,13 @@ export default function SignInPage() {
         <span className="pin pin-jazz">🎷</span>
       </div>
 
-      {/* Sign-in buttons */}
       <div className="signin-buttons">
         <button
           className={`signin-btn signin-google ${loading === 'google' ? 'loading' : ''}`}
           onClick={() => handleSignIn('google')}
           disabled={!!loading}
         >
-          {loading === 'google' ? (
-            <span className="spinner" />
-          ) : (
-            <GoogleIcon />
-          )}
+          {loading === 'google' ? <span className="spinner" /> : <GoogleIcon />}
           Continue with Google
         </button>
 
@@ -59,11 +60,7 @@ export default function SignInPage() {
           onClick={() => handleSignIn('apple')}
           disabled={!!loading}
         >
-          {loading === 'apple' ? (
-            <span className="spinner spinner-dark" />
-          ) : (
-            <AppleIcon />
-          )}
+          {loading === 'apple' ? <span className="spinner spinner-dark" /> : <AppleIcon />}
           Continue with Apple
         </button>
 
@@ -74,6 +71,41 @@ export default function SignInPage() {
           <span className="terms-link">Privacy Policy</span>
         </p>
       </div>
+    </div>
+  )
+}
+
+function RolePicker({ onSelect }) {
+  return (
+    <div className="signin-page">
+      <div className="signin-glow" />
+
+      <div className="signin-hero">
+        <div className="signin-logo">WhatsOn<span className="logo-q">?</span></div>
+        <p className="signin-tagline">How will you be using<br />WhatsOn?</p>
+      </div>
+
+      <div className="role-cards">
+        <button className="role-card" onClick={() => onSelect('customer')}>
+          <span className="role-icon">🗺️</span>
+          <div className="role-text">
+            <p className="role-title">I'm going out</p>
+            <p className="role-desc">Discover live music, comedy, karaoke and more happening near you tonight</p>
+          </div>
+          <span className="role-arrow">→</span>
+        </button>
+
+        <button className="role-card" onClick={() => onSelect('venue')}>
+          <span className="role-icon">🏠</span>
+          <div className="role-text">
+            <p className="role-title">I run a venue</p>
+            <p className="role-desc">List your events, reach more people, and see who's interested tonight</p>
+          </div>
+          <span className="role-arrow">→</span>
+        </button>
+      </div>
+
+      <p className="role-note">You can change this later in settings</p>
     </div>
   )
 }
