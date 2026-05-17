@@ -10,6 +10,7 @@
   justify-content: space-between;
   padding: 0 16px;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 .header-brand {
@@ -61,15 +62,15 @@
 }
 
 .avatar-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
+  top: calc(var(--header-height) + 8px);
+  right: 16px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px;
   width: 220px;
-  z-index: 500;
+  z-index: 600;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   animation: popIn 0.15s ease;
 }
