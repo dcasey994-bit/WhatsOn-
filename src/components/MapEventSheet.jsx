@@ -6,11 +6,10 @@ import './MapEventSheet.css'
 
 export default function MapEventSheet({ event, onClose }) {
   const navigate = useNavigate()
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(() => event ? isSaved(event.id) : false)
 
   useEffect(() => {
     if (!event) return
-    setSaved(isSaved(event.id))
     return subscribe(() => setSaved(isSaved(event.id)))
   }, [event])
 
