@@ -1,0 +1,17 @@
+.browse-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding-bottom: var(--nav-height);
+}
+
+.event-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.browse-list {
+  padding: 12px 16px;
+  overflow-y: auto;
+}

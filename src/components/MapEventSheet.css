@@ -1,0 +1,79 @@
+.map-sheet {
+  position: absolute;
+  bottom: calc(var(--nav-height) + 12px);
+  left: 12px;
+  right: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  z-index: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.sheet-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 14px;
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.sheet-inner {
+  cursor: pointer;
+}
+
+.cat-badge-sm {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.sheet-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 8px 0 4px;
+  padding-right: 28px;
+}
+
+.sheet-venue {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.sheet-price {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.sheet-cta {
+  margin-left: auto;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+}
