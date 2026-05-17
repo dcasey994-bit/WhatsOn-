@@ -141,7 +141,7 @@ export default function VenuePage() {
                       <p className="vc-meta">
                         <span className="vc-cat" style={{ color: cat.color }}>{cat.label}</span>
                         &nbsp;·&nbsp;{event.time}
-                        &nbsp;·&nbsp;{event.price === 0 ? 'Free' : `€${event.price}`}
+                        &nbsp;·&nbsp;{event.price === 0 ? 'Free' : `£${event.price}`}
                       </p>
                     </div>
                     <div className="vc-stats">
@@ -207,7 +207,7 @@ export default function VenuePage() {
 
             <div className="form-row">
               <label>
-                Ticket price (€)
+                Ticket price (£)
                 <input
                   type="number"
                   min="0"

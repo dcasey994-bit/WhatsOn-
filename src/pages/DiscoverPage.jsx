@@ -9,7 +9,7 @@ import CategoryFilter from '../components/CategoryFilter.jsx'
 import MapEventSheet from '../components/MapEventSheet.jsx'
 import './DiscoverPage.css'
 
-const DUBLIN = [53.3498, -6.2603]
+const BALHAM = [51.4435, -0.1527]
 
 function FlyTo({ center }) {
   const map = useMap()
@@ -47,7 +47,7 @@ function EventCardMini({ event }) {
         <span className="meta-item">🕐 {event.time}</span>
         <span className="meta-item">📍 {event.distance}</span>
         <span className="meta-price" style={{ color: event.price === 0 ? 'var(--cat-music)' : 'var(--text)' }}>
-          {event.price === 0 ? 'Free' : `€${event.price}`}
+          {event.price === 0 ? 'Free' : `£${event.price}`}
         </span>
       </div>
 
@@ -98,7 +98,7 @@ export default function DiscoverPage() {
       {view === 'map' ? (
         <div className="map-wrapper">
           <MapContainer
-            center={DUBLIN}
+            center={BALHAM}
             zoom={14}
             zoomControl={false}
             attributionControl={false}
@@ -108,11 +108,11 @@ export default function DiscoverPage() {
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               attribution=""
             />
-            <FlyTo center={DUBLIN} />
+            <FlyTo center={BALHAM} />
 
             {/* User location dot */}
             <CircleMarker
-              center={DUBLIN}
+              center={BALHAM}
               radius={8}
               pathOptions={{ color: '#ffee00', fillColor: '#ffee00', fillOpacity: 1, weight: 2 }}
             />

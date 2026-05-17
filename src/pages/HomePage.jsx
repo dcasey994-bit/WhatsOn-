@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import { EVENTS, CATEGORIES } from '../data/events.js'
 import './HomePage.css'
 
-const DUBLIN = [53.3498, -6.2603]
+const BALHAM = [51.4435, -0.1527]
 
 const ALL_CATEGORIES = [
   { key: 'all', label: 'All' },
@@ -35,7 +35,7 @@ export default function HomePage() {
       {/* Map */}
       <div className="map-area">
         <MapContainer
-          center={DUBLIN}
+          center={BALHAM}
           zoom={14}
           zoomControl={false}
           attributionControl={false}
@@ -45,7 +45,7 @@ export default function HomePage() {
 
           {/* You are here */}
           <CircleMarker
-            center={DUBLIN}
+            center={BALHAM}
             radius={7}
             pathOptions={{ color: '#fff', fillColor: '#ffee00', fillOpacity: 1, weight: 2 }}
           />
@@ -75,7 +75,7 @@ export default function HomePage() {
               <button className="popup-close" onClick={e => { e.stopPropagation(); setSelected(null) }}>✕</button>
             </div>
             <p className="popup-name">{selected.name}</p>
-            <p className="popup-meta">{selected.venue} · {selected.time} · {selected.price === 0 ? 'Free' : `€${selected.price}`}</p>
+            <p className="popup-meta">{selected.venue} · {selected.time} · {selected.price === 0 ? 'Free' : `£${selected.price}`}</p>
             <span className="popup-cta">View details →</span>
           </div>
         )}
@@ -113,7 +113,7 @@ export default function HomePage() {
               <div className="row-right">
                 <p className="row-time">{e.time}</p>
                 <p className="row-price" style={{ color: e.price === 0 ? '#00ff88' : 'var(--text-muted)' }}>
-                  {e.price === 0 ? 'Free' : `€${e.price}`}
+                  {e.price === 0 ? 'Free' : `£${e.price}`}
                 </p>
               </div>
             </div>

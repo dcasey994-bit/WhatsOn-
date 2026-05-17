@@ -41,7 +41,7 @@ export default function EventCard({ event }) {
           className="meta-price"
           style={{ color: event.price === 0 ? 'var(--cat-music)' : 'var(--text)' }}
         >
-          {event.price === 0 ? 'Free' : `€${event.price}`}
+          {event.price === 0 ? 'Free' : `£${event.price}`}
         </span>
       </div>
 
