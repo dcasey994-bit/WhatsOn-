@@ -14,16 +14,24 @@ export default function SavedPage() {
 
   return (
     <div className="saved-page">
-      <Header title="Saved" />
+      <Header>
+        <span className="saved-count-badge">{saved.length} saved</span>
+      </Header>
+
       <div className="saved-list">
         {saved.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-icon">♡</span>
-            <p>Nothing saved yet</p>
-            <p className="empty-sub">Tap the heart on any event to save it for later</p>
+            <div className="empty-icon">♡</div>
+            <h3>Nothing saved yet</h3>
+            <p>Tap the heart on any event to save it here</p>
           </div>
         ) : (
-          saved.map(event => <EventCard key={event.id} event={event} />)
+          <>
+            <p className="saved-section-label">Your saved events tonight</p>
+            {saved.map(event => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </>
         )}
       </div>
     </div>
