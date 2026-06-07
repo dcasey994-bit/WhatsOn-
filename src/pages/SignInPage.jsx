@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { signIn, signInWithEmail } from '../data/authStore.js'
+import { signIn, signInWithPassword, signUpWithEmail } from '../data/authStore.js'
 import './SignInPage.css'
 
 export default function SignInPage() {
   const [loading, setLoading] = useState(null)
   const [error, setError] = useState(null)
   const [showEmail, setShowEmail] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [sent, setSent] = useState(false)
 
   async function handleSignIn(provider) {
@@ -21,16 +23,33 @@ export default function SignInPage() {
     }
   }
 
-  async function handleEmailSignIn(e) {
+  async function handleEmailSubmit(e) {
     e.preventDefault()
-    if (!email.trim()) return
+    if (!email.trim() || !password) return
     setLoading('email')
     setError(null)
     try {
-      await signInWithEmail(email.trim())
-      setSent(true)
+      if (isSignUp) {
+        if (password.length < 6) {
+          setError('Password must be at least 6 characters.')
+          setLoading(null)
+          return
+        }
+        const needsConfirm = await signUpWithEmail(email.trim(), password)
+        if (needsConfirm) {
+          setSent(true)
+        }
+        // If no confirmation needed, auth state change signs them straight in
+      } else {
+        await signInWithPassword(email.trim(), password)
+        // Auth state change handles the rest
+      }
     } catch (err) {
-      setError('Could not send the link. Check the address and try again.')
+      setError(
+        isSignUp
+          ? 'Could not create the account. Try a different email.'
+          : 'Wrong email or password. Please try again.'
+      )
     }
     setLoading(null)
   }
@@ -59,18 +78,29 @@ export default function SignInPage() {
 
         {sent ? (
           <p className="signin-sent">
-            ✉️ Check your inbox — we've sent a sign-in link to<br />
-            <strong>{email}</strong>
+            ✉️ Almost there — we've sent a confirmation link to<br />
+            <strong>{email}</strong><br />
+            Click it to finish creating your account.
           </p>
         ) : showEmail ? (
-          <form className="signin-email-form" onSubmit={handleEmailSignIn}>
+          <form className="signin-email-form" onSubmit={handleEmailSubmit}>
             <input
               type="email"
               className="signin-email-input"
               placeholder="you@example.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
+              autoComplete="email"
               autoFocus
+              required
+            />
+            <input
+              type="password"
+              className="signin-email-input"
+              placeholder={isSignUp ? 'Create a password' : 'Password'}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              autoComplete={isSignUp ? 'new-password' : 'current-password'}
               required
             />
             <button
@@ -79,7 +109,16 @@ export default function SignInPage() {
               disabled={!!loading}
             >
               {loading === 'email' ? <span className="spinner spinner-dark" /> : null}
-              Send me a sign-in link
+              {isSignUp ? 'Create account' : 'Sign in'}
+            </button>
+            <button
+              type="button"
+              className="signin-toggle"
+              onClick={() => { setIsSignUp(!isSignUp); setError(null) }}
+            >
+              {isSignUp
+                ? 'Already have an account? Sign in'
+                : 'New here? Create an account'}
             </button>
             <button
               type="button"

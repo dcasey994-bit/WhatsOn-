@@ -42,15 +42,25 @@ export async function signIn(provider) {
   if (error) throw error
 }
 
-// Sign in with email — sends a magic link to the inbox
-export async function signInWithEmail(email) {
-  const { error } = await supabase.auth.signInWithOtp({
+// Sign in with an existing email + password
+export async function signInWithPassword(email, password) {
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw error
+}
+
+// Create a new account with email + password
+// Returns true if a confirmation email was sent (no active session yet)
+export async function signUpWithEmail(email, password) {
+  const { data, error } = await supabase.auth.signUp({
     email,
+    password,
     options: {
       emailRedirectTo: window.location.origin,
     },
   })
   if (error) throw error
+  // If email confirmation is required, there's a user but no session yet
+  return !data.session
 }
 
 export async function signOut() {
