@@ -31,12 +31,23 @@ function storeUser(supabaseUser, role = 'customer') {
   return user
 }
 
-// Sign in with Google or Apple via Supabase OAuth
+// Sign in with Google via Supabase OAuth
 export async function signIn(provider) {
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo: window.location.origin,
+    },
+  })
+  if (error) throw error
+}
+
+// Sign in with email — sends a magic link to the inbox
+export async function signInWithEmail(email) {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: window.location.origin,
     },
   })
   if (error) throw error
