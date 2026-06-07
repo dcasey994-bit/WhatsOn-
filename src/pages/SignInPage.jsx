@@ -1,36 +1,34 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { signIn } from '../data/authStore.js'
 import './SignInPage.css'
 
 export default function SignInPage() {
-  const navigate = useNavigate()
   const [loading, setLoading] = useState(null)
+  const [error, setError] = useState(null)
 
-  function handleSignIn(provider) {
+  async function handleSignIn(provider) {
     setLoading(provider)
-    setTimeout(() => {
-      signIn(provider)
-      navigate('/discover', { replace: true })
-    }, 900)
+    setError(null)
+    try {
+      await signIn(provider)
+      // Supabase redirects the browser — no navigate() needed
+    } catch (e) {
+      setError('Something went wrong. Please try again.')
+      setLoading(null)
+    }
   }
 
   return (
     <div className="signin-page">
-      {/* Background glow */}
       <div className="signin-glow" />
 
-      {/* Logo */}
       <div className="signin-hero">
-        <div className="signin-logo">
-          WhatsOn<span className="logo-q">?</span>
-        </div>
+        <div className="signin-logo">WhatsOn<span className="logo-q">?</span></div>
         <p className="signin-tagline">
           Everything happening tonight,<br />right where you are.
         </p>
       </div>
 
-      {/* Preview pins graphic */}
       <div className="signin-pins">
         <span className="pin pin-music">🎵</span>
         <span className="pin pin-comedy">😂</span>
@@ -39,18 +37,15 @@ export default function SignInPage() {
         <span className="pin pin-jazz">🎷</span>
       </div>
 
-      {/* Sign-in buttons */}
       <div className="signin-buttons">
+        {error && <p className="signin-error">{error}</p>}
+
         <button
           className={`signin-btn signin-google ${loading === 'google' ? 'loading' : ''}`}
           onClick={() => handleSignIn('google')}
           disabled={!!loading}
         >
-          {loading === 'google' ? (
-            <span className="spinner" />
-          ) : (
-            <GoogleIcon />
-          )}
+          {loading === 'google' ? <span className="spinner" /> : <GoogleIcon />}
           Continue with Google
         </button>
 
@@ -59,11 +54,7 @@ export default function SignInPage() {
           onClick={() => handleSignIn('apple')}
           disabled={!!loading}
         >
-          {loading === 'apple' ? (
-            <span className="spinner spinner-dark" />
-          ) : (
-            <AppleIcon />
-          )}
+          {loading === 'apple' ? <span className="spinner spinner-dark" /> : <AppleIcon />}
           Continue with Apple
         </button>
 

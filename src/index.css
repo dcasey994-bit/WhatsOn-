@@ -78,3 +78,8 @@ input, select, textarea { color-scheme: dark; }
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+
+.app-loading {
+  min-height: 100dvh;
+  background: var(--bg);
+}
