@@ -92,21 +92,21 @@ export default function SignInPage() {
         ) : (
           <>
             <button
-              className={`signin-btn signin-google ${loading === 'google' ? 'loading' : ''}`}
-              onClick={() => handleSignIn('google')}
-              disabled={!!loading}
-            >
-              {loading === 'google' ? <span className="spinner" /> : <GoogleIcon />}
-              Continue with Google
-            </button>
-
-            <button
               className="signin-btn signin-email"
               onClick={() => setShowEmail(true)}
               disabled={!!loading}
             >
               <EmailIcon />
               Continue with Email
+            </button>
+
+            <button
+              className={`signin-btn signin-google ${loading === 'google' ? 'loading' : ''}`}
+              onClick={() => handleSignIn('google')}
+              disabled={!!loading}
+            >
+              {loading === 'google' ? <span className="spinner" /> : <GoogleIcon />}
+              Continue with Google
             </button>
 
             <p className="signin-terms">
