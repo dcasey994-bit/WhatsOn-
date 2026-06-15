@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css'
 import { EVENTS, CATEGORIES } from '../data/events.js'
+import { fetchUpcomingEvents } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
@@ -62,8 +63,17 @@ export default function DiscoverPage() {
   const [view, setView] = useState('map')
   const [category, setCategory] = useState('all')
   const [selected, setSelected] = useState(null)
+  const [dbEvents, setDbEvents] = useState([])
 
-  const filtered = category === 'all' ? EVENTS : EVENTS.filter(e => e.category === category)
+  useEffect(() => {
+    fetchUpcomingEvents()
+      .then(rows => setDbEvents(rows))
+      .catch(() => {})
+  }, [])
+
+  // Show DB events when available, fall back to mock events for demo
+  const allEvents = dbEvents.length > 0 ? dbEvents : EVENTS
+  const filtered = category === 'all' ? allEvents : allEvents.filter(e => e.category === category)
   const sorted = [...filtered].sort((a, b) => a.time.localeCompare(b.time))
 
   function handleCategoryChange(cat) {
