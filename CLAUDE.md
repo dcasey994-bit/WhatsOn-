@@ -1,7 +1,8 @@
 # WhatsOn? — Project Notes
 
 ## Deployment
-- **Netlify auto-deploys from GitHub.** Pushing to the `claude/live-events-map-vRHxH` branch automatically triggers a Netlify build and deploy — no manual deploy step needed.
+- **Netlify auto-deploys from GitHub.** Pushing to the `claude/live-events-map-vRHxH` branch automatically triggers a Netlify build and deploy.
+- **30 deploys/month limit** — resets on the 16th. Only push for meaningful batches of changes, not single fixes.
 - Live URL: https://monumental-hamster-c09097.netlify.app
 - Build command: `npm run build` · Publish directory: `dist`
 
