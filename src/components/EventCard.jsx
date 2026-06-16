@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CATEGORIES } from '../data/events.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
+import { useGoingCount } from '../data/goingStore.js'
 import './EventCard.css'
 
 export default function EventCard({ event }) {
   const navigate = useNavigate()
   const cat = CATEGORIES[event.category]
   const [saved, setSaved] = useState(() => isSaved(event.id))
+  const going = useGoingCount(event.id)
 
   useEffect(() => subscribe(() => setSaved(isSaved(event.id))), [event.id])
 
@@ -18,6 +20,10 @@ export default function EventCard({ event }) {
 
   return (
     <div className="event-card" onClick={() => navigate(`/event/${event.id}`)}>
+      {event.image && (
+        <div className="card-image" style={{ backgroundImage: `url(${event.image})` }} />
+      )}
+
       <div className="card-header">
         <span className="cat-badge" style={{ background: cat.bg, color: cat.color }}>
           {cat.label}
@@ -37,6 +43,7 @@ export default function EventCard({ event }) {
       <div className="card-meta">
         <span className="meta-item">🕐 {event.time}</span>
         {event.distance && <span className="meta-item">📍 {event.distance}</span>}
+        {going > 0 && <span className="meta-item going-count">👥 {going} going</span>}
         <span
           className="meta-price"
           style={{ color: event.price === 0 ? 'var(--cat-music)' : 'var(--text)' }}

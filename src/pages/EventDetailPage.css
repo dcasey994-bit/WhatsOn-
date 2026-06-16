@@ -19,6 +19,12 @@
   position: relative;
 }
 
+.detail-hero.has-image {
+  padding-top: 160px;
+  background-size: cover;
+  background-position: center;
+}
+
 .back-btn {
   position: absolute;
   top: 16px;
@@ -70,6 +76,15 @@
   font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 4px;
+}
+
+.detail-venue-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--accent);
+  display: inline-block;
 }
 
 .detail-address {

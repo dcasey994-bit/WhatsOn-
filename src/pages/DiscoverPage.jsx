@@ -5,11 +5,13 @@ import 'leaflet/dist/leaflet.css'
 import { CATEGORIES } from '../data/events.js'
 import { useEvents } from '../data/EventsContext.jsx'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
+import { useGoingCount } from '../data/goingStore.js'
 import { useUserLocation, distanceKm, formatDistance } from '../data/location.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import DayStrip from '../components/DayStrip.jsx'
+import SearchBar, { matchesQuery } from '../components/SearchBar.jsx'
 import MapEventSheet from '../components/MapEventSheet.jsx'
 import './DiscoverPage.css'
 
@@ -25,6 +27,7 @@ function EventCardMini({ event }) {
   const navigate = useNavigate()
   const cat = CATEGORIES[event.category]
   const [saved, setSaved] = useState(() => isSaved(event.id))
+  const going = useGoingCount(event.id)
 
   useEffect(() => subscribe(() => setSaved(isSaved(event.id))), [event.id])
 
@@ -35,6 +38,9 @@ function EventCardMini({ event }) {
 
   return (
     <div className="event-card" onClick={() => navigate(`/event/${event.id}`)}>
+      {event.image && (
+        <div className="card-image" style={{ backgroundImage: `url(${event.image})` }} />
+      )}
       <div className="card-header">
         <span className="cat-badge" style={{ background: cat.bg, color: cat.color }}>
           {cat.label}
@@ -50,6 +56,7 @@ function EventCardMini({ event }) {
       <div className="card-meta">
         <span className="meta-item">🕐 {event.time}</span>
         {event.distance && <span className="meta-item">📍 {event.distance}</span>}
+        {going > 0 && <span className="meta-item going-count">👥 {going} going</span>}
         <span className="meta-price" style={{ color: event.price === 0 ? 'var(--cat-music)' : 'var(--text)' }}>
           {event.price === 0 ? 'Free' : `£${event.price}`}
         </span>
@@ -66,6 +73,7 @@ export default function DiscoverPage() {
   const [view, setView] = useState('map')
   const [category, setCategory] = useState('all')
   const [day, setDay] = useState(() => todayKey())
+  const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null)
   const events = useEvents()
   const { coords } = useUserLocation()
@@ -82,7 +90,9 @@ export default function DiscoverPage() {
     : events
 
   const filtered = withDistance.filter(e =>
-    (category === 'all' || e.category === category) && matchesDay(e, day)
+    (category === 'all' || e.category === category) &&
+    matchesDay(e, day) &&
+    matchesQuery(e, query)
   )
   const sorted = [...filtered].sort((a, b) =>
     (a.startsAt || a.time).localeCompare(b.startsAt || b.time)
@@ -173,6 +183,7 @@ export default function DiscoverPage() {
         </div>
       ) : (
         <div className="discover-list">
+          <SearchBar value={query} onChange={setQuery} />
           <p className="discover-count">{filtered.length} {filtered.length === 1 ? 'event' : 'events'}</p>
           {sorted.map(event => (
             <EventCardMini key={event.id} event={event} />

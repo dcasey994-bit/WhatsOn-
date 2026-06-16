@@ -1,0 +1,53 @@
+.venue-profile {
+  min-height: 100vh;
+  padding-bottom: 90px;
+}
+
+.vp-hero {
+  padding: 60px 20px 24px;
+  position: relative;
+  background: linear-gradient(160deg, rgba(0, 255, 136, 0.08) 0%, rgba(15, 15, 20, 0.99) 70%);
+  border-bottom: 1px solid var(--border);
+}
+
+.vp-name {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.vp-type {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.vp-address,
+.vp-phone {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.vp-body {
+  padding: 20px 16px;
+}
+
+.vp-heading {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+.vp-empty,
+.vp-loading {
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 20px 16px;
+}

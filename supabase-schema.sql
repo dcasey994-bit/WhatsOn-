@@ -63,8 +63,12 @@ create table if not exists events (
   description text,
   capacity    int,
   ticket_url  text,
+  image_url   text,
   created_at  timestamptz default now()
 );
+
+-- If the events table already existed before image support, add the column:
+alter table events add column if not exists image_url text;
 
 alter table events enable row level security;
 
@@ -81,3 +85,28 @@ create policy "events: update own venue" on events for update using (
 create policy "events: delete own venue" on events for delete using (
   exists (select 1 from venues where id = venue_id and user_id = auth.uid())
 );
+
+-- ── Going counts ────────────────────────────────────────────────────────────
+-- Public aggregate of how many people are "going" to each event. The view is
+-- owned by postgres so it bypasses going_events RLS to count everyone's rows,
+-- while individual going_events rows stay private to their owner.
+
+create or replace view going_counts as
+  select event_id, count(*)::int as count
+  from going_events
+  group by event_id;
+
+grant select on going_counts to anon, authenticated;
+
+-- ── Event images (Storage) ──────────────────────────────────────────────────
+-- Public bucket for event banner images. Anyone can read; logged-in venues upload.
+
+insert into storage.buckets (id, name, public)
+values ('event-images', 'event-images', true)
+on conflict (id) do nothing;
+
+create policy "event images: public read" on storage.objects
+  for select using (bucket_id = 'event-images');
+
+create policy "event images: authenticated upload" on storage.objects
+  for insert to authenticated with check (bucket_id = 'event-images');

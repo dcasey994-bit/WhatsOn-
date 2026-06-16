@@ -3,7 +3,7 @@ import { CATEGORIES } from '../data/events.js'
 import {
   fetchMyVenue, registerVenue,
   fetchVenueEvents, createEvent, updateEvent, deleteEvent,
-  geocodeAddress,
+  geocodeAddress, uploadEventImage,
 } from '../data/eventsStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
@@ -11,7 +11,7 @@ import './VenuePage.css'
 
 const BLANK_EVENT = {
   name: '', category: 'music', date: '', time: '',
-  price: '', capacity: '', ticket_url: '', description: '',
+  price: '', capacity: '', ticket_url: '', description: '', image_url: '',
 }
 
 const BLANK_VENUE = {
@@ -37,6 +37,7 @@ export default function VenuePage() {
   const [venueForm, setVenueForm] = useState(BLANK_VENUE)
   const [geocoded, setGeocoded] = useState(null)  // { lat, lng, display }
   const [geocoding, setGeocoding] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const reloadEvents = useReloadEvents()
 
   useEffect(() => {
@@ -104,6 +105,7 @@ export default function VenuePage() {
       capacity: form.capacity ? Number(form.capacity) : null,
       ticket_url: form.ticket_url || null,
       description: form.description,
+      image_url: form.image_url || null,
     }
     try {
       if (editingId) {
@@ -142,6 +144,7 @@ export default function VenuePage() {
       capacity: ev.capacity ?? '',
       ticket_url: ev.ticket_url ?? '',
       description: ev.description ?? '',
+      image_url: ev.image_url ?? '',
     })
     setEditingId(ev.id)
     setError(null)
@@ -153,6 +156,20 @@ export default function VenuePage() {
     await deleteEvent(eventId)
     setEvents(prev => prev.filter(e => e.id !== eventId))
     reloadEvents()
+  }
+
+  async function handleImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setError(null)
+    try {
+      const url = await uploadEventImage(file)
+      setForm(f => ({ ...f, image_url: url }))
+    } catch {
+      setError('Could not upload image. Please try a smaller JPG or PNG.')
+    }
+    setUploading(false)
   }
 
   function set(field) {
@@ -337,10 +354,22 @@ export default function VenuePage() {
               <input type="url" value={form.ticket_url} onChange={set('ticket_url')} placeholder="https://..." />
             </label>
             <label>
+              Event image (optional)
+              {form.image_url && (
+                <div className="image-preview" style={{ backgroundImage: `url(${form.image_url})` }}>
+                  <button type="button" className="image-remove" onClick={() => setForm(f => ({ ...f, image_url: '' }))}>
+                    Remove
+                  </button>
+                </div>
+              )}
+              <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+              {uploading && <span className="upload-hint">Uploading…</span>}
+            </label>
+            <label>
               Description
               <textarea required value={form.description} onChange={set('description')} rows={4} placeholder="Tell people what to expect..." />
             </label>
-            <button type="submit" className="post-btn" disabled={saving}>
+            <button type="submit" className="post-btn" disabled={saving || uploading}>
               {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Post Event'}
             </button>
           </form>

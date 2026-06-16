@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { CATEGORIES } from '../data/events.js'
 import { useEvent } from '../data/EventsContext.jsx'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
+import { useGoingCount } from '../data/goingStore.js'
 import './EventDetailPage.css'
 
 export default function EventDetailPage() {
@@ -12,7 +13,7 @@ export default function EventDetailPage() {
 
   const [saved, setSaved] = useState(() => isSaved(id))
   const [going, setGoing] = useState(() => isGoing(id))
-  const [likes, setLikes] = useState(event?.likes ?? 0)
+  const goingCount = useGoingCount(id)
 
   useEffect(() => {
     return subscribe(() => {
@@ -33,42 +34,37 @@ export default function EventDetailPage() {
   const cat = CATEGORIES[event.category]
 
   function handleGoing() {
-    const wasGoing = isGoing(id)
     toggleGoing(id)
-    setLikes(l => wasGoing ? l - 1 : l + 1)
   }
+
+  const heroStyle = event.image
+    ? { backgroundImage: `linear-gradient(to top, rgba(15,15,20,0.98) 12%, rgba(15,15,20,0.55) 60%, rgba(15,15,20,0.35)), url(${event.image})` }
+    : { background: `linear-gradient(160deg, ${cat.bg} 0%, rgba(15,15,20,0.99) 70%)` }
 
   return (
     <div className="detail-page">
       {/* Hero */}
-      <div
-        className="detail-hero"
-        style={{ background: `linear-gradient(160deg, ${cat.bg} 0%, rgba(15,15,20,0.99) 70%)` }}
-      >
+      <div className={`detail-hero ${event.image ? 'has-image' : ''}`} style={heroStyle}>
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <div className="hero-content">
           <span className="cat-badge-lg" style={{ background: cat.bg, color: cat.color }}>
             {cat.label}
           </span>
           <h1 className="detail-title">{event.name}</h1>
-          <p className="detail-venue">{event.venue}</p>
+          {event.fromDB && event.venueId ? (
+            <button className="detail-venue detail-venue-link" onClick={() => navigate(`/venue/${event.venueId}`)}>
+              {event.venue} ›
+            </button>
+          ) : (
+            <p className="detail-venue">{event.venue}</p>
+          )}
           <p className="detail-address">📍 {event.address}</p>
         </div>
 
         <div className="hero-stats">
           <div className="hero-stat">
-            <span className="hero-stat-val">{likes}</span>
-            <span className="hero-stat-lbl">Interested</span>
-          </div>
-          <div className="hero-stat-divider" />
-          <div className="hero-stat">
-            <span className="hero-stat-val">{event.views}</span>
-            <span className="hero-stat-lbl">Views</span>
-          </div>
-          <div className="hero-stat-divider" />
-          <div className="hero-stat">
-            <span className="hero-stat-val">{event.saves}</span>
-            <span className="hero-stat-lbl">Saves</span>
+            <span className="hero-stat-val">{goingCount}</span>
+            <span className="hero-stat-lbl">Going</span>
           </div>
         </div>
       </div>
@@ -143,7 +139,9 @@ export default function EventDetailPage() {
           <h2>Venue</h2>
           <p className="venue-name">{event.venue}</p>
           <p className="venue-addr">{event.address}</p>
-          <p className="venue-cap">Capacity: {event.capacity.toLocaleString()}</p>
+          {event.capacity != null && (
+            <p className="venue-cap">Capacity: {event.capacity.toLocaleString()}</p>
+          )}
         </section>
       </div>
 

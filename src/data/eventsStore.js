@@ -40,7 +40,7 @@ export function dbEventToLocal(row) {
     ticketsLeft: null,
     ticket_url: row.ticket_url || null,
     artist_bio: '',
-    image: null,
+    image: row.image_url || null,
     fromDB: true,
   }
 }
@@ -62,6 +62,31 @@ export async function fetchUpcomingEvents() {
   const { data, error } = await supabase
     .from('events')
     .select('*, venues(name, address, lat, lng)')
+    .gte('date', today)
+    .order('date', { ascending: true })
+    .order('time', { ascending: true })
+  if (error) throw error
+  return (data || []).map(dbEventToLocal)
+}
+
+// ── Public venue profiles ──────────────────────────────────────────────────
+
+export async function fetchVenueById(venueId) {
+  const { data } = await supabase
+    .from('venues')
+    .select('*')
+    .eq('id', venueId)
+    .maybeSingle()
+  return data || null
+}
+
+// Upcoming events for one venue, in the UI shape (used by the public profile page)
+export async function fetchPublicVenueEvents(venueId) {
+  const today = new Date().toISOString().split('T')[0]
+  const { data, error } = await supabase
+    .from('events')
+    .select('*, venues(name, address, lat, lng)')
+    .eq('venue_id', venueId)
     .gte('date', today)
     .order('date', { ascending: true })
     .order('time', { ascending: true })
@@ -133,4 +158,20 @@ export async function updateEvent(eventId, fields) {
 export async function deleteEvent(eventId) {
   const { error } = await supabase.from('events').delete().eq('id', eventId)
   if (error) throw error
+}
+
+// ── Event images (Supabase Storage) ─────────────────────────────────────────
+
+// Upload a file to the public `event-images` bucket and return its public URL
+export async function uploadEventImage(file) {
+  const user = getUser()
+  if (!user) throw new Error('Not logged in')
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
+  const path = `${user.id}/${Date.now()}.${ext}`
+  const { error } = await supabase.storage
+    .from('event-images')
+    .upload(path, file, { cacheControl: '3600', upsert: false })
+  if (error) throw error
+  const { data } = supabase.storage.from('event-images').getPublicUrl(path)
+  return data.publicUrl
 }

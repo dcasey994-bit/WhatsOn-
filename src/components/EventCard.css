@@ -19,10 +19,24 @@
   border-color: #3a3a50;
 }
 
+.card-image {
+  height: 140px;
+  margin: -14px -16px 4px;
+  border-radius: 16px 16px 0 0;
+  background-size: cover;
+  background-position: center;
+  background-color: #1a1a24;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.going-count {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .cat-badge {

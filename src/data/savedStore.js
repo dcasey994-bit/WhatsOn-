@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.js'
 import { getUser } from './authStore.js'
+import { bumpGoingCount } from './goingStore.js'
 
 const LS_SAVED = 'whatson_saved'
 const LS_GOING = 'whatson_going'
@@ -58,9 +59,11 @@ export async function toggleGoing(id) {
   const user = getUser()
   if (set.has(id)) {
     set.delete(id)
+    bumpGoingCount(id, -1)
     if (user) await supabase.from('going_events').delete().match({ user_id: user.id, event_id: id })
   } else {
     set.add(id)
+    bumpGoingCount(id, +1)
     if (user) await supabase.from('going_events').upsert(
       { user_id: user.id, event_id: id },
       { onConflict: 'user_id,event_id' }
