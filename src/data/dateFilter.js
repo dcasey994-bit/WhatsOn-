@@ -7,28 +7,25 @@ export function todayKey() {
   return fmt(new Date())
 }
 
-// The Saturday + Sunday of the current/upcoming weekend
-export function weekendKeys() {
+// Build the day options for the horizontal strip: All + the next `days` days
+export function buildDayOptions(days = 14) {
+  const opts = [{ key: 'all', top: 'All', bottom: '' }]
   const now = new Date()
-  const day = now.getDay() // 0 = Sun ... 6 = Sat
-  const sat = new Date(now)
-  if (day === 0) sat.setDate(now.getDate() - 1) // Sunday → yesterday was Saturday
-  else sat.setDate(now.getDate() + (6 - day))
-  const sun = new Date(sat)
-  sun.setDate(sat.getDate() + 1)
-  return new Set([fmt(sat), fmt(sun)])
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now)
+    d.setDate(now.getDate() + i)
+    opts.push({
+      key: fmt(d),
+      top: i === 0 ? 'Today' : d.toLocaleDateString('en-GB', { weekday: 'short' }),
+      bottom: String(d.getDate()),
+    })
+  }
+  return opts
 }
 
-export function matchesDate(event, filter) {
-  if (filter === 'all') return true
-  const key = event.dateKey || todayKey() // mock events have no dateKey → treat as tonight
-  if (filter === 'tonight') return key === todayKey()
-  if (filter === 'weekend') return weekendKeys().has(key)
-  return true
+// Match an event against the selected day ('all' or a YYYY-MM-DD key)
+export function matchesDay(event, day) {
+  if (day === 'all') return true
+  const key = event.dateKey || todayKey() // mock events have no dateKey → treat as today
+  return key === day
 }
-
-export const DATE_FILTERS = [
-  { key: 'tonight', label: 'Tonight' },
-  { key: 'weekend', label: 'This Weekend' },
-  { key: 'all', label: 'All Upcoming' },
-]

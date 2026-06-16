@@ -6,10 +6,10 @@ import { CATEGORIES } from '../data/events.js'
 import { useEvents } from '../data/EventsContext.jsx'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { useUserLocation, distanceKm, formatDistance } from '../data/location.js'
-import { matchesDate } from '../data/dateFilter.js'
+import { matchesDay, todayKey } from '../data/dateFilter.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
-import DateFilter from '../components/DateFilter.jsx'
+import DayStrip from '../components/DayStrip.jsx'
 import MapEventSheet from '../components/MapEventSheet.jsx'
 import './DiscoverPage.css'
 
@@ -65,7 +65,7 @@ function EventCardMini({ event }) {
 export default function DiscoverPage() {
   const [view, setView] = useState('map')
   const [category, setCategory] = useState('all')
-  const [dateRange, setDateRange] = useState('tonight')
+  const [day, setDay] = useState(() => todayKey())
   const [selected, setSelected] = useState(null)
   const events = useEvents()
   const { coords } = useUserLocation()
@@ -82,7 +82,7 @@ export default function DiscoverPage() {
     : events
 
   const filtered = withDistance.filter(e =>
-    (category === 'all' || e.category === category) && matchesDate(e, dateRange)
+    (category === 'all' || e.category === category) && matchesDay(e, day)
   )
   const sorted = [...filtered].sort((a, b) =>
     (a.startsAt || a.time).localeCompare(b.startsAt || b.time)
@@ -115,7 +115,7 @@ export default function DiscoverPage() {
         </button>
       </div>
 
-      <DateFilter active={dateRange} onChange={setDateRange} />
+      <DayStrip active={day} onChange={setDay} />
       <CategoryFilter active={category} onChange={handleCategoryChange} />
 
       {view === 'map' ? (
