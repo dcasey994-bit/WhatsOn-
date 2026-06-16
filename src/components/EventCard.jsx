@@ -36,7 +36,7 @@ export default function EventCard({ event }) {
 
       <div className="card-meta">
         <span className="meta-item">🕐 {event.time}</span>
-        <span className="meta-item">📍 {event.distance}</span>
+        {event.distance && <span className="meta-item">📍 {event.distance}</span>}
         <span
           className="meta-price"
           style={{ color: event.price === 0 ? 'var(--cat-music)' : 'var(--text)' }}

@@ -1,22 +1,23 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { EVENTS, CATEGORIES } from '../data/events.js'
+import { CATEGORIES } from '../data/events.js'
+import { useEvent } from '../data/EventsContext.jsx'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
 import './EventDetailPage.css'
 
 export default function EventDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const event = EVENTS.find(e => e.id === Number(id))
+  const event = useEvent(id)
 
-  const [saved, setSaved] = useState(() => isSaved(Number(id)))
-  const [going, setGoing] = useState(() => isGoing(Number(id)))
+  const [saved, setSaved] = useState(() => isSaved(id))
+  const [going, setGoing] = useState(() => isGoing(id))
   const [likes, setLikes] = useState(event?.likes ?? 0)
 
   useEffect(() => {
     return subscribe(() => {
-      setSaved(isSaved(Number(id)))
-      setGoing(isGoing(Number(id)))
+      setSaved(isSaved(id))
+      setGoing(isGoing(id))
     })
   }, [id])
 
@@ -32,8 +33,8 @@ export default function EventDetailPage() {
   const cat = CATEGORIES[event.category]
 
   function handleGoing() {
-    const wasGoing = isGoing(event.id)
-    toggleGoing(event.id)
+    const wasGoing = isGoing(id)
+    toggleGoing(id)
     setLikes(l => wasGoing ? l - 1 : l + 1)
   }
 
@@ -148,15 +149,26 @@ export default function EventDetailPage() {
 
       {/* Sticky CTA */}
       <div className="detail-actions">
-        <button
-          className={`going-btn ${going ? 'active' : ''}`}
-          onClick={handleGoing}
-        >
-          {going ? "✓ I'm Going!" : "🎟 I'm Going"}
-        </button>
+        {event.ticket_url ? (
+          <a
+            href={event.ticket_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="going-btn"
+          >
+            🎟 Get Tickets
+          </a>
+        ) : (
+          <button
+            className={`going-btn ${going ? 'active' : ''}`}
+            onClick={handleGoing}
+          >
+            {going ? "✓ I'm Going!" : "🎟 I'm Going"}
+          </button>
+        )}
         <button
           className={`save-btn ${saved ? 'saved' : ''}`}
-          onClick={() => toggleSaved(event.id)}
+          onClick={() => toggleSaved(id)}
           aria-label={saved ? 'Unsave' : 'Save event'}
         >
           {saved ? '♥' : '♡'}

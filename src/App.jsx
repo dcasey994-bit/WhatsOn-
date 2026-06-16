@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { getUser, initAuth } from './data/authStore.js'
 import { loadSavedFromDB } from './data/savedStore.js'
+import { EventsProvider } from './data/EventsContext.jsx'
 import SignInPage from './pages/SignInPage.jsx'
 import DiscoverPage from './pages/DiscoverPage.jsx'
 import BrowsePage from './pages/BrowsePage.jsx'
@@ -33,7 +34,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <EventsProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/discover" replace />} />
         <Route path="/discover" element={<DiscoverPage />} />
@@ -44,6 +45,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/discover" replace />} />
       </Routes>
       <BottomNav />
-    </>
+    </EventsProvider>
   )
 }

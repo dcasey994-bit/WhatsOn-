@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet'
 import { useNavigate } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css'
-import { EVENTS, CATEGORIES } from '../data/events.js'
-import { fetchUpcomingEvents } from '../data/eventsStore.js'
+import { CATEGORIES } from '../data/events.js'
+import { useEvents } from '../data/EventsContext.jsx'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
@@ -46,7 +46,7 @@ function EventCardMini({ event }) {
 
       <div className="card-meta">
         <span className="meta-item">🕐 {event.time}</span>
-        <span className="meta-item">📍 {event.distance}</span>
+        {event.distance && <span className="meta-item">📍 {event.distance}</span>}
         <span className="meta-price" style={{ color: event.price === 0 ? 'var(--cat-music)' : 'var(--text)' }}>
           {event.price === 0 ? 'Free' : `£${event.price}`}
         </span>
@@ -63,17 +63,9 @@ export default function DiscoverPage() {
   const [view, setView] = useState('map')
   const [category, setCategory] = useState('all')
   const [selected, setSelected] = useState(null)
-  const [dbEvents, setDbEvents] = useState([])
+  const events = useEvents()
 
-  useEffect(() => {
-    fetchUpcomingEvents()
-      .then(rows => setDbEvents(rows))
-      .catch(() => {})
-  }, [])
-
-  // Show DB events when available, fall back to mock events for demo
-  const allEvents = dbEvents.length > 0 ? dbEvents : EVENTS
-  const filtered = category === 'all' ? allEvents : allEvents.filter(e => e.category === category)
+  const filtered = category === 'all' ? events : events.filter(e => e.category === category)
   const sorted = [...filtered].sort((a, b) => a.time.localeCompare(b.time))
 
   function handleCategoryChange(cat) {
