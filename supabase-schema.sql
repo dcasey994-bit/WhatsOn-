@@ -22,9 +22,11 @@ create table if not exists going_events (
 alter table saved_events enable row level security;
 alter table going_events  enable row level security;
 
+drop policy if exists "saved: own rows" on saved_events;
 create policy "saved: own rows" on saved_events
   for all using (auth.uid() = user_id);
 
+drop policy if exists "going: own rows" on going_events;
 create policy "going: own rows" on going_events
   for all using (auth.uid() = user_id);
 
@@ -45,9 +47,13 @@ create table if not exists venues (
 
 alter table venues enable row level security;
 
+drop policy if exists "venues: read all"   on venues;
 create policy "venues: read all"   on venues for select using (true);
+drop policy if exists "venues: insert own" on venues;
 create policy "venues: insert own" on venues for insert with check (auth.uid() = user_id);
+drop policy if exists "venues: update own" on venues;
 create policy "venues: update own" on venues for update using (auth.uid() = user_id);
+drop policy if exists "venues: delete own" on venues;
 create policy "venues: delete own" on venues for delete using (auth.uid() = user_id);
 
 -- ── Events ────────────────────────────────────────────────────────────────
@@ -72,16 +78,20 @@ alter table events add column if not exists image_url text;
 
 alter table events enable row level security;
 
+drop policy if exists "events: read all" on events;
 create policy "events: read all" on events for select using (true);
 
+drop policy if exists "events: insert own venue" on events;
 create policy "events: insert own venue" on events for insert with check (
   exists (select 1 from venues where id = venue_id and user_id = auth.uid())
 );
 
+drop policy if exists "events: update own venue" on events;
 create policy "events: update own venue" on events for update using (
   exists (select 1 from venues where id = venue_id and user_id = auth.uid())
 );
 
+drop policy if exists "events: delete own venue" on events;
 create policy "events: delete own venue" on events for delete using (
   exists (select 1 from venues where id = venue_id and user_id = auth.uid())
 );
@@ -105,8 +115,10 @@ insert into storage.buckets (id, name, public)
 values ('event-images', 'event-images', true)
 on conflict (id) do nothing;
 
+drop policy if exists "event images: public read" on storage.objects;
 create policy "event images: public read" on storage.objects
   for select using (bucket_id = 'event-images');
 
+drop policy if exists "event images: authenticated upload" on storage.objects;
 create policy "event images: authenticated upload" on storage.objects
   for insert to authenticated with check (bucket_id = 'event-images');
