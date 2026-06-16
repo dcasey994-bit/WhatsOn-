@@ -1,11 +1,17 @@
 import { supabase } from '../lib/supabase.js'
 import { getUser } from './authStore.js'
 
-// Approximate coordinates for each area — used when registering a venue
-export const AREA_COORDS = {
-  'Clapham':  { lat: 51.4618, lng: -0.1400 },
-  'Balham':   { lat: 51.4435, lng: -0.1527 },
-  'Tooting':  { lat: 51.4280, lng: -0.1680 },
+// Geocode a UK address using Nominatim (OpenStreetMap) — no API key needed
+export async function geocodeAddress(address) {
+  const url = `https://nominatim.openstreetmap.org/search?` +
+    new URLSearchParams({ q: address, format: 'json', limit: '1', countrycodes: 'gb' })
+  const res = await fetch(url, {
+    headers: { 'Accept-Language': 'en', 'User-Agent': 'WhatsOn-App/1.0' },
+  })
+  if (!res.ok) throw new Error('Geocoding request failed')
+  const data = await res.json()
+  if (!data.length) throw new Error('Address not found')
+  return { lat: Number(data[0].lat), lng: Number(data[0].lon), display: data[0].display_name }
 }
 
 // Convert a DB event row (with joined venue) to the shape the UI expects

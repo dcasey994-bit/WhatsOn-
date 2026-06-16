@@ -3,8 +3,9 @@ import { CATEGORIES } from '../data/events.js'
 import {
   fetchMyVenue, registerVenue,
   fetchVenueEvents, createEvent, deleteEvent,
-  AREA_COORDS,
+  geocodeAddress,
 } from '../data/eventsStore.js'
+import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
 import './VenuePage.css'
 
@@ -14,7 +15,7 @@ const BLANK_EVENT = {
 }
 
 const BLANK_VENUE = {
-  name: '', address: '', area: 'Balham',
+  name: '', address: '',
   phone: '', capacity: '', type: 'Pub & Live Music Venue',
 }
 
@@ -33,6 +34,9 @@ export default function VenuePage() {
   const [success, setSuccess] = useState(null)
   const [form, setForm] = useState(BLANK_EVENT)
   const [venueForm, setVenueForm] = useState(BLANK_VENUE)
+  const [geocoded, setGeocoded] = useState(null)  // { lat, lng, display }
+  const [geocoding, setGeocoding] = useState(false)
+  const reloadEvents = useReloadEvents()
 
   useEffect(() => {
     fetchMyVenue().then(v => {
@@ -49,24 +53,38 @@ export default function VenuePage() {
     setLoading(false)
   }
 
+  async function handleLookupAddress() {
+    if (!venueForm.address.trim()) return
+    setGeocoding(true)
+    setError(null)
+    setGeocoded(null)
+    try {
+      const result = await geocodeAddress(venueForm.address)
+      setGeocoded(result)
+    } catch {
+      setError('Address not found. Try a more specific address including postcode.')
+    }
+    setGeocoding(false)
+  }
+
   async function handleRegisterVenue(e) {
     e.preventDefault()
+    if (!geocoded) { setError('Please verify your address first.'); return }
     setSaving(true)
     setError(null)
     try {
-      const coords = AREA_COORDS[venueForm.area]
       const v = await registerVenue({
         name: venueForm.name,
         address: venueForm.address,
-        lat: coords.lat,
-        lng: coords.lng,
+        lat: geocoded.lat,
+        lng: geocoded.lng,
         phone: venueForm.phone || null,
         capacity: venueForm.capacity ? Number(venueForm.capacity) : null,
         type: venueForm.type,
       })
       setVenue(v)
       setEvents([])
-    } catch (err) {
+    } catch {
       setError('Could not register venue. Please try again.')
     }
     setSaving(false)
@@ -90,8 +108,9 @@ export default function VenuePage() {
       setEvents(prev => [...prev, row])
       setForm(BLANK_EVENT)
       setSuccess('Event posted!')
+      reloadEvents()  // refresh customer-facing map immediately
       setTimeout(() => { setSuccess(null); setView('dashboard') }, 1500)
-    } catch (err) {
+    } catch {
       setError('Could not post event. Please try again.')
     }
     setSaving(false)
@@ -101,6 +120,7 @@ export default function VenuePage() {
     if (!confirm('Delete this event?')) return
     await deleteEvent(eventId)
     setEvents(prev => prev.filter(e => e.id !== eventId))
+    reloadEvents()
   }
 
   function set(field) {
@@ -127,14 +147,23 @@ export default function VenuePage() {
             </label>
             <label>
               Address
-              <input required value={venueForm.address} onChange={setV('address')} placeholder="e.g. 77 Bedford Hill, Balham, SW12 9HD" />
+              <div className="address-row">
+                <input
+                  required
+                  value={venueForm.address}
+                  onChange={e => { setV('address')(e); setGeocoded(null) }}
+                  placeholder="e.g. 77 Bedford Hill, Balham, SW12 9HD"
+                />
+                <button type="button" className="lookup-btn" onClick={handleLookupAddress} disabled={geocoding || !venueForm.address.trim()}>
+                  {geocoding ? '…' : 'Verify'}
+                </button>
+              </div>
             </label>
-            <label>
-              Area
-              <select value={venueForm.area} onChange={setV('area')}>
-                {Object.keys(AREA_COORDS).map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </label>
+            {geocoded && (
+              <p className="geocode-confirm">
+                📍 {geocoded.display}
+              </p>
+            )}
             <label>
               Venue type
               <select value={venueForm.type} onChange={setV('type')}>
@@ -151,7 +180,7 @@ export default function VenuePage() {
                 <input type="number" min="1" value={venueForm.capacity} onChange={setV('capacity')} placeholder="e.g. 200" />
               </label>
             </div>
-            <button type="submit" className="post-btn" disabled={saving}>
+            <button type="submit" className="post-btn" disabled={saving || !geocoded}>
               {saving ? 'Registering…' : 'Register venue'}
             </button>
           </form>
