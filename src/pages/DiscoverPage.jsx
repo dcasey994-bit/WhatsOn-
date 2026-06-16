@@ -66,7 +66,9 @@ export default function DiscoverPage() {
   const events = useEvents()
 
   const filtered = category === 'all' ? events : events.filter(e => e.category === category)
-  const sorted = [...filtered].sort((a, b) => a.time.localeCompare(b.time))
+  const sorted = [...filtered].sort((a, b) =>
+    (a.startsAt || a.time).localeCompare(b.startsAt || b.time)
+  )
 
   function handleCategoryChange(cat) {
     setCategory(cat)

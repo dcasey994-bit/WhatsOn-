@@ -21,6 +21,7 @@ export function dbEventToLocal(row) {
     lng: row.venues?.lng ?? -0.1527,
     time: row.time?.slice(0, 5) || '',
     date: formatDate(row.date),
+    startsAt: `${row.date}T${row.time || '00:00'}`,
     price: Number(row.price) || 0,
     distance: null,
     description: row.description || '',
