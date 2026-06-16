@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { CATEGORIES } from '../data/events.js'
 import {
   fetchMyVenue, registerVenue,
-  fetchVenueEvents, createEvent, deleteEvent,
+  fetchVenueEvents, createEvent, updateEvent, deleteEvent,
   geocodeAddress,
 } from '../data/eventsStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
@@ -33,6 +33,7 @@ export default function VenuePage() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [form, setForm] = useState(BLANK_EVENT)
+  const [editingId, setEditingId] = useState(null)
   const [venueForm, setVenueForm] = useState(BLANK_VENUE)
   const [geocoded, setGeocoded] = useState(null)  // { lat, lng, display }
   const [geocoding, setGeocoding] = useState(false)
@@ -94,26 +95,57 @@ export default function VenuePage() {
     e.preventDefault()
     setSaving(true)
     setError(null)
+    const fields = {
+      name: form.name,
+      category: form.category,
+      date: form.date,
+      time: form.time,
+      price: form.price === '' ? 0 : Number(form.price),
+      capacity: form.capacity ? Number(form.capacity) : null,
+      ticket_url: form.ticket_url || null,
+      description: form.description,
+    }
     try {
-      const row = await createEvent(venue.id, {
-        name: form.name,
-        category: form.category,
-        date: form.date,
-        time: form.time,
-        price: form.price === '' ? 0 : Number(form.price),
-        capacity: form.capacity ? Number(form.capacity) : null,
-        ticket_url: form.ticket_url || null,
-        description: form.description,
-      })
-      setEvents(prev => [...prev, row])
+      if (editingId) {
+        const row = await updateEvent(editingId, fields)
+        setEvents(prev => prev.map(ev => (ev.id === editingId ? row : ev)))
+        setSuccess('Event updated!')
+      } else {
+        const row = await createEvent(venue.id, fields)
+        setEvents(prev => [...prev, row])
+        setSuccess('Event posted!')
+      }
       setForm(BLANK_EVENT)
-      setSuccess('Event posted!')
+      setEditingId(null)
       reloadEvents()  // refresh customer-facing map immediately
       setTimeout(() => { setSuccess(null); setView('dashboard') }, 1500)
     } catch {
-      setError('Could not post event. Please try again.')
+      setError(editingId ? 'Could not update event.' : 'Could not post event. Please try again.')
     }
     setSaving(false)
+  }
+
+  function startAddEvent() {
+    setForm(BLANK_EVENT)
+    setEditingId(null)
+    setError(null)
+    setView('add')
+  }
+
+  function handleEdit(ev) {
+    setForm({
+      name: ev.name,
+      category: ev.category,
+      date: ev.date,
+      time: ev.time?.slice(0, 5) || '',
+      price: ev.price ?? '',
+      capacity: ev.capacity ?? '',
+      ticket_url: ev.ticket_url ?? '',
+      description: ev.description ?? '',
+    })
+    setEditingId(ev.id)
+    setError(null)
+    setView('add')
   }
 
   async function handleDelete(eventId) {
@@ -200,7 +232,7 @@ export default function VenuePage() {
         <button className={`vtab ${view === 'dashboard' ? 'active' : ''}`} onClick={() => setView('dashboard')}>
           My Events
         </button>
-        <button className={`vtab ${view === 'add' ? 'active' : ''}`} onClick={() => setView('add')}>
+        <button className={`vtab ${view === 'add' ? 'active' : ''}`} onClick={startAddEvent}>
           + Add Event
         </button>
       </div>
@@ -225,7 +257,7 @@ export default function VenuePage() {
           ) : events.length === 0 ? (
             <div className="no-events">
               <p>No upcoming events listed.</p>
-              <button className="add-first-btn" onClick={() => setView('add')}>
+              <button className="add-first-btn" onClick={startAddEvent}>
                 + Add your first event
               </button>
             </div>
@@ -248,6 +280,9 @@ export default function VenuePage() {
                         &nbsp;·&nbsp;{Number(event.price) === 0 ? 'Free' : `£${event.price}`}
                       </p>
                     </div>
+                    <button className="edit-event-btn" onClick={() => handleEdit(event)} aria-label="Edit event">
+                      ✎
+                    </button>
                     <button className="delete-event-btn" onClick={() => handleDelete(event.id)} aria-label="Delete event">
                       ✕
                     </button>
@@ -263,6 +298,7 @@ export default function VenuePage() {
         <div className="add-event-form">
           {success && <div className="success-banner">🎉 {success}</div>}
           {error && <p className="form-error">{error}</p>}
+          <h3 className="section-heading">{editingId ? 'Edit Event' : 'New Event'}</h3>
           <form onSubmit={handleAddEvent}>
             <label>
               Event name
@@ -305,7 +341,7 @@ export default function VenuePage() {
               <textarea required value={form.description} onChange={set('description')} rows={4} placeholder="Tell people what to expect..." />
             </label>
             <button type="submit" className="post-btn" disabled={saving}>
-              {saving ? 'Posting…' : 'Post Event'}
+              {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Post Event'}
             </button>
           </form>
         </div>

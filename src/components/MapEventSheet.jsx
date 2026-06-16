@@ -42,7 +42,7 @@ export default function MapEventSheet({ event, onClose }) {
 
         <div className="sheet-row">
           <span className="sheet-meta-item">🕐 {event.time}</span>
-          <span className="sheet-meta-item">🚶 {event.distance}</span>
+          {event.distance && <span className="sheet-meta-item">🚶 {event.distance}</span>}
           <span
             className="sheet-price"
             style={{ color: event.price === 0 ? 'var(--cat-music)' : 'var(--text)' }}

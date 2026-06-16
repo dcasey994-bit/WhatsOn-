@@ -5,8 +5,11 @@ import 'leaflet/dist/leaflet.css'
 import { CATEGORIES } from '../data/events.js'
 import { useEvents } from '../data/EventsContext.jsx'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
+import { useUserLocation, distanceKm, formatDistance } from '../data/location.js'
+import { matchesDate } from '../data/dateFilter.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
+import DateFilter from '../components/DateFilter.jsx'
 import MapEventSheet from '../components/MapEventSheet.jsx'
 import './DiscoverPage.css'
 
@@ -62,10 +65,25 @@ function EventCardMini({ event }) {
 export default function DiscoverPage() {
   const [view, setView] = useState('map')
   const [category, setCategory] = useState('all')
+  const [dateRange, setDateRange] = useState('tonight')
   const [selected, setSelected] = useState(null)
   const events = useEvents()
+  const { coords } = useUserLocation()
 
-  const filtered = category === 'all' ? events : events.filter(e => e.category === category)
+  const center = coords ? [coords.lat, coords.lng] : BALHAM
+
+  // Add real distances when we know where the user is
+  const withDistance = coords
+    ? events.map(e => {
+        if (e.lat == null || e.lng == null) return e
+        const km = distanceKm(coords.lat, coords.lng, e.lat, e.lng)
+        return { ...e, distance: formatDistance(km), _km: km }
+      })
+    : events
+
+  const filtered = withDistance.filter(e =>
+    (category === 'all' || e.category === category) && matchesDate(e, dateRange)
+  )
   const sorted = [...filtered].sort((a, b) =>
     (a.startsAt || a.time).localeCompare(b.startsAt || b.time)
   )
@@ -97,12 +115,13 @@ export default function DiscoverPage() {
         </button>
       </div>
 
+      <DateFilter active={dateRange} onChange={setDateRange} />
       <CategoryFilter active={category} onChange={handleCategoryChange} />
 
       {view === 'map' ? (
         <div className="map-wrapper">
           <MapContainer
-            center={BALHAM}
+            center={center}
             zoom={14}
             zoomControl={false}
             attributionControl={false}
@@ -112,11 +131,11 @@ export default function DiscoverPage() {
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               attribution=""
             />
-            <FlyTo center={BALHAM} />
+            <FlyTo center={center} />
 
             {/* User location dot */}
             <CircleMarker
-              center={BALHAM}
+              center={center}
               radius={8}
               pathOptions={{ color: '#ffee00', fillColor: '#ffee00', fillOpacity: 1, weight: 2 }}
             />
@@ -154,7 +173,7 @@ export default function DiscoverPage() {
         </div>
       ) : (
         <div className="discover-list">
-          <p className="discover-count">{filtered.length} events tonight</p>
+          <p className="discover-count">{filtered.length} {filtered.length === 1 ? 'event' : 'events'}</p>
           {sorted.map(event => (
             <EventCardMini key={event.id} event={event} />
           ))}

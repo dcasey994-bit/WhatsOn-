@@ -27,6 +27,7 @@ export function dbEventToLocal(row) {
     lng: row.venues?.lng ?? -0.1527,
     time: row.time?.slice(0, 5) || '',
     date: formatDate(row.date),
+    dateKey: row.date,
     startsAt: `${row.date}T${row.time || '00:00'}`,
     price: Number(row.price) || 0,
     distance: null,
@@ -112,6 +113,17 @@ export async function createEvent(venueId, fields) {
   const { data, error } = await supabase
     .from('events')
     .insert({ ...fields, venue_id: venueId })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateEvent(eventId, fields) {
+  const { data, error } = await supabase
+    .from('events')
+    .update(fields)
+    .eq('id', eventId)
     .select()
     .single()
   if (error) throw error
