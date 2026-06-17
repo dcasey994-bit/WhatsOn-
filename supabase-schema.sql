@@ -33,17 +33,27 @@ create policy "going: own rows" on going_events
 -- ── Venues ────────────────────────────────────────────────────────────────
 
 create table if not exists venues (
-  id         uuid primary key default gen_random_uuid(),
-  user_id    uuid references auth.users(id) on delete cascade not null unique,
-  name       text not null,
-  address    text not null,
-  lat        double precision not null,
-  lng        double precision not null,
-  phone      text,
-  capacity   int,
-  type       text,
-  created_at timestamptz default now()
+  id                     uuid primary key default gen_random_uuid(),
+  user_id                uuid references auth.users(id) on delete cascade not null unique,
+  name                   text not null,
+  address                text not null,
+  lat                    double precision not null,
+  lng                    double precision not null,
+  phone                  text,
+  capacity               int,
+  type                   text,
+  subscription_status    text not null default 'trialing' check (subscription_status in ('trialing','active','lapsed')),
+  trial_ends_at          timestamptz not null default (now() + interval '3 months'),
+  stripe_customer_id     text,
+  stripe_subscription_id text,
+  created_at             timestamptz default now()
 );
+
+-- If the venues table already existed, add the new columns:
+alter table venues add column if not exists subscription_status    text not null default 'trialing' check (subscription_status in ('trialing','active','lapsed'));
+alter table venues add column if not exists trial_ends_at          timestamptz not null default (now() + interval '3 months');
+alter table venues add column if not exists stripe_customer_id     text;
+alter table venues add column if not exists stripe_subscription_id text;
 
 alter table venues enable row level security;
 
@@ -79,7 +89,17 @@ alter table events add column if not exists image_url text;
 alter table events enable row level security;
 
 drop policy if exists "events: read all" on events;
-create policy "events: read all" on events for select using (true);
+-- Only show events from venues that are active or still within their free trial
+create policy "events: read active venues" on events for select using (
+  exists (
+    select 1 from venues
+    where id = venue_id
+      and (
+        subscription_status = 'active'
+        or (subscription_status = 'trialing' and trial_ends_at > now())
+      )
+  )
+);
 
 drop policy if exists "events: insert own venue" on events;
 create policy "events: insert own venue" on events for insert with check (

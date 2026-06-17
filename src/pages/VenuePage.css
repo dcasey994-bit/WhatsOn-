@@ -379,3 +379,129 @@
   font-size: 12px;
   color: var(--accent);
 }
+
+/* Trial countdown banner */
+.trial-banner {
+  background: rgba(255, 193, 7, 0.1);
+  border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.trial-banner--urgent {
+  background: rgba(255, 107, 107, 0.1);
+  border-bottom-color: rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+}
+
+.trial-subscribe-btn {
+  background: var(--accent);
+  color: #000;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* Lapsed paywall */
+.sub-paywall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 24px;
+  gap: 16px;
+}
+
+.sub-paywall-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.sub-paywall h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+
+.sub-paywall p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 300px;
+  margin: 0;
+}
+
+.sub-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+.sub-amount {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.sub-period {
+  font-size: 18px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.sub-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 260px;
+}
+
+.sub-features li {
+  font-size: 14px;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+}
+
+.sub-features li::before {
+  content: '✓ ';
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.sub-cta-btn {
+  width: 100%;
+  max-width: 300px;
+  padding: 16px;
+  background: var(--accent);
+  color: #000;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.sub-small {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: -8px 0 0;
+}

@@ -15,9 +15,16 @@
 ## Supabase
 - Project URL: `https://lqafmjidqbshssqrxmkr.supabase.co`
 - Auth providers enabled: Google OAuth, Email (magic link)
-- Tables: `saved_events`, `going_events` (per-user, RLS enabled)
-- Schema lives in `supabase-schema.sql`
-- Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) live in `.env` locally (gitignored) and in Netlify env settings.
+- Tables: `saved_events`, `going_events`, `venues`, `events` (RLS enabled); schema in `supabase-schema.sql`
+- Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) in `.env` locally and Netlify env settings.
+
+## Stripe (subscriptions)
+- Venue mode is free for 3 months, then £20/month
+- `subscription_status` on venues: `trialing` | `active` | `lapsed`
+- Checkout: Stripe Payment Link — set `VITE_STRIPE_PAYMENT_LINK` in env. URL gets `?client_reference_id={venue_id}` appended.
+- Webhook: `netlify/functions/stripe-webhook.js` handles `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed`
+- Webhook env vars: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`
+- Setup steps: (1) Create £20/mo product + Payment Link in Stripe dashboard, (2) Add webhook endpoint `https://[site]/.netlify/functions/stripe-webhook` in Stripe, (3) Set all env vars in Netlify.
 
 ## Scope
 - South London focus: Clapham, Balham, Tooting

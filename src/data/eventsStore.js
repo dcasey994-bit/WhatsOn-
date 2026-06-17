@@ -110,13 +110,36 @@ export async function fetchMyVenue() {
 export async function registerVenue(fields) {
   const user = getUser()
   if (!user) throw new Error('Not logged in')
+  const trialEndsAt = new Date()
+  trialEndsAt.setMonth(trialEndsAt.getMonth() + 3)
   const { data, error } = await supabase
     .from('venues')
-    .insert({ ...fields, user_id: user.id })
+    .insert({
+      ...fields,
+      user_id: user.id,
+      subscription_status: 'trialing',
+      trial_ends_at: trialEndsAt.toISOString(),
+    })
     .select()
     .single()
   if (error) throw error
   return data
+}
+
+// Returns 'active' | 'trialing' | 'lapsed'
+export function getSubscriptionState(venue) {
+  if (!venue) return 'lapsed'
+  if (venue.subscription_status === 'active') return 'active'
+  if (venue.subscription_status === 'trialing' && venue.trial_ends_at) {
+    return new Date(venue.trial_ends_at) > new Date() ? 'trialing' : 'lapsed'
+  }
+  return 'lapsed'
+}
+
+export function trialDaysLeft(venue) {
+  if (!venue?.trial_ends_at) return 0
+  const diff = new Date(venue.trial_ends_at) - new Date()
+  return Math.max(0, Math.ceil(diff / 86400000))
 }
 
 // ── Venue event management ────────────────────────────────────────────────

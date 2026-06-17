@@ -1,0 +1,57 @@
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const { createClient } = require('@supabase/supabase-js')
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+
+exports.handler = async (event) => {
+  const sig = event.headers['stripe-signature']
+  let stripeEvent
+
+  try {
+    stripeEvent = stripe.webhooks.constructEvent(
+      event.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    )
+  } catch (err) {
+    return { statusCode: 400, body: `Webhook error: ${err.message}` }
+  }
+
+  const { type, data } = stripeEvent
+
+  if (type === 'checkout.session.completed') {
+    const session = data.object
+    const venueId = session.client_reference_id
+    if (!venueId) return { statusCode: 400, body: 'Missing client_reference_id' }
+
+    await supabase
+      .from('venues')
+      .update({
+        subscription_status: 'active',
+        stripe_customer_id: session.customer,
+        stripe_subscription_id: session.subscription,
+      })
+      .eq('id', venueId)
+  }
+
+  if (type === 'customer.subscription.deleted') {
+    const sub = data.object
+    await supabase
+      .from('venues')
+      .update({ subscription_status: 'lapsed', stripe_subscription_id: null })
+      .eq('stripe_customer_id', sub.customer)
+  }
+
+  if (type === 'invoice.payment_failed') {
+    const invoice = data.object
+    await supabase
+      .from('venues')
+      .update({ subscription_status: 'lapsed' })
+      .eq('stripe_customer_id', invoice.customer)
+  }
+
+  return { statusCode: 200, body: 'ok' }
+}

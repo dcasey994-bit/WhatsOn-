@@ -4,7 +4,9 @@ import {
   fetchMyVenue, registerVenue,
   fetchVenueEvents, createEvent, updateEvent, deleteEvent,
   geocodeAddress, uploadEventImage,
+  getSubscriptionState, trialDaysLeft,
 } from '../data/eventsStore.js'
+import { getUser } from '../data/authStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
 import './VenuePage.css'
@@ -238,12 +240,65 @@ export default function VenuePage() {
     )
   }
 
+  // ── Subscription state ──────────────────────────────────────────────────
+  const subState = getSubscriptionState(venue)
+  const daysLeft = trialDaysLeft(venue)
+  const isLapsed = subState === 'lapsed'
+
+  function handleSubscribe() {
+    const link = import.meta.env.VITE_STRIPE_PAYMENT_LINK
+    if (!link) return
+    const user = getUser()
+    const url = `${link}?client_reference_id=${venue.id}${user?.email ? `&prefilled_email=${encodeURIComponent(user.email)}` : ''}`
+    window.location.href = url
+  }
+
+  // ── Lapsed paywall ──────────────────────────────────────────────────────
+  if (!loading && venue && isLapsed) {
+    return (
+      <div className="venue-page">
+        <Header title={venue.name} />
+        <div className="sub-paywall">
+          <div className="sub-paywall-icon">🔒</div>
+          <h2>Your free trial has ended</h2>
+          <p>Subscribe to keep your events visible on WhatsOn? and continue managing your listings.</p>
+          <div className="sub-price">
+            <span className="sub-amount">£20</span>
+            <span className="sub-period">/month</span>
+          </div>
+          <ul className="sub-features">
+            <li>Unlimited event listings</li>
+            <li>Live map placement</li>
+            <li>Going + save counts</li>
+            <li>Cancel anytime</li>
+          </ul>
+          <button className="sub-cta-btn" onClick={handleSubscribe}>
+            Subscribe now
+          </button>
+          <p className="sub-small">Secure payment via Stripe</p>
+        </div>
+      </div>
+    )
+  }
+
   // ── Main dashboard ──────────────────────────────────────────────────────
   return (
     <div className="venue-page">
       <Header title={venue?.name || ''}>
         <span className="verified-badge">✓ Verified</span>
       </Header>
+
+      {subState === 'trialing' && daysLeft <= 14 && (
+        <div className={`trial-banner ${daysLeft <= 3 ? 'trial-banner--urgent' : ''}`}>
+          {daysLeft === 0
+            ? 'Your free trial expires today — subscribe to keep your events live.'
+            : `Free trial: ${daysLeft} day${daysLeft === 1 ? '' : 's'} left.`}
+          {' '}
+          <button className="trial-subscribe-btn" onClick={handleSubscribe}>
+            Subscribe — £20/mo
+          </button>
+        </div>
+      )}
 
       <div className="venue-tabs">
         <button className={`vtab ${view === 'dashboard' ? 'active' : ''}`} onClick={() => setView('dashboard')}>
