@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { MapContainer, TileLayer, CircleMarker, Marker, useMap } from 'react-leaflet'
+import { divIcon } from 'leaflet'
 import { useNavigate } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css'
 import { CATEGORIES } from '../data/events.js'
@@ -17,9 +18,25 @@ import './DiscoverPage.css'
 
 const BALHAM = [51.4435, -0.1527]
 
-function FlyTo({ center }) {
+const userPinIcon = divIcon({
+  className: '',
+  html: `<svg width="22" height="30" viewBox="0 0 22 30" xmlns="http://www.w3.org/2000/svg">
+    <path d="M11 0C4.925 0 0 4.925 0 11c0 8.25 11 19 11 19s11-10.75 11-19C22 4.925 17.075 0 11 0z" fill="#00ff88"/>
+    <circle cx="11" cy="11" r="4.5" fill="#0f0f14"/>
+  </svg>`,
+  iconSize: [22, 30],
+  iconAnchor: [11, 30],
+})
+
+// Only re-centers when coords genuinely change, not on every render
+function FlyToOnce({ lat, lng }) {
   const map = useMap()
-  useEffect(() => { map.setView(center, map.getZoom()) }, [center, map])
+  const prevRef = useRef(null)
+  useEffect(() => {
+    if (prevRef.current?.lat === lat && prevRef.current?.lng === lng) return
+    map.setView([lat, lng], map.getZoom())
+    prevRef.current = { lat, lng }
+  }, [lat, lng, map])
   return null
 }
 
@@ -78,7 +95,10 @@ export default function DiscoverPage() {
   const events = useEvents()
   const { coords } = useUserLocation()
 
-  const center = coords ? [coords.lat, coords.lng] : BALHAM
+  const center = useMemo(
+    () => coords ? [coords.lat, coords.lng] : BALHAM,
+    [coords?.lat, coords?.lng]  // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
   // Add real distances when we know where the user is
   const withDistance = coords
@@ -141,14 +161,10 @@ export default function DiscoverPage() {
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
               attribution=""
             />
-            <FlyTo center={center} />
+            <FlyToOnce lat={center[0]} lng={center[1]} />
 
-            {/* User location dot */}
-            <CircleMarker
-              center={center}
-              radius={8}
-              pathOptions={{ color: '#ffee00', fillColor: '#ffee00', fillOpacity: 1, weight: 2 }}
-            />
+            {/* User location pin */}
+            <Marker position={center} icon={userPinIcon} />
 
             {filtered.map(event => {
               const cat = CATEGORIES[event.category]
