@@ -142,6 +142,18 @@ export function trialDaysLeft(venue) {
   return Math.max(0, Math.ceil(diff / 86400000))
 }
 
+// Redirect to the Stripe Payment Link, tagging the venue so the webhook can
+// activate the right subscription after checkout.
+export function startCheckout(venue) {
+  const link = import.meta.env.VITE_STRIPE_PAYMENT_LINK
+  if (!link || !venue) return
+  const user = getUser()
+  const sep = link.includes('?') ? '&' : '?'
+  const url = `${link}${sep}client_reference_id=${venue.id}` +
+    (user?.email ? `&prefilled_email=${encodeURIComponent(user.email)}` : '')
+  window.location.href = url
+}
+
 // ── Venue event management ────────────────────────────────────────────────
 
 export async function fetchVenueEvents(venueId) {

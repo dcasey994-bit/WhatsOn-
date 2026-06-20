@@ -131,6 +131,18 @@
   color: #0f0f14;
 }
 
+.upgrade-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #0f0f14;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
 .signout-btn {
   font-size: 14px;
   font-weight: 600;

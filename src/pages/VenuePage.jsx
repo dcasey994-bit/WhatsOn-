@@ -4,9 +4,8 @@ import {
   fetchMyVenue, registerVenue,
   fetchVenueEvents, createEvent, updateEvent, deleteEvent,
   geocodeAddress, uploadEventImage,
-  getSubscriptionState, trialDaysLeft,
+  getSubscriptionState, trialDaysLeft, startCheckout,
 } from '../data/eventsStore.js'
-import { getUser } from '../data/authStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
 import './VenuePage.css'
@@ -246,11 +245,7 @@ export default function VenuePage() {
   const isLapsed = subState === 'lapsed'
 
   function handleSubscribe() {
-    const link = import.meta.env.VITE_STRIPE_PAYMENT_LINK
-    if (!link) return
-    const user = getUser()
-    const url = `${link}?client_reference_id=${venue.id}${user?.email ? `&prefilled_email=${encodeURIComponent(user.email)}` : ''}`
-    window.location.href = url
+    startCheckout(venue)
   }
 
   // ── Lapsed paywall ──────────────────────────────────────────────────────
@@ -288,7 +283,7 @@ export default function VenuePage() {
         <span className="verified-badge">✓ Verified</span>
       </Header>
 
-      {subState === 'trialing' && daysLeft <= 14 && (
+      {subState === 'trialing' && (
         <div className={`trial-banner ${daysLeft <= 3 ? 'trial-banner--urgent' : ''}`}>
           {daysLeft === 0
             ? 'Your free trial expires today — subscribe to keep your events live.'
