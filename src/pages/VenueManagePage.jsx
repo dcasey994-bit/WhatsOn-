@@ -11,15 +11,22 @@ export default function VenueManagePage() {
     fetchMyVenue().then(v => { setVenue(v); setLoading(false) })
   }, [])
 
-  if (loading) return <div className="vmp-page"><Header title="My Venue" /><p className="vmp-loading">Loading…</p></div>
+  if (loading) {
+    return (
+      <div className="venue-manage-page">
+        <Header title="My Venue" />
+        <p className="vm-loading">Loading…</p>
+      </div>
+    )
+  }
 
   if (!venue) {
     return (
-      <div className="vmp-page">
+      <div className="venue-manage-page">
         <Header title="My Venue" />
-        <div className="vmp-empty">
-          <p>You haven't registered a venue yet.</p>
-          <p className="vmp-empty-hint">Go to My Events to get started.</p>
+        <div className="vm-empty">
+          <p>No venue registered yet.</p>
+          <p className="vm-hint">Go to My Events to register your venue.</p>
         </div>
       </div>
     )
@@ -28,37 +35,42 @@ export default function VenueManagePage() {
   const subState = getSubscriptionState(venue)
   const daysLeft = trialDaysLeft(venue)
 
-  const subLabel = {
-    active: 'Active subscription',
-    trialing: `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} remaining`,
-    lapsed: 'Trial ended — subscribe to reactivate',
-  }[subState]
-
-  const subColor = {
-    active: 'var(--accent)',
-    trialing: daysLeft <= 3 ? '#ff6b6b' : '#ffc107',
-    lapsed: '#ff6b6b',
-  }[subState]
-
   return (
-    <div className="vmp-page">
-      <Header title="My Venue" />
+    <div className="venue-manage-page">
+      <Header title={venue.name}>
+        <span className="verified-badge">✓ Verified</span>
+      </Header>
 
-      <div className="vmp-body">
-        <div className="vmp-card">
-          <p className="vmp-label">Venue name</p>
-          <p className="vmp-value">{venue.name}</p>
+      <div className={`vm-sub-card ${subState === 'lapsed' ? 'vm-sub-lapsed' : subState === 'active' ? 'vm-sub-active' : 'vm-sub-trial'}`}>
+        <div className="vm-sub-row">
+          <span className="vm-sub-label">
+            {subState === 'active' && '✓ Active subscription'}
+            {subState === 'trialing' && `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+            {subState === 'lapsed' && '⚠ Trial expired'}
+          </span>
+          {subState !== 'active' && (
+            <button className="vm-sub-btn" onClick={() => startCheckout(venue)}>
+              {subState === 'lapsed' ? 'Reactivate' : 'Subscribe'} — £20/mo
+            </button>
+          )}
         </div>
+      </div>
 
-        <div className="vmp-card">
-          <p className="vmp-label">Type</p>
-          <p className="vmp-value">{venue.type || '—'}</p>
+      <div className="vm-section">
+        <h2 className="vm-section-title">Venue Details</h2>
+
+        <div className="vm-detail-row">
+          <span className="vm-detail-label">Name</span>
+          <span className="vm-detail-value">{venue.name}</span>
         </div>
-
-        <div className="vmp-card">
-          <p className="vmp-label">Address</p>
+        <div className="vm-detail-row">
+          <span className="vm-detail-label">Type</span>
+          <span className="vm-detail-value">{venue.type || '—'}</span>
+        </div>
+        <div className="vm-detail-row">
+          <span className="vm-detail-label">Address</span>
           <a
-            className="vmp-value vmp-link"
+            className="vm-detail-value vm-detail-link"
             href={`https://maps.google.com/?q=${venue.lat},${venue.lng}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -66,30 +78,18 @@ export default function VenueManagePage() {
             {venue.address}
           </a>
         </div>
-
         {venue.phone && (
-          <div className="vmp-card">
-            <p className="vmp-label">Phone</p>
-            <a className="vmp-value vmp-link" href={`tel:${venue.phone}`}>{venue.phone}</a>
+          <div className="vm-detail-row">
+            <span className="vm-detail-label">Phone</span>
+            <a className="vm-detail-value vm-detail-link" href={`tel:${venue.phone}`}>{venue.phone}</a>
           </div>
         )}
-
         {venue.capacity && (
-          <div className="vmp-card">
-            <p className="vmp-label">Capacity</p>
-            <p className="vmp-value">{venue.capacity.toLocaleString()}</p>
+          <div className="vm-detail-row">
+            <span className="vm-detail-label">Capacity</span>
+            <span className="vm-detail-value">{venue.capacity.toLocaleString()}</span>
           </div>
         )}
-
-        <div className="vmp-card vmp-sub-card">
-          <p className="vmp-label">Subscription</p>
-          <p className="vmp-value" style={{ color: subColor }}>{subLabel}</p>
-          {subState !== 'active' && (
-            <button className="vmp-subscribe-btn" onClick={() => startCheckout(venue)}>
-              {subState === 'lapsed' ? 'Reactivate — £20/mo' : 'Subscribe early — £20/mo'}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   )

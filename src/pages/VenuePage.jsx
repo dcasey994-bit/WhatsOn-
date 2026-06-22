@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { CATEGORIES } from '../data/events.js'
 import {
   fetchMyVenue, registerVenue,
-  fetchVenueEvents, fetchPastVenueEvents,
-  createEvent, updateEvent, deleteEvent,
+  fetchVenueEvents, createEvent, updateEvent, deleteEvent,
   geocodeAddress, uploadEventImage,
   getSubscriptionState, trialDaysLeft, startCheckout,
 } from '../data/eventsStore.js'
@@ -28,9 +27,7 @@ const VENUE_TYPES = [
 
 export default function VenuePage() {
   const [venue, setVenue] = useState(null)
-  const [upcomingEvents, setUpcomingEvents] = useState([])
-  const [pastEvents, setPastEvents] = useState([])
-  const [eventTab, setEventTab] = useState('upcoming')  // 'upcoming' | 'past'
+  const [events, setEvents] = useState([])
   const [view, setView] = useState('dashboard')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -54,17 +51,10 @@ export default function VenuePage() {
 
   async function loadEvents(venueId) {
     setLoading(true)
-    const [upcoming, past] = await Promise.all([
-      fetchVenueEvents(venueId),
-      fetchPastVenueEvents(venueId),
-    ])
-    setUpcomingEvents(upcoming)
-    setPastEvents(past)
+    const rows = await fetchVenueEvents(venueId)
+    setEvents(rows)
     setLoading(false)
   }
-
-  // whichever tab is active
-  const events = eventTab === 'upcoming' ? upcomingEvents : pastEvents
 
   async function handleLookupAddress() {
     if (!venueForm.address.trim()) return
@@ -121,16 +111,16 @@ export default function VenuePage() {
     try {
       if (editingId) {
         const row = await updateEvent(editingId, fields)
-        setUpcomingEvents(prev => prev.map(ev => (ev.id === editingId ? row : ev)))
+        setEvents(prev => prev.map(ev => (ev.id === editingId ? row : ev)))
         setSuccess('Event updated!')
       } else {
         const row = await createEvent(venue.id, fields)
-        setUpcomingEvents(prev => [...prev, row])
+        setEvents(prev => [...prev, row])
         setSuccess('Event posted!')
       }
       setForm(BLANK_EVENT)
       setEditingId(null)
-      reloadEvents()  // refresh customer-facing map immediately
+      reloadEvents()
       setTimeout(() => { setSuccess(null); setView('dashboard') }, 1500)
     } catch {
       setError(editingId ? 'Could not update event.' : 'Could not post event. Please try again.')
@@ -165,8 +155,7 @@ export default function VenuePage() {
   async function handleDelete(eventId) {
     if (!confirm('Delete this event?')) return
     await deleteEvent(eventId)
-    setUpcomingEvents(prev => prev.filter(e => e.id !== eventId))
-    setPastEvents(prev => prev.filter(e => e.id !== eventId))
+    setEvents(prev => prev.filter(e => e.id !== eventId))
     reloadEvents()
   }
 
@@ -319,45 +308,25 @@ export default function VenuePage() {
         <div className="venue-dashboard">
           <div className="stats-row">
             <div className="stat-box stat-box-wide">
-              <span className="stat-num">{upcomingEvents.length}</span>
-              <span className="stat-label">Upcoming</span>
+              <span className="stat-num">{events.length}</span>
+              <span className="stat-label">Upcoming Events</span>
             </div>
             <div className="stat-box stat-box-wide">
-              <span className="stat-num">{pastEvents.length}</span>
-              <span className="stat-label">Past</span>
+              <span className="stat-num">{venue?.capacity?.toLocaleString() ?? '—'}</span>
+              <span className="stat-label">Venue Capacity</span>
             </div>
           </div>
 
-          {/* Upcoming / Past tab strip */}
-          <div className="event-tab-strip">
-            <button
-              className={`etab ${eventTab === 'upcoming' ? 'active' : ''}`}
-              onClick={() => setEventTab('upcoming')}
-            >
-              Upcoming
-            </button>
-            <button
-              className={`etab ${eventTab === 'past' ? 'active' : ''}`}
-              onClick={() => setEventTab('past')}
-            >
-              Past
-            </button>
-          </div>
+          <h3 className="section-heading">Upcoming Listings</h3>
 
           {loading ? (
             <p className="loading-text">Loading…</p>
           ) : events.length === 0 ? (
             <div className="no-events">
-              {eventTab === 'upcoming' ? (
-                <>
-                  <p>No upcoming events listed.</p>
-                  <button className="add-first-btn" onClick={startAddEvent}>
-                    + Add your first event
-                  </button>
-                </>
-              ) : (
-                <p>No past events found.</p>
-              )}
+              <p>No upcoming events listed.</p>
+              <button className="add-first-btn" onClick={startAddEvent}>
+                + Add your first event
+              </button>
             </div>
           ) : (
             <div className="event-rows">
@@ -378,9 +347,7 @@ export default function VenuePage() {
                         &nbsp;·&nbsp;{Number(event.price) === 0 ? 'Free' : `£${event.price}`}
                       </p>
                     </div>
-                    {eventTab === 'upcoming' && (
-                      <button className="edit-event-btn" onClick={() => handleEdit(event)} aria-label="Edit event">✎</button>
-                    )}
+                    <button className="edit-event-btn" onClick={() => handleEdit(event)} aria-label="Edit event">✎</button>
                     <button className="delete-event-btn" onClick={() => handleDelete(event.id)} aria-label="Delete event">✕</button>
                   </div>
                 )
