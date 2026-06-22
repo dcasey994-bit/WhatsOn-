@@ -34,6 +34,11 @@
   margin-top: 2px;
 }
 
+.vp-address {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .vp-body {
   padding: 20px 16px;
 }

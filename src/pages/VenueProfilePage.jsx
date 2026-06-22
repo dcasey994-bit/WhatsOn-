@@ -49,7 +49,14 @@ export default function VenueProfilePage() {
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <h1 className="vp-name">{venue.name}</h1>
         {venue.type && <p className="vp-type">{venue.type}</p>}
-        <p className="vp-address">📍 {venue.address}</p>
+        <a
+          className="vp-address"
+          href={`https://maps.google.com/?q=${venue.lat},${venue.lng}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          📍 {venue.address}
+        </a>
         {venue.phone && <p className="vp-phone">📞 {venue.phone}</p>}
       </div>
 

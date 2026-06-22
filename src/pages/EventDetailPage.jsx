@@ -71,7 +71,14 @@ export default function EventDetailPage() {
           ) : (
             <p className="detail-venue">{event.venue}</p>
           )}
-          <p className="detail-address">📍 {event.address}</p>
+          <a
+            className="detail-address"
+            href={`https://maps.google.com/?q=${event.lat},${event.lng}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            📍 {event.address}
+          </a>
         </div>
 
         <div className="hero-stats">
@@ -151,7 +158,14 @@ export default function EventDetailPage() {
         <section className="detail-section venue-section">
           <h2>Venue</h2>
           <p className="venue-name">{event.venue}</p>
-          <p className="venue-addr">{event.address}</p>
+          <a
+            className="venue-addr"
+            href={`https://maps.google.com/?q=${event.lat},${event.lng}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {event.address}
+          </a>
           {event.capacity != null && (
             <p className="venue-cap">Capacity: {event.capacity.toLocaleString()}</p>
           )}

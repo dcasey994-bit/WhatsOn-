@@ -90,6 +90,8 @@
 .detail-address {
   font-size: 13px;
   color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .hero-stats {
