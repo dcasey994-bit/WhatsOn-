@@ -1,6 +1,6 @@
 .detail-page {
   min-height: 100dvh;
-  padding-bottom: 90px;
+  padding-bottom: calc(90px + var(--nav-height));
   background: var(--bg);
 }
 
@@ -235,12 +235,12 @@
 
 .detail-actions {
   position: fixed;
-  bottom: 0;
+  bottom: var(--nav-height);
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  padding: 12px 16px 24px;
+  padding: 12px 16px 16px;
   background: linear-gradient(to top, var(--bg) 65%, transparent);
   display: flex;
   gap: 10px;
