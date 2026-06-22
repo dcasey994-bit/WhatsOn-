@@ -80,6 +80,18 @@ export async function fetchVenueById(venueId) {
   return data || null
 }
 
+// All venues that are currently visible (active or still in free trial) — for the venues map
+export async function fetchAllVenues() {
+  const { data, error } = await supabase
+    .from('venues')
+    .select('*')
+  if (error) throw error
+  return (data || []).filter(v => {
+    const s = getSubscriptionState(v)
+    return s === 'active' || s === 'trialing'
+  })
+}
+
 // Upcoming events for one venue, in the UI shape (used by the public profile page)
 export async function fetchPublicVenueEvents(venueId) {
   const today = new Date().toISOString().split('T')[0]
