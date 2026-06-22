@@ -10,6 +10,7 @@ import BrowsePage from './pages/BrowsePage.jsx'
 import SavedPage from './pages/SavedPage.jsx'
 import VenuePage from './pages/VenuePage.jsx'
 import VenueProfilePage from './pages/VenueProfilePage.jsx'
+import VenueManagePage from './pages/VenueManagePage.jsx'
 import EventDetailPage from './pages/EventDetailPage.jsx'
 import BottomNav from './components/BottomNav.jsx'
 
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/browse" element={<BrowsePage />} />
         <Route path="/saved" element={<SavedPage />} />
         <Route path="/venue" element={<VenuePage />} />
+        <Route path="/venue/manage" element={<VenueManagePage />} />
         <Route path="/venue/:id" element={<VenueProfilePage />} />
         <Route path="/event/:id" element={<EventDetailPage />} />
         <Route path="*" element={<Navigate to="/discover" replace />} />

@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+import { getUser, subscribe } from '../data/authStore.js'
 import { NavLink } from 'react-router-dom'
 import './BottomNav.css'
 
@@ -32,6 +34,17 @@ function IconHeart() {
   )
 }
 
+function IconCalendar() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  )
+}
+
 function IconBuilding() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -42,20 +55,30 @@ function IconBuilding() {
   )
 }
 
-const tabs = [
+const goingOutTabs = [
   { to: '/discover', label: 'Discover', Icon: IconMap },
-  { to: '/browse', label: 'Browse', Icon: IconList },
-  { to: '/saved', label: 'Saved', Icon: IconHeart },
-  { to: '/venue', label: 'Venues', Icon: IconBuilding },
+  { to: '/browse',   label: 'Browse',   Icon: IconList },
+  { to: '/saved',    label: 'Saved',    Icon: IconHeart },
+]
+
+const venueTabs = [
+  { to: '/venue',        label: 'My Events', Icon: IconCalendar },
+  { to: '/venue/manage', label: 'My Venue',  Icon: IconBuilding },
 ]
 
 export default function BottomNav() {
+  const [user, setUser] = useState(() => getUser())
+  useEffect(() => subscribe(() => setUser(getUser())), [])
+
+  const tabs = user?.role === 'venue' ? venueTabs : goingOutTabs
+
   return (
     <nav className="bottom-nav">
       {tabs.map(({ to, label, Icon }) => (
         <NavLink
           key={to}
           to={to}
+          end
           className={({ isActive }) => isActive ? 'nav-tab active' : 'nav-tab'}
         >
           <Icon />

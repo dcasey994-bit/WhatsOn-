@@ -181,6 +181,19 @@ export async function fetchVenueEvents(venueId) {
   return data || []
 }
 
+export async function fetchPastVenueEvents(venueId) {
+  const today = new Date().toISOString().split('T')[0]
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .eq('venue_id', venueId)
+    .lt('date', today)
+    .order('date', { ascending: false })
+    .order('time', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
 export async function createEvent(venueId, fields) {
   const { data, error } = await supabase
     .from('events')
