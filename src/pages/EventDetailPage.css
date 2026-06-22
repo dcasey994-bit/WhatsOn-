@@ -292,6 +292,31 @@
   transform: scale(1.15);
 }
 
+.share-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: transform 0.1s;
+}
+
+.share-btn.copied {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+}
+
+.share-btn:active {
+  transform: scale(1.15);
+}
+
 .detail-error {
   padding: 40px 20px;
   text-align: center;

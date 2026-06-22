@@ -13,6 +13,7 @@ export default function EventDetailPage() {
 
   const [saved, setSaved] = useState(() => isSaved(id))
   const [going, setGoing] = useState(() => isGoing(id))
+  const [shared, setShared] = useState(false)
   const goingCount = useGoingCount(id)
 
   useEffect(() => {
@@ -35,6 +36,18 @@ export default function EventDetailPage() {
 
   function handleGoing() {
     toggleGoing(id)
+  }
+
+  async function handleShare() {
+    const url = `https://whatsonapp.uk/event/${id}`
+    const text = `${event.name} at ${event.venue} — ${event.date}, ${event.time}`
+    if (navigator.share) {
+      await navigator.share({ title: event.name, text, url })
+    } else {
+      await navigator.clipboard.writeText(url)
+      setShared(true)
+      setTimeout(() => setShared(false), 2000)
+    }
   }
 
   const heroStyle = event.image
@@ -170,6 +183,13 @@ export default function EventDetailPage() {
           aria-label={saved ? 'Unsave' : 'Save event'}
         >
           {saved ? '♥' : '♡'}
+        </button>
+        <button
+          className={`share-btn ${shared ? 'copied' : ''}`}
+          onClick={handleShare}
+          aria-label="Share event"
+        >
+          {shared ? '✓' : '↑'}
         </button>
       </div>
     </div>
