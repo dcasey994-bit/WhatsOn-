@@ -13,7 +13,7 @@ function subBadge(venue) {
 
 function roleBadge(venue) {
   if (venue.memberRole === 'admin') return { label: 'Admin', cls: 'vl-badge-role-admin' }
-  return { label: 'Manager', cls: 'vl-badge-role-manager' }
+  return { label: 'Events Manager', cls: 'vl-badge-role-manager' }
 }
 
 export default function VenueListPage() {

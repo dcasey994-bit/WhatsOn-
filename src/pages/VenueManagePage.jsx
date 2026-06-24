@@ -348,7 +348,7 @@ export default function VenueManagePage() {
               <div className="vm-member-controls">
                 {m.user_id === user?.id ? (
                   <span className={`vm-member-badge ${m.role === 'admin' ? 'is-admin' : 'is-manager'}`}>
-                    {m.role === 'admin' ? 'Admin (you)' : 'Manager (you)'}
+                    {m.role === 'admin' ? 'Admin (you)' : 'Events Manager (you)'}
                   </span>
                 ) : (
                   <>
@@ -358,7 +358,7 @@ export default function VenueManagePage() {
                       onChange={e => handleChangeMemberRole(m.user_id, e.target.value)}
                     >
                       <option value="admin">Admin</option>
-                      <option value="events_manager">Manager</option>
+                      <option value="events_manager">Events Manager</option>
                     </select>
                     <button className="vm-member-remove" onClick={() => handleRemoveMember(m.user_id)} aria-label="Remove">✕</button>
                   </>
@@ -376,7 +376,7 @@ export default function VenueManagePage() {
               required
             />
             <select className="vm-role-select" value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
-              <option value="events_manager">Manager</option>
+              <option value="events_manager">Events Manager</option>
               <option value="admin">Admin</option>
             </select>
             <button type="submit" className="vm-invite-btn" disabled={inviting}>
