@@ -29,11 +29,13 @@ insert into profiles (id, email)
 select id, email from auth.users
 on conflict (id) do update set email = excluded.email;
 
--- Keep profiles in sync whenever a user signs up or changes email
+-- Keep profiles in sync whenever a user signs up or changes email.
+-- search_path is pinned because SECURITY DEFINER triggers on auth.users run
+-- with a restricted search_path that excludes public.
 create or replace function handle_auth_user_upsert()
-returns trigger language plpgsql security definer as $$
+returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  insert into profiles (id, email)
+  insert into public.profiles (id, email)
   values (new.id, new.email)
   on conflict (id) do update set email = excluded.email;
   return new;
@@ -69,28 +71,28 @@ on conflict (venue_id, user_id) do nothing;
 -- ── 4. Security-definer helpers (bypass RLS to avoid recursion) ───────────────
 
 create or replace function is_venue_member(vid uuid)
-returns boolean language sql security definer stable as $$
+returns boolean language sql security definer stable set search_path = public as $$
   select exists (
-    select 1 from venue_members where venue_id = vid and user_id = auth.uid()
+    select 1 from public.venue_members where venue_id = vid and user_id = auth.uid()
   )
 $$;
 
 create or replace function is_venue_admin(vid uuid)
-returns boolean language sql security definer stable as $$
+returns boolean language sql security definer stable set search_path = public as $$
   select exists (
-    select 1 from venue_members
+    select 1 from public.venue_members
     where venue_id = vid and user_id = auth.uid() and role = 'admin'
   )
 $$;
 
 create or replace function get_venue_members(vid uuid)
 returns table(user_id uuid, email text, role text, created_at timestamptz)
-language sql security definer stable as $$
+language sql security definer stable set search_path = public as $$
   select vm.user_id, p.email, vm.role, vm.created_at
-  from venue_members vm
-  join profiles p on p.id = vm.user_id
+  from public.venue_members vm
+  join public.profiles p on p.id = vm.user_id
   where vm.venue_id = vid
-    and is_venue_member(vid)
+    and public.is_venue_member(vid)
   order by vm.created_at
 $$;
 
