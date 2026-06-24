@@ -103,12 +103,15 @@ export async function fetchMyVenueEvents(period) {
 // ── Public venue profiles ──────────────────────────────────────────────────
 
 export async function fetchVenueById(venueId) {
-  const { data } = await supabase
-    .from('venues')
-    .select('*')
-    .eq('id', venueId)
-    .maybeSingle()
-  return data || null
+  const user = getUser()
+  const [venueRes, memberRes] = await Promise.all([
+    supabase.from('venues').select('*').eq('id', venueId).maybeSingle(),
+    user
+      ? supabase.from('venue_members').select('role').eq('venue_id', venueId).eq('user_id', user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ])
+  if (!venueRes.data) return null
+  return { ...venueRes.data, memberRole: memberRes.data?.role || null }
 }
 
 // All venues that are currently visible (active or still in free trial) — for the venues map
@@ -149,17 +152,17 @@ export async function fetchMyVenue() {
   return data || null
 }
 
-// All venues owned by the current user
+// All venues the current user is a member of (any role), with memberRole attached
 export async function fetchMyVenues() {
   const user = getUser()
   if (!user) return []
   const { data, error } = await supabase
-    .from('venues')
-    .select('*')
+    .from('venue_members')
+    .select('role, venues(*)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
   if (error) throw error
-  return data || []
+  return (data || []).map(row => ({ ...row.venues, memberRole: row.role }))
 }
 
 export async function registerVenue(fields) {
@@ -167,7 +170,7 @@ export async function registerVenue(fields) {
   if (!user) throw new Error('Not logged in')
   const trialEndsAt = new Date()
   trialEndsAt.setMonth(trialEndsAt.getMonth() + 3)
-  const { data, error } = await supabase
+  const { data: venue, error } = await supabase
     .from('venues')
     .insert({
       ...fields,
@@ -178,7 +181,13 @@ export async function registerVenue(fields) {
     .select()
     .single()
   if (error) throw error
-  return data
+  // Make the creator an admin in venue_members
+  await supabase.from('venue_members').insert({
+    venue_id: venue.id,
+    user_id: user.id,
+    role: 'admin',
+  })
+  return venue
 }
 
 // Returns 'active' | 'trialing' | 'archived'
@@ -207,6 +216,51 @@ export function startCheckout(venue) {
   const url = `${link}${sep}client_reference_id=${venue.id}` +
     (user?.email ? `&prefilled_email=${encodeURIComponent(user.email)}` : '')
   window.location.href = url
+}
+
+// ── Venue member management ───────────────────────────────────────────────
+
+// Returns [{user_id, email, role, created_at}] for a venue (admin only)
+export async function fetchVenueMembers(venueId) {
+  const { data, error } = await supabase.rpc('get_venue_members', { vid: venueId })
+  if (error) throw error
+  return data || []
+}
+
+// Add a member by email address (person must already have a WhatsOn account)
+export async function addVenueMember(venueId, email, role) {
+  const { data: profile, error: pErr } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle()
+  if (pErr) throw pErr
+  if (!profile) throw new Error('No account found with that email. They need to sign in to WhatsOn first.')
+  const { error } = await supabase
+    .from('venue_members')
+    .insert({ venue_id: venueId, user_id: profile.id, role })
+  if (error) {
+    if (error.code === '23505') throw new Error('This person already has access to this venue.')
+    throw error
+  }
+}
+
+export async function removeVenueMember(venueId, userId) {
+  const { error } = await supabase
+    .from('venue_members')
+    .delete()
+    .eq('venue_id', venueId)
+    .eq('user_id', userId)
+  if (error) throw error
+}
+
+export async function updateMemberRole(venueId, userId, role) {
+  const { error } = await supabase
+    .from('venue_members')
+    .update({ role })
+    .eq('venue_id', venueId)
+    .eq('user_id', userId)
+  if (error) throw error
 }
 
 // ── Venue event management ────────────────────────────────────────────────

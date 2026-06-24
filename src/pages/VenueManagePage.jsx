@@ -5,6 +5,7 @@ import {
   fetchVenueById, fetchVenueEvents, fetchPastVenueEvents,
   createEvent, updateEvent, deleteEvent, uploadEventImage,
   getSubscriptionState, trialDaysLeft, startCheckout,
+  fetchVenueMembers, addVenueMember, removeVenueMember, updateMemberRole,
 } from '../data/eventsStore.js'
 import { getUser } from '../data/authStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
@@ -33,6 +34,11 @@ export default function VenueManagePage() {
   const [form, setForm] = useState(BLANK_EVENT)
   const [editingId, setEditingId] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [members, setMembers] = useState([])
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('events_manager')
+  const [inviting, setInviting] = useState(false)
+  const [inviteError, setInviteError] = useState(null)
   const reloadEvents = useReloadEvents()
 
   async function loadEvents(venueId) {
@@ -49,14 +55,17 @@ export default function VenueManagePage() {
     setLoading(true)
     fetchVenueById(id).then(async v => {
       if (!active) return
-      const user = getUser()
-      if (!v || (user && v.user_id !== user.id)) {
+      if (!v || !v.memberRole) {
         setNotMine(true)
         setLoading(false)
         return
       }
       setVenue(v)
-      await loadEvents(v.id)
+      const loads = [loadEvents(v.id)]
+      if (v.memberRole === 'admin') {
+        loads.push(fetchVenueMembers(v.id).then(setMembers).catch(() => {}))
+      }
+      await Promise.all(loads)
       if (active) setLoading(false)
     })
     return () => { active = false }
@@ -145,6 +154,32 @@ export default function VenueManagePage() {
     setUploading(false)
   }
 
+  async function handleInvite(e) {
+    e.preventDefault()
+    setInviting(true)
+    setInviteError(null)
+    try {
+      await addVenueMember(venue.id, inviteEmail, inviteRole)
+      const updated = await fetchVenueMembers(venue.id)
+      setMembers(updated)
+      setInviteEmail('')
+    } catch (err) {
+      setInviteError(err.message)
+    }
+    setInviting(false)
+  }
+
+  async function handleRemoveMember(userId) {
+    if (!confirm('Remove this person from the venue?')) return
+    await removeVenueMember(venue.id, userId)
+    setMembers(prev => prev.filter(m => m.user_id !== userId))
+  }
+
+  async function handleChangeMemberRole(userId, newRole) {
+    await updateMemberRole(venue.id, userId, newRole)
+    setMembers(prev => prev.map(m => m.user_id === userId ? { ...m, role: newRole } : m))
+  }
+
   function set(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }))
   }
@@ -172,6 +207,8 @@ export default function VenueManagePage() {
 
   const subState = getSubscriptionState(venue)
   const daysLeft = trialDaysLeft(venue)
+  const isAdmin = venue?.memberRole === 'admin'
+  const user = getUser()
 
   // ── Event add/edit form ──────────────────────────────────────────────────
   if (view === 'add') {
@@ -254,21 +291,23 @@ export default function VenueManagePage() {
 
       <button className="vp-back-link vp-back-pad" onClick={() => navigate('/venue')}>← My Venues</button>
 
-      {/* Subscription card */}
-      <div className={`vm-sub-card ${subState === 'archived' ? 'vm-sub-lapsed' : subState === 'active' ? 'vm-sub-active' : 'vm-sub-trial'}`}>
-        <div className="vm-sub-row">
-          <span className="vm-sub-label">
-            {subState === 'active' && '✓ Active subscription'}
-            {subState === 'trialing' && `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
-            {subState === 'archived' && '⚠ Venue archived — events hidden'}
-          </span>
-          {subState !== 'active' && (
-            <button className="vm-sub-btn" onClick={() => startCheckout(venue)}>
-              {subState === 'archived' ? 'Reactivate' : 'Subscribe'} — £20/mo
-            </button>
-          )}
+      {/* Subscription card — admin only */}
+      {isAdmin && (
+        <div className={`vm-sub-card ${subState === 'archived' ? 'vm-sub-lapsed' : subState === 'active' ? 'vm-sub-active' : 'vm-sub-trial'}`}>
+          <div className="vm-sub-row">
+            <span className="vm-sub-label">
+              {subState === 'active' && '✓ Active subscription'}
+              {subState === 'trialing' && `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+              {subState === 'archived' && '⚠ Venue archived — events hidden'}
+            </span>
+            {subState !== 'active' && (
+              <button className="vm-sub-btn" onClick={() => startCheckout(venue)}>
+                {subState === 'archived' ? 'Reactivate' : 'Subscribe'} — £20/mo
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Venue details */}
       <div className="vm-section">
@@ -298,6 +337,55 @@ export default function VenueManagePage() {
           </div>
         )}
       </div>
+
+      {/* Team — admin only */}
+      {isAdmin && (
+        <div className="vm-section">
+          <h2 className="vm-section-title">Team</h2>
+          {members.map(m => (
+            <div key={m.user_id} className="vm-member-row">
+              <span className="vm-member-email">{m.email}</span>
+              <div className="vm-member-controls">
+                {m.user_id === user?.id ? (
+                  <span className={`vm-member-badge ${m.role === 'admin' ? 'is-admin' : 'is-manager'}`}>
+                    {m.role === 'admin' ? 'Admin (you)' : 'Manager (you)'}
+                  </span>
+                ) : (
+                  <>
+                    <select
+                      className="vm-role-select"
+                      value={m.role}
+                      onChange={e => handleChangeMemberRole(m.user_id, e.target.value)}
+                    >
+                      <option value="admin">Admin</option>
+                      <option value="events_manager">Manager</option>
+                    </select>
+                    <button className="vm-member-remove" onClick={() => handleRemoveMember(m.user_id)} aria-label="Remove">✕</button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+          <form className="vm-invite-form" onSubmit={handleInvite}>
+            <input
+              type="email"
+              className="vm-invite-email"
+              placeholder="their@email.com"
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+              required
+            />
+            <select className="vm-role-select" value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
+              <option value="events_manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button type="submit" className="vm-invite-btn" disabled={inviting}>
+              {inviting ? '…' : 'Add'}
+            </button>
+          </form>
+          {inviteError && <p className="vm-invite-error">{inviteError}</p>}
+        </div>
+      )}
 
       {/* Events */}
       <div className="venue-tabs">

@@ -11,6 +11,11 @@ function subBadge(venue) {
   return { label: 'Archived', cls: 'vl-badge-lapsed' }
 }
 
+function roleBadge(venue) {
+  if (venue.memberRole === 'admin') return { label: 'Admin', cls: 'vl-badge-role-admin' }
+  return { label: 'Manager', cls: 'vl-badge-role-manager' }
+}
+
 export default function VenueListPage() {
   const [venues, setVenues] = useState([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +42,8 @@ export default function VenueListPage() {
         ) : (
           <>
             {venues.map(venue => {
-              const badge = subBadge(venue)
+              const sub = subBadge(venue)
+              const role = roleBadge(venue)
               return (
                 <button
                   key={venue.id}
@@ -50,7 +56,10 @@ export default function VenueListPage() {
                     <p className="vl-card-addr">{venue.address}</p>
                   </div>
                   <div className="vl-card-side">
-                    <span className={`vl-badge ${badge.cls}`}>{badge.label}</span>
+                    <span className={`vl-badge ${role.cls}`}>{role.label}</span>
+                    {venue.memberRole === 'admin' && (
+                      <span className={`vl-badge ${sub.cls}`}>{sub.label}</span>
+                    )}
                     <span className="vl-chevron">›</span>
                   </div>
                 </button>

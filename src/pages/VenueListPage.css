@@ -88,9 +88,11 @@
   letter-spacing: 0.4px;
 }
 
-.vl-badge-active { background: rgba(0,255,136,0.12);  color: #00ff88; }
-.vl-badge-trial  { background: rgba(255,193,7,0.12);  color: #ffc107; }
-.vl-badge-lapsed { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+.vl-badge-active        { background: rgba(0,255,136,0.12);   color: #00ff88; }
+.vl-badge-trial         { background: rgba(255,193,7,0.12);   color: #ffc107; }
+.vl-badge-lapsed        { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+.vl-badge-role-admin    { background: rgba(0,255,136,0.08);   color: var(--accent); }
+.vl-badge-role-manager  { background: rgba(255,255,255,0.06); color: var(--text-muted); }
 
 .vl-chevron {
   font-size: 22px;
