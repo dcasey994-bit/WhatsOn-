@@ -404,6 +404,18 @@
   color: var(--accent);
 }
 
+.add-event-fab {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #000;
+  font-size: 15px;
+  font-weight: 800;
+}
+
 /* Trial countdown banner */
 .trial-banner {
   background: rgba(255, 193, 7, 0.1);

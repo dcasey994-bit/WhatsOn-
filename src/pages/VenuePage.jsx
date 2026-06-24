@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { CATEGORIES } from '../data/events.js'
 import {
   fetchMyVenue, registerVenue,
-  fetchVenueEvents, createEvent, updateEvent, deleteEvent,
+  fetchVenueEvents, fetchPastVenueEvents,
+  createEvent, updateEvent, deleteEvent,
   geocodeAddress, uploadEventImage,
   getSubscriptionState, trialDaysLeft, startCheckout,
 } from '../data/eventsStore.js'
@@ -27,7 +28,9 @@ const VENUE_TYPES = [
 
 export default function VenuePage() {
   const [venue, setVenue] = useState(null)
-  const [events, setEvents] = useState([])
+  const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [pastEvents, setPastEvents] = useState([])
+  const [eventTab, setEventTab] = useState('upcoming')
   const [view, setView] = useState('dashboard')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -51,10 +54,16 @@ export default function VenuePage() {
 
   async function loadEvents(venueId) {
     setLoading(true)
-    const rows = await fetchVenueEvents(venueId)
-    setEvents(rows)
+    const [upcoming, past] = await Promise.all([
+      fetchVenueEvents(venueId),
+      fetchPastVenueEvents(venueId),
+    ])
+    setUpcomingEvents(upcoming)
+    setPastEvents(past)
     setLoading(false)
   }
+
+  const events = eventTab === 'upcoming' ? upcomingEvents : pastEvents
 
   async function handleLookupAddress() {
     if (!venueForm.address.trim()) return
@@ -86,7 +95,8 @@ export default function VenuePage() {
         type: venueForm.type,
       })
       setVenue(v)
-      setEvents([])
+      setUpcomingEvents([])
+      setPastEvents([])
     } catch {
       setError('Could not register venue. Please try again.')
     }
@@ -111,11 +121,11 @@ export default function VenuePage() {
     try {
       if (editingId) {
         const row = await updateEvent(editingId, fields)
-        setEvents(prev => prev.map(ev => (ev.id === editingId ? row : ev)))
+        setUpcomingEvents(prev => prev.map(ev => (ev.id === editingId ? row : ev)))
         setSuccess('Event updated!')
       } else {
         const row = await createEvent(venue.id, fields)
-        setEvents(prev => [...prev, row])
+        setUpcomingEvents(prev => [...prev, row])
         setSuccess('Event posted!')
       }
       setForm(BLANK_EVENT)
@@ -155,7 +165,8 @@ export default function VenuePage() {
   async function handleDelete(eventId) {
     if (!confirm('Delete this event?')) return
     await deleteEvent(eventId)
-    setEvents(prev => prev.filter(e => e.id !== eventId))
+    setUpcomingEvents(prev => prev.filter(e => e.id !== eventId))
+    setPastEvents(prev => prev.filter(e => e.id !== eventId))
     reloadEvents()
   }
 
@@ -296,37 +307,30 @@ export default function VenuePage() {
       )}
 
       <div className="venue-tabs">
-        <button className={`vtab ${view === 'dashboard' ? 'active' : ''}`} onClick={() => setView('dashboard')}>
-          My Events
+        <button className={`vtab ${view !== 'add' && eventTab === 'upcoming' ? 'active' : ''}`}
+          onClick={() => { setEventTab('upcoming'); setView('dashboard') }}>
+          Upcoming
         </button>
-        <button className={`vtab ${view === 'add' ? 'active' : ''}`} onClick={startAddEvent}>
-          + Add Event
+        <button className={`vtab ${view !== 'add' && eventTab === 'past' ? 'active' : ''}`}
+          onClick={() => { setEventTab('past'); setView('dashboard') }}>
+          Past Events
         </button>
       </div>
 
       {view === 'dashboard' && (
         <div className="venue-dashboard">
-          <div className="stats-row">
-            <div className="stat-box stat-box-wide">
-              <span className="stat-num">{events.length}</span>
-              <span className="stat-label">Upcoming Events</span>
-            </div>
-            <div className="stat-box stat-box-wide">
-              <span className="stat-num">{venue?.capacity?.toLocaleString() ?? '—'}</span>
-              <span className="stat-label">Venue Capacity</span>
-            </div>
-          </div>
-
-          <h3 className="section-heading">Upcoming Listings</h3>
-
           {loading ? (
             <p className="loading-text">Loading…</p>
           ) : events.length === 0 ? (
             <div className="no-events">
-              <p>No upcoming events listed.</p>
-              <button className="add-first-btn" onClick={startAddEvent}>
-                + Add your first event
-              </button>
+              {eventTab === 'upcoming' ? (
+                <>
+                  <p>No upcoming events listed.</p>
+                  <button className="add-first-btn" onClick={startAddEvent}>+ Add your first event</button>
+                </>
+              ) : (
+                <p>No past events yet.</p>
+              )}
             </div>
           ) : (
             <div className="event-rows">
@@ -347,12 +351,18 @@ export default function VenuePage() {
                         &nbsp;·&nbsp;{Number(event.price) === 0 ? 'Free' : `£${event.price}`}
                       </p>
                     </div>
-                    <button className="edit-event-btn" onClick={() => handleEdit(event)} aria-label="Edit event">✎</button>
+                    {eventTab === 'upcoming' && (
+                      <button className="edit-event-btn" onClick={() => handleEdit(event)} aria-label="Edit event">✎</button>
+                    )}
                     <button className="delete-event-btn" onClick={() => handleDelete(event.id)} aria-label="Delete event">✕</button>
                   </div>
                 )
               })}
             </div>
+          )}
+
+          {eventTab === 'upcoming' && (
+            <button className="add-event-fab" onClick={startAddEvent}>+ Add Event</button>
           )}
         </div>
       )}
