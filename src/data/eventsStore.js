@@ -69,6 +69,37 @@ export async function fetchUpcomingEvents() {
   return (data || []).map(dbEventToLocal)
 }
 
+// A single event by id, in the UI shape (used by the detail page as a fallback
+// when the event isn't in the live map context — e.g. past events)
+export async function fetchEventById(eventId) {
+  const { data } = await supabase
+    .from('events')
+    .select('*, venues(name, address, lat, lng)')
+    .eq('id', eventId)
+    .maybeSingle()
+  return data ? dbEventToLocal(data) : null
+}
+
+// All events across the current user's venues, chronological. period: 'upcoming' | 'past'
+export async function fetchMyVenueEvents(period) {
+  const venues = await fetchMyVenues()
+  const ids = venues.map(v => v.id)
+  if (!ids.length) return []
+  const today = new Date().toISOString().split('T')[0]
+  let q = supabase
+    .from('events')
+    .select('*, venues(name, address, lat, lng)')
+    .in('venue_id', ids)
+  if (period === 'past') {
+    q = q.lt('date', today).order('date', { ascending: false }).order('time', { ascending: false })
+  } else {
+    q = q.gte('date', today).order('date', { ascending: true }).order('time', { ascending: true })
+  }
+  const { data, error } = await q
+  if (error) throw error
+  return (data || []).map(dbEventToLocal)
+}
+
 // ── Public venue profiles ──────────────────────────────────────────────────
 
 export async function fetchVenueById(venueId) {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { CATEGORIES } from '../data/events.js'
 import { useEvent } from '../data/EventsContext.jsx'
+import { fetchEventById } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
 import { useGoingCount } from '../data/goingStore.js'
 import './EventDetailPage.css'
@@ -9,12 +10,29 @@ import './EventDetailPage.css'
 export default function EventDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const event = useEvent(id)
+  const contextEvent = useEvent(id)
 
+  const [fetched, setFetched] = useState(null)
+  const [lookupDone, setLookupDone] = useState(false)
   const [saved, setSaved] = useState(() => isSaved(id))
   const [going, setGoing] = useState(() => isGoing(id))
   const [shared, setShared] = useState(false)
   const goingCount = useGoingCount(id)
+
+  const event = contextEvent || fetched
+
+  // If the event isn't in the live map context (e.g. a past event), fetch it directly
+  useEffect(() => {
+    if (contextEvent) { setLookupDone(true); return }
+    let active = true
+    setLookupDone(false)
+    fetchEventById(id).then(ev => {
+      if (!active) return
+      setFetched(ev)
+      setLookupDone(true)
+    })
+    return () => { active = false }
+  }, [id, contextEvent])
 
   useEffect(() => {
     return subscribe(() => {
@@ -26,7 +44,7 @@ export default function EventDetailPage() {
   if (!event) {
     return (
       <div className="detail-missing">
-        <p>Event not found</p>
+        <p>{lookupDone ? 'Event not found' : 'Loading…'}</p>
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
       </div>
     )

@@ -10,6 +10,7 @@ import BrowsePage from './pages/BrowsePage.jsx'
 import SavedPage from './pages/SavedPage.jsx'
 import VenueListPage from './pages/VenueListPage.jsx'
 import VenueRegisterPage from './pages/VenueRegisterPage.jsx'
+import VenueEventsPage from './pages/VenueEventsPage.jsx'
 import VenueProfilePage from './pages/VenueProfilePage.jsx'
 import VenueManagePage from './pages/VenueManagePage.jsx'
 import EventDetailPage from './pages/EventDetailPage.jsx'
@@ -49,6 +50,8 @@ export default function App() {
         <Route path="/saved" element={<SavedPage />} />
         <Route path="/venue" element={<VenueListPage />} />
         <Route path="/venue/new" element={<VenueRegisterPage />} />
+        <Route path="/venue/events/upcoming" element={<VenueEventsPage period="upcoming" />} />
+        <Route path="/venue/events/past" element={<VenueEventsPage period="past" />} />
         <Route path="/venue/manage/:id" element={<VenueManagePage />} />
         <Route path="/venue/:id" element={<VenueProfilePage />} />
         <Route path="/event/:id" element={<EventDetailPage />} />

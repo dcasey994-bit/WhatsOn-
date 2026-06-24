@@ -44,6 +44,26 @@ function IconBuilding() {
   )
 }
 
+function IconCalendar() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  )
+}
+
+function IconClock() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <polyline points="12 7 12 12 15 14"/>
+    </svg>
+  )
+}
+
 const goingOutTabs = [
   { to: '/discover', label: 'Discover', Icon: IconMap },
   { to: '/browse',   label: 'Browse',   Icon: IconList },
@@ -51,7 +71,9 @@ const goingOutTabs = [
 ]
 
 const venueTabs = [
-  { to: '/venue', label: 'My Venues', Icon: IconBuilding },
+  { to: '/venue',                 label: 'My Venues', Icon: IconBuilding },
+  { to: '/venue/events/upcoming', label: 'Upcoming',  Icon: IconCalendar },
+  { to: '/venue/events/past',     label: 'Past',      Icon: IconClock },
 ]
 
 export default function BottomNav() {
@@ -66,7 +88,7 @@ export default function BottomNav() {
         <NavLink
           key={to}
           to={to}
-          end={to === '/discover' || to === '/browse' || to === '/saved'}
+          end
           className={({ isActive }) => isActive ? 'nav-tab active' : 'nav-tab'}
         >
           <Icon />
