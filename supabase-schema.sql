@@ -161,6 +161,21 @@ create policy "profiles: read all" on profiles for select using (true);
 
 -- ── Venue membership roles ─────────────────────────────────────────────────────
 
+create table if not exists venue_members (
+  id          uuid primary key default gen_random_uuid(),
+  venue_id    uuid references venues(id) on delete cascade not null,
+  user_id     uuid references auth.users(id) on delete cascade not null,
+  role        text not null check (role in ('admin', 'events_manager')),
+  invited_by  uuid references auth.users(id),
+  created_at  timestamptz default now(),
+  unique(venue_id, user_id)
+);
+
+-- Backfill: existing venue owners become admins
+insert into venue_members (venue_id, user_id, role)
+select id, user_id, 'admin' from venues
+on conflict (venue_id, user_id) do nothing;
+
 -- Security-definer helpers — run as postgres to bypass RLS and avoid recursion
 create or replace function is_venue_member(vid uuid)
 returns boolean language sql security definer stable as $$
@@ -188,21 +203,6 @@ language sql security definer stable as $$
     and is_venue_member(vid)
   order by vm.created_at
 $$;
-
-create table if not exists venue_members (
-  id          uuid primary key default gen_random_uuid(),
-  venue_id    uuid references venues(id) on delete cascade not null,
-  user_id     uuid references auth.users(id) on delete cascade not null,
-  role        text not null check (role in ('admin', 'events_manager')),
-  invited_by  uuid references auth.users(id),
-  created_at  timestamptz default now(),
-  unique(venue_id, user_id)
-);
-
--- Backfill: existing venue owners become admins
-insert into venue_members (venue_id, user_id, role)
-select id, user_id, 'admin' from venues
-on conflict (venue_id, user_id) do nothing;
 
 alter table venue_members enable row level security;
 
