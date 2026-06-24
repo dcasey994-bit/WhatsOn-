@@ -99,6 +99,7 @@ alter table events add column if not exists image_url text;
 alter table events enable row level security;
 
 drop policy if exists "events: read all" on events;
+drop policy if exists "events: read active venues" on events;
 -- Only show events from venues that are active or still within their free trial
 create policy "events: read active venues" on events for select using (
   exists (
