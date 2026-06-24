@@ -32,9 +32,10 @@ create policy "going: own rows" on going_events
 
 -- ── Venues ────────────────────────────────────────────────────────────────
 
+-- A user may own multiple venues (no unique constraint on user_id).
 create table if not exists venues (
   id                     uuid primary key default gen_random_uuid(),
-  user_id                uuid references auth.users(id) on delete cascade not null unique,
+  user_id                uuid references auth.users(id) on delete cascade not null,
   name                   text not null,
   address                text not null,
   lat                    double precision not null,
@@ -54,6 +55,9 @@ alter table venues add column if not exists subscription_status    text not null
 alter table venues add column if not exists trial_ends_at          timestamptz not null default (now() + interval '3 months');
 alter table venues add column if not exists stripe_customer_id     text;
 alter table venues add column if not exists stripe_subscription_id text;
+
+-- Allow multiple venues per user (drop the old one-venue-per-user constraint):
+alter table venues drop constraint if exists venues_user_id_key;
 
 alter table venues enable row level security;
 

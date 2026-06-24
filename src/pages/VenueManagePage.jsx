@@ -1,33 +1,171 @@
 import { useState, useEffect } from 'react'
-import { fetchMyVenue, getSubscriptionState, trialDaysLeft, startCheckout } from '../data/eventsStore.js'
+import { useParams, useNavigate } from 'react-router-dom'
+import { CATEGORIES } from '../data/events.js'
+import {
+  fetchVenueById, fetchVenueEvents, fetchPastVenueEvents,
+  createEvent, updateEvent, deleteEvent, uploadEventImage,
+  getSubscriptionState, trialDaysLeft, startCheckout,
+} from '../data/eventsStore.js'
+import { getUser } from '../data/authStore.js'
+import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
+import './VenuePage.css'
 import './VenueManagePage.css'
 
+const BLANK_EVENT = {
+  name: '', category: 'music', date: '', time: '',
+  price: '', capacity: '', ticket_url: '', description: '', image_url: '',
+}
+
 export default function VenueManagePage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
   const [venue, setVenue] = useState(null)
+  const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [pastEvents, setPastEvents] = useState([])
+  const [eventTab, setEventTab] = useState('upcoming')
+  const [view, setView] = useState('main')  // 'main' | 'add'
   const [loading, setLoading] = useState(true)
+  const [notMine, setNotMine] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+  const [form, setForm] = useState(BLANK_EVENT)
+  const [editingId, setEditingId] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const reloadEvents = useReloadEvents()
+
+  async function loadEvents(venueId) {
+    const [upcoming, past] = await Promise.all([
+      fetchVenueEvents(venueId),
+      fetchPastVenueEvents(venueId),
+    ])
+    setUpcomingEvents(upcoming)
+    setPastEvents(past)
+  }
 
   useEffect(() => {
-    fetchMyVenue().then(v => { setVenue(v); setLoading(false) })
-  }, [])
+    let active = true
+    setLoading(true)
+    fetchVenueById(id).then(async v => {
+      if (!active) return
+      const user = getUser()
+      if (!v || (user && v.user_id !== user.id)) {
+        setNotMine(true)
+        setLoading(false)
+        return
+      }
+      setVenue(v)
+      await loadEvents(v.id)
+      if (active) setLoading(false)
+    })
+    return () => { active = false }
+  }, [id])
 
-  if (loading) {
+  const events = eventTab === 'upcoming' ? upcomingEvents : pastEvents
+
+  async function handleAddEvent(e) {
+    e.preventDefault()
+    setSaving(true)
+    setError(null)
+    const fields = {
+      name: form.name,
+      category: form.category,
+      date: form.date,
+      time: form.time,
+      price: form.price === '' ? 0 : Number(form.price),
+      capacity: form.capacity ? Number(form.capacity) : null,
+      ticket_url: form.ticket_url || null,
+      description: form.description,
+      image_url: form.image_url || null,
+    }
+    try {
+      if (editingId) {
+        const row = await updateEvent(editingId, fields)
+        setUpcomingEvents(prev => prev.map(ev => (ev.id === editingId ? row : ev)))
+        setSuccess('Event updated!')
+      } else {
+        const row = await createEvent(venue.id, fields)
+        setUpcomingEvents(prev => [...prev, row])
+        setSuccess('Event posted!')
+      }
+      setForm(BLANK_EVENT)
+      setEditingId(null)
+      reloadEvents()
+      setTimeout(() => { setSuccess(null); setView('main') }, 1500)
+    } catch {
+      setError(editingId ? 'Could not update event.' : 'Could not post event. Please try again.')
+    }
+    setSaving(false)
+  }
+
+  function startAddEvent() {
+    setForm(BLANK_EVENT)
+    setEditingId(null)
+    setError(null)
+    setView('add')
+  }
+
+  function handleEdit(ev) {
+    setForm({
+      name: ev.name,
+      category: ev.category,
+      date: ev.date,
+      time: ev.time?.slice(0, 5) || '',
+      price: ev.price ?? '',
+      capacity: ev.capacity ?? '',
+      ticket_url: ev.ticket_url ?? '',
+      description: ev.description ?? '',
+      image_url: ev.image_url ?? '',
+    })
+    setEditingId(ev.id)
+    setError(null)
+    setView('add')
+  }
+
+  async function handleDelete(eventId) {
+    if (!confirm('Delete this event?')) return
+    await deleteEvent(eventId)
+    setUpcomingEvents(prev => prev.filter(e => e.id !== eventId))
+    setPastEvents(prev => prev.filter(e => e.id !== eventId))
+    reloadEvents()
+  }
+
+  async function handleImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setError(null)
+    try {
+      const url = await uploadEventImage(file)
+      setForm(f => ({ ...f, image_url: url }))
+    } catch {
+      setError('Could not upload image. Please try a smaller JPG or PNG.')
+    }
+    setUploading(false)
+  }
+
+  function set(field) {
+    return e => setForm(f => ({ ...f, [field]: e.target.value }))
+  }
+
+  if (notMine) {
     return (
-      <div className="venue-manage-page">
-        <Header title="My Venue" />
-        <p className="vm-loading">Loading…</p>
+      <div className="venue-page">
+        <Header title="My Venues" />
+        <div className="vm-empty">
+          <p>Venue not found.</p>
+          <button className="vl-add-btn" onClick={() => navigate('/venue')}>← Back to My Venues</button>
+        </div>
       </div>
     )
   }
 
-  if (!venue) {
+  if (loading || !venue) {
     return (
-      <div className="venue-manage-page">
-        <Header title="My Venue" />
-        <div className="vm-empty">
-          <p>No venue registered yet.</p>
-          <p className="vm-hint">Go to My Events to register your venue.</p>
-        </div>
+      <div className="venue-page">
+        <Header title="My Venues" />
+        <p className="loading-text">Loading…</p>
       </div>
     )
   }
@@ -35,18 +173,94 @@ export default function VenueManagePage() {
   const subState = getSubscriptionState(venue)
   const daysLeft = trialDaysLeft(venue)
 
+  // ── Event add/edit form ──────────────────────────────────────────────────
+  if (view === 'add') {
+    return (
+      <div className="venue-page">
+        <Header title={venue.name} />
+        <div className="add-event-form">
+          <button className="vp-back-link" onClick={() => { setView('main'); setEditingId(null) }}>← Back</button>
+          {success && <div className="success-banner">🎉 {success}</div>}
+          {error && <p className="form-error">{error}</p>}
+          <h3 className="section-heading">{editingId ? 'Edit Event' : 'New Event'}</h3>
+          <form onSubmit={handleAddEvent}>
+            <label>
+              Event name
+              <input required value={form.name} onChange={set('name')} placeholder="e.g. Open Mic Night" />
+            </label>
+            <label>
+              Category
+              <select value={form.category} onChange={set('category')}>
+                {Object.entries(CATEGORIES).map(([key, cat]) => (
+                  <option key={key} value={key}>{cat.label}</option>
+                ))}
+              </select>
+            </label>
+            <div className="form-row">
+              <label>
+                Date
+                <input type="date" required value={form.date} onChange={set('date')} />
+              </label>
+              <label>
+                Time
+                <input type="time" required value={form.time} onChange={set('time')} />
+              </label>
+            </div>
+            <div className="form-row">
+              <label>
+                Ticket price (£)
+                <input type="number" min="0" value={form.price} onChange={set('price')} placeholder="0 = Free" />
+              </label>
+              <label>
+                Capacity
+                <input type="number" min="1" value={form.capacity} onChange={set('capacity')} placeholder="Optional" />
+              </label>
+            </div>
+            <label>
+              Ticket link (optional)
+              <input type="url" value={form.ticket_url} onChange={set('ticket_url')} placeholder="https://..." />
+            </label>
+            <label>
+              Event image (optional)
+              {form.image_url && (
+                <div className="image-preview" style={{ backgroundImage: `url(${form.image_url})` }}>
+                  <button type="button" className="image-remove" onClick={() => setForm(f => ({ ...f, image_url: '' }))}>
+                    Remove
+                  </button>
+                </div>
+              )}
+              <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+              {uploading && <span className="upload-hint">Uploading…</span>}
+            </label>
+            <label>
+              Description
+              <textarea required value={form.description} onChange={set('description')} rows={4} placeholder="Tell people what to expect..." />
+            </label>
+            <button type="submit" className="post-btn" disabled={saving || uploading}>
+              {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Post Event'}
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Main per-venue page ────────────────────────────────────────────────────
   return (
-    <div className="venue-manage-page">
+    <div className="venue-page">
       <Header title={venue.name}>
         <span className="verified-badge">✓ Verified</span>
       </Header>
 
+      <button className="vp-back-link vp-back-pad" onClick={() => navigate('/venue')}>← My Venues</button>
+
+      {/* Subscription card */}
       <div className={`vm-sub-card ${subState === 'lapsed' ? 'vm-sub-lapsed' : subState === 'active' ? 'vm-sub-active' : 'vm-sub-trial'}`}>
         <div className="vm-sub-row">
           <span className="vm-sub-label">
             {subState === 'active' && '✓ Active subscription'}
             {subState === 'trialing' && `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
-            {subState === 'lapsed' && '⚠ Trial expired'}
+            {subState === 'lapsed' && '⚠ Trial expired — events hidden'}
           </span>
           {subState !== 'active' && (
             <button className="vm-sub-btn" onClick={() => startCheckout(venue)}>
@@ -56,25 +270,18 @@ export default function VenueManagePage() {
         </div>
       </div>
 
+      {/* Venue details */}
       <div className="vm-section">
         <h2 className="vm-section-title">Venue Details</h2>
-
-        <div className="vm-detail-row">
-          <span className="vm-detail-label">Name</span>
-          <span className="vm-detail-value">{venue.name}</span>
-        </div>
         <div className="vm-detail-row">
           <span className="vm-detail-label">Type</span>
           <span className="vm-detail-value">{venue.type || '—'}</span>
         </div>
         <div className="vm-detail-row">
           <span className="vm-detail-label">Address</span>
-          <a
-            className="vm-detail-value vm-detail-link"
+          <a className="vm-detail-value vm-detail-link"
             href={`https://maps.google.com/?q=${venue.lat},${venue.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+            target="_blank" rel="noopener noreferrer">
             {venue.address}
           </a>
         </div>
@@ -89,6 +296,62 @@ export default function VenueManagePage() {
             <span className="vm-detail-label">Capacity</span>
             <span className="vm-detail-value">{venue.capacity.toLocaleString()}</span>
           </div>
+        )}
+      </div>
+
+      {/* Events */}
+      <div className="venue-tabs">
+        <button className={`vtab ${eventTab === 'upcoming' ? 'active' : ''}`} onClick={() => setEventTab('upcoming')}>
+          Upcoming
+        </button>
+        <button className={`vtab ${eventTab === 'past' ? 'active' : ''}`} onClick={() => setEventTab('past')}>
+          Past Events
+        </button>
+      </div>
+
+      <div className="venue-dashboard">
+        {events.length === 0 ? (
+          <div className="no-events">
+            {eventTab === 'upcoming' ? (
+              <>
+                <p>No upcoming events listed.</p>
+                <button className="add-first-btn" onClick={startAddEvent}>+ Add your first event</button>
+              </>
+            ) : (
+              <p>No past events yet.</p>
+            )}
+          </div>
+        ) : (
+          <div className="event-rows">
+            {events.map(event => {
+              const cat = CATEGORIES[event.category] || CATEGORIES.music
+              const dateLabel = new Date(event.date + 'T00:00:00').toLocaleDateString('en-GB', {
+                weekday: 'short', day: 'numeric', month: 'short',
+              })
+              return (
+                <div key={event.id} className="venue-event-row">
+                  <span className="vc-dot" style={{ background: cat.color }} />
+                  <div className="vc-info">
+                    <p className="vc-name">{event.name}</p>
+                    <p className="vc-meta">
+                      <span className="vc-cat" style={{ color: cat.color }}>{cat.label}</span>
+                      &nbsp;·&nbsp;{dateLabel}
+                      &nbsp;·&nbsp;{event.time?.slice(0, 5)}
+                      &nbsp;·&nbsp;{Number(event.price) === 0 ? 'Free' : `£${event.price}`}
+                    </p>
+                  </div>
+                  {eventTab === 'upcoming' && (
+                    <button className="edit-event-btn" onClick={() => handleEdit(event)} aria-label="Edit event">✎</button>
+                  )}
+                  <button className="delete-event-btn" onClick={() => handleDelete(event.id)} aria-label="Delete event">✕</button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {eventTab === 'upcoming' && (
+          <button className="add-event-fab" onClick={startAddEvent}>+ Add Event</button>
         )}
       </div>
     </div>

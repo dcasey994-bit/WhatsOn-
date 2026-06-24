@@ -8,7 +8,8 @@ import SignInPage from './pages/SignInPage.jsx'
 import DiscoverPage from './pages/DiscoverPage.jsx'
 import BrowsePage from './pages/BrowsePage.jsx'
 import SavedPage from './pages/SavedPage.jsx'
-import VenuePage from './pages/VenuePage.jsx'
+import VenueListPage from './pages/VenueListPage.jsx'
+import VenueRegisterPage from './pages/VenueRegisterPage.jsx'
 import VenueProfilePage from './pages/VenueProfilePage.jsx'
 import VenueManagePage from './pages/VenueManagePage.jsx'
 import EventDetailPage from './pages/EventDetailPage.jsx'
@@ -46,8 +47,9 @@ export default function App() {
         <Route path="/discover" element={<DiscoverPage />} />
         <Route path="/browse" element={<BrowsePage />} />
         <Route path="/saved" element={<SavedPage />} />
-        <Route path="/venue" element={<VenuePage />} />
-        <Route path="/venue/manage" element={<VenueManagePage />} />
+        <Route path="/venue" element={<VenueListPage />} />
+        <Route path="/venue/new" element={<VenueRegisterPage />} />
+        <Route path="/venue/manage/:id" element={<VenueManagePage />} />
         <Route path="/venue/:id" element={<VenueProfilePage />} />
         <Route path="/event/:id" element={<EventDetailPage />} />
         <Route path="*" element={<Navigate to="/discover" replace />} />

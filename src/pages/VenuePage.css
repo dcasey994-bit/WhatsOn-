@@ -416,6 +416,18 @@
   font-weight: 800;
 }
 
+.vp-back-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 14px;
+  display: inline-block;
+}
+
+.vp-back-pad {
+  margin: 14px 16px 0;
+}
+
 /* Trial countdown banner */
 .trial-banner {
   background: rgba(255, 193, 7, 0.1);

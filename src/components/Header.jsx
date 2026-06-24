@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { getUser, setRole, signOut, subscribe } from '../data/authStore.js'
-import { fetchMyVenue, getSubscriptionState, startCheckout } from '../data/eventsStore.js'
+import { fetchMyVenues, getSubscriptionState } from '../data/eventsStore.js'
 import './Header.css'
 
 export default function Header({ title, children }) {
   const [user, setUser] = useState(() => getUser())
-  const [venue, setVenue] = useState(null)
+  const [venues, setVenues] = useState([])
   const [menu, setMenu] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
   const avatarRef = useRef(null)
@@ -15,14 +15,13 @@ export default function Header({ title, children }) {
 
   useEffect(() => subscribe(() => setUser(getUser())), [])
 
-  // Load the venue (if any) so the account menu can offer an upgrade
+  // Load venues so the account menu can flag any needing a subscription
   useEffect(() => {
-    if (!user) { setVenue(null); return }
-    fetchMyVenue().then(setVenue)
+    if (!user) { setVenues([]); return }
+    fetchMyVenues().then(setVenues).catch(() => setVenues([]))
   }, [user?.id])
 
-  const subState = getSubscriptionState(venue)
-  const canUpgrade = venue && subState !== 'active'
+  const needsAttention = venues.some(v => getSubscriptionState(v) !== 'active')
 
   function openMenu() {
     if (avatarRef.current) {
@@ -86,9 +85,9 @@ export default function Header({ title, children }) {
 
             <hr className="avatar-divider" />
 
-            {canUpgrade && (
-              <button className="upgrade-btn" onClick={() => { setMenu(false); startCheckout(venue) }}>
-                {subState === 'lapsed' ? 'Reactivate — £20/mo' : 'Upgrade to Pro — £20/mo'}
+            {needsAttention && (
+              <button className="upgrade-btn" onClick={() => { setMenu(false); setRole('venue'); navigate('/venue') }}>
+                Manage subscriptions
               </button>
             )}
 
