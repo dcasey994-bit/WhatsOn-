@@ -255,16 +255,16 @@ export default function VenueManagePage() {
       <button className="vp-back-link vp-back-pad" onClick={() => navigate('/venue')}>← My Venues</button>
 
       {/* Subscription card */}
-      <div className={`vm-sub-card ${subState === 'lapsed' ? 'vm-sub-lapsed' : subState === 'active' ? 'vm-sub-active' : 'vm-sub-trial'}`}>
+      <div className={`vm-sub-card ${subState === 'archived' ? 'vm-sub-lapsed' : subState === 'active' ? 'vm-sub-active' : 'vm-sub-trial'}`}>
         <div className="vm-sub-row">
           <span className="vm-sub-label">
             {subState === 'active' && '✓ Active subscription'}
             {subState === 'trialing' && `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
-            {subState === 'lapsed' && '⚠ Trial expired — events hidden'}
+            {subState === 'archived' && '⚠ Venue archived — events hidden'}
           </span>
           {subState !== 'active' && (
             <button className="vm-sub-btn" onClick={() => startCheckout(venue)}>
-              {subState === 'lapsed' ? 'Reactivate' : 'Subscribe'} — £20/mo
+              {subState === 'archived' ? 'Reactivate' : 'Subscribe'} — £20/mo
             </button>
           )}
         </div>

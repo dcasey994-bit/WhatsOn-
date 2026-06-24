@@ -43,7 +43,7 @@ create table if not exists venues (
   phone                  text,
   capacity               int,
   type                   text,
-  subscription_status    text not null default 'trialing' check (subscription_status in ('trialing','active','lapsed')),
+  subscription_status    text not null default 'trialing' check (subscription_status in ('trialing','active','archived')),
   trial_ends_at          timestamptz not null default (now() + interval '3 months'),
   stripe_customer_id     text,
   stripe_subscription_id text,
@@ -51,13 +51,19 @@ create table if not exists venues (
 );
 
 -- If the venues table already existed, add the new columns:
-alter table venues add column if not exists subscription_status    text not null default 'trialing' check (subscription_status in ('trialing','active','lapsed'));
+alter table venues add column if not exists subscription_status    text not null default 'trialing' check (subscription_status in ('trialing','active','archived'));
 alter table venues add column if not exists trial_ends_at          timestamptz not null default (now() + interval '3 months');
 alter table venues add column if not exists stripe_customer_id     text;
 alter table venues add column if not exists stripe_subscription_id text;
 
 -- Allow multiple venues per user (drop the old one-venue-per-user constraint):
 alter table venues drop constraint if exists venues_user_id_key;
+
+-- Rename 'lapsed' → 'archived' in the subscription_status constraint:
+alter table venues drop constraint if exists venues_subscription_status_check;
+alter table venues add constraint venues_subscription_status_check
+  check (subscription_status in ('trialing','active','archived'));
+update venues set subscription_status = 'archived' where subscription_status = 'lapsed';
 
 alter table venues enable row level security;
 

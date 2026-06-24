@@ -41,7 +41,7 @@ exports.handler = async (event) => {
     const sub = data.object
     await supabase
       .from('venues')
-      .update({ subscription_status: 'lapsed', stripe_subscription_id: null })
+      .update({ subscription_status: 'archived', stripe_subscription_id: null })
       .eq('stripe_customer_id', sub.customer)
   }
 
@@ -49,7 +49,7 @@ exports.handler = async (event) => {
     const invoice = data.object
     await supabase
       .from('venues')
-      .update({ subscription_status: 'lapsed' })
+      .update({ subscription_status: 'archived' })
       .eq('stripe_customer_id', invoice.customer)
   }
 

@@ -8,7 +8,7 @@ function subBadge(venue) {
   const s = getSubscriptionState(venue)
   if (s === 'active') return { label: 'Active', cls: 'vl-badge-active' }
   if (s === 'trialing') return { label: `Trial · ${trialDaysLeft(venue)}d`, cls: 'vl-badge-trial' }
-  return { label: 'Lapsed', cls: 'vl-badge-lapsed' }
+  return { label: 'Archived', cls: 'vl-badge-lapsed' }
 }
 
 export default function VenueListPage() {

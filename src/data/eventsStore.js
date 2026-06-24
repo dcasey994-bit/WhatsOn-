@@ -117,10 +117,7 @@ export async function fetchAllVenues() {
     .from('venues')
     .select('*')
   if (error) throw error
-  return (data || []).filter(v => {
-    const s = getSubscriptionState(v)
-    return s === 'active' || s === 'trialing'
-  })
+  return (data || []).filter(v => getSubscriptionState(v) !== 'archived')
 }
 
 // Upcoming events for one venue, in the UI shape (used by the public profile page)
@@ -184,14 +181,14 @@ export async function registerVenue(fields) {
   return data
 }
 
-// Returns 'active' | 'trialing' | 'lapsed'
+// Returns 'active' | 'trialing' | 'archived'
 export function getSubscriptionState(venue) {
-  if (!venue) return 'lapsed'
+  if (!venue) return 'archived'
   if (venue.subscription_status === 'active') return 'active'
   if (venue.subscription_status === 'trialing' && venue.trial_ends_at) {
-    return new Date(venue.trial_ends_at) > new Date() ? 'trialing' : 'lapsed'
+    return new Date(venue.trial_ends_at) > new Date() ? 'trialing' : 'archived'
   }
-  return 'lapsed'
+  return 'archived'
 }
 
 export function trialDaysLeft(venue) {
