@@ -1,0 +1,96 @@
+.settings-page {
+  min-height: 100dvh;
+  padding-bottom: var(--nav-height);
+}
+
+.settings-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.settings-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: -4px;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.settings-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-value-cap {
+  text-transform: capitalize;
+}
+
+.settings-toggle-row {
+  display: flex;
+  gap: 6px;
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.settings-toggle-btn {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.settings-toggle-btn.active {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.settings-signout-btn {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--danger);
+  text-align: left;
+  padding: 2px 0;
+  width: 100%;
+}

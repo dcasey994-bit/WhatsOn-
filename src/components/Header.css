@@ -143,10 +143,19 @@
   margin-bottom: 12px;
 }
 
+.settings-link-btn {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  width: 100%;
+  text-align: left;
+  padding: 4px 0;
+}
+
 .signout-btn {
   font-size: 14px;
   font-weight: 600;
-  color: #ff6b6b;
+  color: var(--danger);
   width: 100%;
   text-align: left;
   padding: 4px 0;

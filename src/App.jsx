@@ -14,6 +14,7 @@ import VenueEventsPage from './pages/VenueEventsPage.jsx'
 import VenueProfilePage from './pages/VenueProfilePage.jsx'
 import VenueManagePage from './pages/VenueManagePage.jsx'
 import EventDetailPage from './pages/EventDetailPage.jsx'
+import AccountSettingsPage from './pages/AccountSettingsPage.jsx'
 import BottomNav from './components/BottomNav.jsx'
 
 export default function App() {
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/venue/manage/:id" element={<VenueManagePage />} />
         <Route path="/venue/:id" element={<VenueProfilePage />} />
         <Route path="/event/:id" element={<EventDetailPage />} />
+        <Route path="/settings" element={<AccountSettingsPage />} />
         <Route path="*" element={<Navigate to="/discover" replace />} />
       </Routes>
       <BottomNav />
