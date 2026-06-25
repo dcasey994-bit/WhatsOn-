@@ -74,7 +74,7 @@
   position: absolute;
   top: 12px;
   left: 12px;
-  background: rgba(15, 15, 20, 0.88);
+  background: var(--overlay-bg);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);

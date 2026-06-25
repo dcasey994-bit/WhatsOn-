@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { getUser, setRole, signOut, subscribe } from '../data/authStore.js'
 import { fetchMyVenues, getSubscriptionState } from '../data/eventsStore.js'
+import { getTheme, setTheme } from '../data/themeStore.js'
 import './Header.css'
 
 export default function Header({ title, children }) {
@@ -10,8 +11,14 @@ export default function Header({ title, children }) {
   const [venues, setVenues] = useState([])
   const [menu, setMenu] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
+  const [theme, setThemeState] = useState(() => getTheme())
   const avatarRef = useRef(null)
   const navigate = useNavigate()
+
+  function handleTheme(t) {
+    setTheme(t)
+    setThemeState(t)
+  }
 
   useEffect(() => subscribe(() => setUser(getUser())), [])
 
@@ -81,6 +88,15 @@ export default function Header({ title, children }) {
               >
                 🏠 My venue
               </button>
+            </div>
+
+            <hr className="avatar-divider" />
+
+            <p className="mode-label">Appearance</p>
+            <div className="mode-toggle">
+              <button className={`mode-btn ${theme === 'system' ? 'active' : ''}`} onClick={() => handleTheme('system')}>Auto</button>
+              <button className={`mode-btn ${theme === 'light'  ? 'active' : ''}`} onClick={() => handleTheme('light')}>Light</button>
+              <button className={`mode-btn ${theme === 'dark'   ? 'active' : ''}`} onClick={() => handleTheme('dark')}>Dark</button>
             </div>
 
             <hr className="avatar-divider" />

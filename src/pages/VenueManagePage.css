@@ -135,8 +135,8 @@
   letter-spacing: 0.4px;
 }
 
-.vm-member-badge.is-admin   { background: rgba(0,255,136,0.12); color: var(--accent); }
-.vm-member-badge.is-manager { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+.vm-member-badge.is-admin   { background: var(--accent-dim); color: var(--accent); }
+.vm-member-badge.is-manager { background: var(--surface-tint); color: var(--text-muted); }
 
 .vm-role-select {
   font-size: 12px;
@@ -154,7 +154,7 @@
   border-radius: 6px;
 }
 
-.vm-member-remove:active { color: #ff6b6b; }
+.vm-member-remove:active { color: var(--danger); }
 
 .vm-invite-form {
   display: flex;
