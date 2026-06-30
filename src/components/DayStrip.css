@@ -26,10 +26,6 @@
   transition: all 0.15s;
 }
 
-.day-chip-all {
-  justify-content: center;
-}
-
 .day-top {
   font-size: 12px;
   font-weight: 600;
@@ -44,5 +40,5 @@
 .day-chip.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: #000;
+  color: var(--accent-text);
 }

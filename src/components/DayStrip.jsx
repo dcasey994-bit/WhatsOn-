@@ -9,11 +9,11 @@ export default function DayStrip({ active, onChange }) {
       {days.map(({ key, top, bottom }) => (
         <button
           key={key}
-          className={`day-chip ${active === key ? 'active' : ''} ${bottom ? '' : 'day-chip-all'}`}
+          className={`day-chip ${active === key ? 'active' : ''}`}
           onClick={() => onChange(key)}
         >
           <span className="day-top">{top}</span>
-          {bottom && <span className="day-bottom">{bottom}</span>}
+          <span className="day-bottom">{bottom}</span>
         </button>
       ))}
     </div>

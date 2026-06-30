@@ -7,9 +7,9 @@ export function todayKey() {
   return fmt(new Date())
 }
 
-// Build the day options for the horizontal strip: All + the next `days` days
+// Build the day options for the horizontal strip: the next `days` days
 export function buildDayOptions(days = 14) {
-  const opts = [{ key: 'all', top: 'All', bottom: '' }]
+  const opts = []
   const now = new Date()
   for (let i = 0; i < days; i++) {
     const d = new Date(now)
