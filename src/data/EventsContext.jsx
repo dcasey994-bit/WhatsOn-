@@ -7,12 +7,16 @@ const EventsContext = createContext(EVENTS)
 
 export function EventsProvider({ children }) {
   const [events, setEvents] = useState(EVENTS)
+  const [error, setError] = useState(false)
 
   const load = useCallback(async () => {
     try {
       const rows = await fetchUpcomingEvents()
       if (rows.length > 0) setEvents(rows)
-    } catch {}
+      setError(false)
+    } catch {
+      setError(true)
+    }
   }, [])
 
   useEffect(() => {
@@ -61,7 +65,7 @@ export function EventsProvider({ children }) {
   }, [load])
 
   return (
-    <EventsContext.Provider value={{ events, reload: load }}>
+    <EventsContext.Provider value={{ events, reload: load, error }}>
       {children}
     </EventsContext.Provider>
   )
@@ -73,6 +77,11 @@ export function useEvents() {
 
 export function useReloadEvents() {
   return useContext(EventsContext).reload
+}
+
+// True when the last events fetch failed (the list may be stale or mock data)
+export function useEventsError() {
+  return useContext(EventsContext).error
 }
 
 export function useEvent(id) {

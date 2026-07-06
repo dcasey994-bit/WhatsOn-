@@ -1,0 +1,31 @@
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 16px;
+  padding: 10px 14px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: 12px;
+}
+
+.error-banner-msg {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.error-banner-retry {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+  padding: 6px 12px;
+  border: 1px solid var(--danger-border);
+  border-radius: 8px;
+}
+
+.error-banner-retry:active {
+  background: var(--danger-bg);
+}

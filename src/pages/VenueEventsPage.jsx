@@ -3,21 +3,25 @@ import { useNavigate } from 'react-router-dom'
 import { CATEGORIES } from '../data/events.js'
 import { fetchMyVenueEvents } from '../data/eventsStore.js'
 import Header from '../components/Header.jsx'
+import ErrorBanner from '../components/ErrorBanner.jsx'
 import './VenueEventsPage.css'
 
 export default function VenueEventsPage({ period }) {
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const navigate = useNavigate()
 
   useEffect(() => {
     let active = true
     setLoading(true)
+    setError(false)
     fetchMyVenueEvents(period)
       .then(evs => { if (active) { setEvents(evs); setLoading(false) } })
-      .catch(() => { if (active) setLoading(false) })
+      .catch(() => { if (active) { setError(true); setLoading(false) } })
     return () => { active = false }
-  }, [period])
+  }, [period, attempt])
 
   const title = period === 'past' ? 'Past Events' : 'Upcoming Events'
 
@@ -27,6 +31,11 @@ export default function VenueEventsPage({ period }) {
       <div className="ve-body">
         {loading ? (
           <p className="ve-status">Loading…</p>
+        ) : error ? (
+          <ErrorBanner
+            message="Couldn't load your events. Check your connection."
+            onRetry={() => setAttempt(a => a + 1)}
+          />
         ) : events.length === 0 ? (
           <p className="ve-status">No {period} events across your venues.</p>
         ) : (

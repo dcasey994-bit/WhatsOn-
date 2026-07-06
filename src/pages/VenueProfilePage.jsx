@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { fetchVenueById, fetchPublicVenueEvents } from '../data/eventsStore.js'
 import EventCard from '../components/EventCard.jsx'
+import ErrorBanner from '../components/ErrorBanner.jsx'
 import './VenueProfilePage.css'
 
 export default function VenueProfilePage() {
@@ -10,10 +11,13 @@ export default function VenueProfilePage() {
   const [venue, setVenue] = useState(null)
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     let active = true
     setLoading(true)
+    setError(false)
     Promise.all([fetchVenueById(id), fetchPublicVenueEvents(id)])
       .then(([v, evs]) => {
         if (!active) return
@@ -21,15 +25,31 @@ export default function VenueProfilePage() {
         setEvents(evs)
         setLoading(false)
       })
-      .catch(() => active && setLoading(false))
+      .catch(() => {
+        if (!active) return
+        setError(true)
+        setLoading(false)
+      })
     return () => { active = false }
-  }, [id])
+  }, [id, attempt])
 
   if (loading) {
     return (
       <div className="venue-profile">
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <p className="vp-loading">Loading…</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="venue-profile">
+        <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
+        <ErrorBanner
+          message="Couldn't load this venue. Check your connection."
+          onRetry={() => setAttempt(a => a + 1)}
+        />
       </div>
     )
   }

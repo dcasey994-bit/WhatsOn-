@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Marker, Tooltip, useMap } from 'react-leaflet'
 import { divIcon } from 'leaflet'
 import { useNavigate } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css'
 import { CATEGORIES } from '../data/events.js'
-import { useEvents } from '../data/EventsContext.jsx'
+import { useEvents, useEventsError, useReloadEvents } from '../data/EventsContext.jsx'
 import { fetchAllVenues } from '../data/eventsStore.js'
 import { useUserLocation } from '../data/location.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
@@ -13,6 +13,7 @@ import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import DayStrip from '../components/DayStrip.jsx'
 import MapEventSheet from '../components/MapEventSheet.jsx'
+import ErrorBanner from '../components/ErrorBanner.jsx'
 import './DiscoverPage.css'
 
 const BALHAM = [51.4435, -0.1527]
@@ -78,16 +79,23 @@ export default function DiscoverPage() {
   const [day, setDay] = useState(() => todayKey())
   const [selected, setSelected] = useState(null)
   const [venues, setVenues] = useState([])
+  const [venuesError, setVenuesError] = useState(false)
   const events = useEvents()
+  const eventsError = useEventsError()
+  const reloadEvents = useReloadEvents()
   const { coords } = useUserLocation()
   const navigate = useNavigate()
   const theme = useResolvedTheme()
   const userPinIcon = useMemo(() => makeUserPinIcon(theme), [theme])
   const venuePinIcon = useMemo(() => makeVenuePinIcon(theme), [theme])
 
-  useEffect(() => {
-    fetchAllVenues().then(setVenues).catch(() => {})
+  const loadVenues = useCallback(() => {
+    fetchAllVenues()
+      .then(vs => { setVenues(vs); setVenuesError(false) })
+      .catch(() => setVenuesError(true))
   }, [])
+
+  useEffect(() => { loadVenues() }, [loadVenues])
 
   const center = useMemo(
     () => coords ? [coords.lat, coords.lng] : BALHAM,
@@ -137,6 +145,13 @@ export default function DiscoverPage() {
           <DayStrip active={day} onChange={setDay} />
           <CategoryFilter active={category} onChange={handleCategoryChange} />
         </>
+      )}
+
+      {mapMode === 'events' && eventsError && (
+        <ErrorBanner message="Couldn't load events. Check your connection." onRetry={reloadEvents} />
+      )}
+      {mapMode === 'venues' && venuesError && (
+        <ErrorBanner message="Couldn't load venues. Check your connection." onRetry={loadVenues} />
       )}
 
       <div className="map-wrapper">

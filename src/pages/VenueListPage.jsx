@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchMyVenues, getSubscriptionState, trialDaysLeft } from '../data/eventsStore.js'
 import Header from '../components/Header.jsx'
+import ErrorBanner from '../components/ErrorBanner.jsx'
 import './VenueListPage.css'
 
 function subBadge(venue) {
@@ -19,11 +20,18 @@ function roleBadge(venue) {
 export default function VenueListPage() {
   const [venues, setVenues] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    fetchMyVenues().then(vs => { setVenues(vs); setLoading(false) }).catch(() => setLoading(false))
-  }, [])
+  function load() {
+    setLoading(true)
+    setError(false)
+    fetchMyVenues()
+      .then(vs => { setVenues(vs); setLoading(false) })
+      .catch(() => { setError(true); setLoading(false) })
+  }
+
+  useEffect(() => { load() }, [])
 
   return (
     <div className="venue-list-page">
@@ -32,6 +40,8 @@ export default function VenueListPage() {
       <div className="vl-body">
         {loading ? (
           <p className="vl-loading">Loading…</p>
+        ) : error ? (
+          <ErrorBanner message="Couldn't load your venues. Check your connection." onRetry={load} />
         ) : venues.length === 0 ? (
           <div className="vl-empty">
             <p>You haven&apos;t added a venue yet.</p>
