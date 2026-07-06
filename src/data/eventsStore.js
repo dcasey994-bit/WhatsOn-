@@ -139,19 +139,6 @@ export async function fetchPublicVenueEvents(venueId) {
 
 // ── Venue management ──────────────────────────────────────────────────────
 
-export async function fetchMyVenue() {
-  const user = getUser()
-  if (!user) return null
-  const { data } = await supabase
-    .from('venues')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
-  return data || null
-}
-
 // All venues the current user is a member of (any role), with memberRole attached
 export async function fetchMyVenues() {
   const user = getUser()

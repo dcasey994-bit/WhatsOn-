@@ -8,6 +8,7 @@ import { useEvents } from '../data/EventsContext.jsx'
 import { fetchAllVenues } from '../data/eventsStore.js'
 import { useUserLocation } from '../data/location.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
+import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import DayStrip from '../components/DayStrip.jsx'
@@ -16,25 +17,48 @@ import './DiscoverPage.css'
 
 const BALHAM = [51.4435, -0.1527]
 
-const userPinIcon = divIcon({
-  className: '',
-  html: `<svg width="22" height="30" viewBox="0 0 22 30" xmlns="http://www.w3.org/2000/svg">
-    <path d="M11 0C4.925 0 0 4.925 0 11c0 8.25 11 19 11 19s11-10.75 11-19C22 4.925 17.075 0 11 0z" fill="#00ff88"/>
-    <circle cx="11" cy="11" r="4.5" fill="#0f0f14"/>
-  </svg>`,
-  iconSize: [22, 30],
-  iconAnchor: [11, 30],
-})
+const TILE_URLS = {
+  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+}
 
-const venuePinIcon = divIcon({
-  className: '',
-  html: `<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
-    <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21s13-11.25 13-21C26 5.82 20.18 0 13 0z" fill="#ffffff"/>
-    <circle cx="13" cy="13" r="5" fill="#0f0f14"/>
-  </svg>`,
-  iconSize: [26, 34],
-  iconAnchor: [13, 34],
-})
+const PIN_COLORS = {
+  dark:  { accent: '#00ff88', venue: '#ffffff', center: '#0f0f14' },
+  light: { accent: '#009955', venue: '#1a1a24', center: '#ffffff' },
+}
+
+function makeUserPinIcon(theme) {
+  const c = PIN_COLORS[theme]
+  return divIcon({
+    className: '',
+    html: `<svg width="22" height="30" viewBox="0 0 22 30" xmlns="http://www.w3.org/2000/svg">
+      <path d="M11 0C4.925 0 0 4.925 0 11c0 8.25 11 19 11 19s11-10.75 11-19C22 4.925 17.075 0 11 0z" fill="${c.accent}"/>
+      <circle cx="11" cy="11" r="4.5" fill="${c.center}"/>
+    </svg>`,
+    iconSize: [22, 30],
+    iconAnchor: [11, 30],
+  })
+}
+
+function makeVenuePinIcon(theme) {
+  const c = PIN_COLORS[theme]
+  return divIcon({
+    className: '',
+    html: `<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21s13-11.25 13-21C26 5.82 20.18 0 13 0z" fill="${c.venue}"/>
+      <circle cx="13" cy="13" r="5" fill="${c.center}"/>
+    </svg>`,
+    iconSize: [26, 34],
+    iconAnchor: [13, 34],
+  })
+}
+
+// Re-renders when the effective light/dark theme changes (toggle or OS setting)
+function useResolvedTheme() {
+  const [theme, setTheme] = useState(() => getResolvedTheme())
+  useEffect(() => subscribeTheme(() => setTheme(getResolvedTheme())), [])
+  return theme
+}
 
 // Only re-centers when coords genuinely change, not on every render
 function FlyToOnce({ lat, lng }) {
@@ -57,6 +81,9 @@ export default function DiscoverPage() {
   const events = useEvents()
   const { coords } = useUserLocation()
   const navigate = useNavigate()
+  const theme = useResolvedTheme()
+  const userPinIcon = useMemo(() => makeUserPinIcon(theme), [theme])
+  const venuePinIcon = useMemo(() => makeVenuePinIcon(theme), [theme])
 
   useEffect(() => {
     fetchAllVenues().then(setVenues).catch(() => {})
@@ -121,7 +148,8 @@ export default function DiscoverPage() {
           style={{ width: '100%', height: '100%' }}
         >
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            key={theme}
+            url={TILE_URLS[theme]}
             attribution=""
           />
           <FlyToOnce lat={center[0]} lng={center[1]} />
@@ -139,7 +167,7 @@ export default function DiscoverPage() {
                 center={[event.lat, event.lng]}
                 radius={isSelected ? 15 : 11}
                 pathOptions={{
-                  color: '#ffffff',
+                  color: theme === 'light' ? '#1a1a24' : '#ffffff',
                   fillColor: cat.color,
                   fillOpacity: isSelected ? 1 : 0.85,
                   weight: isSelected ? 3 : 1.5,

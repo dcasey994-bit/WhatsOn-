@@ -37,20 +37,16 @@ exports.handler = async (event) => {
       .eq('id', venueId)
   }
 
+  // Archive only when Stripe gives up on the subscription entirely.
+  // invoice.payment_failed is deliberately NOT handled: Stripe retries failed
+  // payments for ~2 weeks and recovers most of them; subscription.deleted
+  // fires once those retries are exhausted (or the venue cancels).
   if (type === 'customer.subscription.deleted') {
     const sub = data.object
     await supabase
       .from('venues')
       .update({ subscription_status: 'archived', stripe_subscription_id: null })
       .eq('stripe_customer_id', sub.customer)
-  }
-
-  if (type === 'invoice.payment_failed') {
-    const invoice = data.object
-    await supabase
-      .from('venues')
-      .update({ subscription_status: 'archived' })
-      .eq('stripe_customer_id', invoice.customer)
   }
 
   return { statusCode: 200, body: 'ok' }
