@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { signIn, signInWithPassword, signUpWithEmail } from '../data/authStore.js'
 import './SignInPage.css'
 
 export default function SignInPage() {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(null)
   const [error, setError] = useState(null)
   const [showEmail, setShowEmail] = useState(false)
@@ -154,6 +156,13 @@ export default function SignInPage() {
               {' '}and{' '}
               <span className="terms-link">Privacy Policy</span>
             </p>
+
+            <button
+              className="signin-skip"
+              onClick={() => navigate('/discover')}
+            >
+              Just browsing? Explore without an account →
+            </button>
           </>
         )}
       </div>

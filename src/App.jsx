@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { getUser, initAuth } from './data/authStore.js'
 import { loadSavedFromDB } from './data/savedStore.js'
 import { loadGoingCounts } from './data/goingStore.js'
@@ -17,49 +17,55 @@ import EventDetailPage from './pages/EventDetailPage.jsx'
 import AccountSettingsPage from './pages/AccountSettingsPage.jsx'
 import BottomNav from './components/BottomNav.jsx'
 
+// After signing in, return to wherever the user was when they hit the gate
+function SignInRoute({ user }) {
+  const location = useLocation()
+  if (user) return <Navigate to={location.state?.from || '/discover'} replace />
+  return <SignInPage />
+}
+
 export default function App() {
   const [user, setUser] = useState(() => getUser())
   const [ready, setReady] = useState(false)
+  const location = useLocation()
 
   useEffect(() => {
     return initAuth(u => {
       setUser(u)
       setReady(true)
-      if (u) {
-        loadSavedFromDB()
-        loadGoingCounts()
-      }
+      loadGoingCounts()          // public counts — no account needed
+      if (u) loadSavedFromDB()   // personal saves need one
     })
   }, [])
 
   if (!ready) return <div className="app-loading" />
 
-  if (!user) {
-    return (
-      <Routes>
-        <Route path="*" element={<SignInPage />} />
-      </Routes>
-    )
-  }
+  const authed = el => (user ? el : <Navigate to="/signin" replace />)
 
   return (
     <EventsProvider>
       <Routes>
         <Route path="/" element={<Navigate to="/discover" replace />} />
+        <Route path="/signin" element={<SignInRoute user={user} />} />
+
+        {/* Public — browse without an account */}
         <Route path="/discover" element={<DiscoverPage />} />
         <Route path="/browse" element={<BrowsePage />} />
         <Route path="/saved" element={<SavedPage />} />
-        <Route path="/venue" element={<VenueListPage />} />
-        <Route path="/venue/new" element={<VenueRegisterPage />} />
-        <Route path="/venue/events/upcoming" element={<VenueEventsPage period="upcoming" />} />
-        <Route path="/venue/events/past" element={<VenueEventsPage period="past" />} />
-        <Route path="/venue/manage/:id" element={<VenueManagePage />} />
-        <Route path="/venue/:id" element={<VenueProfilePage />} />
         <Route path="/event/:id" element={<EventDetailPage />} />
-        <Route path="/settings" element={<AccountSettingsPage />} />
+        <Route path="/venue/:id" element={<VenueProfilePage />} />
+
+        {/* Account required */}
+        <Route path="/settings" element={authed(<AccountSettingsPage />)} />
+        <Route path="/venue" element={authed(<VenueListPage />)} />
+        <Route path="/venue/new" element={authed(<VenueRegisterPage />)} />
+        <Route path="/venue/events/upcoming" element={authed(<VenueEventsPage period="upcoming" />)} />
+        <Route path="/venue/events/past" element={authed(<VenueEventsPage period="past" />)} />
+        <Route path="/venue/manage/:id" element={authed(<VenueManagePage />)} />
+
         <Route path="*" element={<Navigate to="/discover" replace />} />
       </Routes>
-      <BottomNav />
+      {location.pathname !== '/signin' && <BottomNav />}
     </EventsProvider>
   )
 }

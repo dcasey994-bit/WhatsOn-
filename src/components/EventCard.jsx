@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CATEGORIES } from '../data/events.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { useGoingCount } from '../data/goingStore.js'
+import { ensureSignedIn } from '../data/authGate.js'
 import './EventCard.css'
 
 export default function EventCard({ event }) {
@@ -15,6 +16,7 @@ export default function EventCard({ event }) {
 
   function handleSave(e) {
     e.stopPropagation()
+    if (!ensureSignedIn(navigate)) return
     toggleSaved(event.id)
   }
 

@@ -5,6 +5,7 @@ import { useEvent } from '../data/EventsContext.jsx'
 import { fetchEventById } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
 import { useGoingCount } from '../data/goingStore.js'
+import { ensureSignedIn } from '../data/authGate.js'
 import './EventDetailPage.css'
 
 export default function EventDetailPage() {
@@ -53,7 +54,13 @@ export default function EventDetailPage() {
   const cat = CATEGORIES[event.category]
 
   function handleGoing() {
+    if (!ensureSignedIn(navigate)) return
     toggleGoing(id)
+  }
+
+  function handleSaveToggle() {
+    if (!ensureSignedIn(navigate)) return
+    toggleSaved(id)
   }
 
   async function handleShare() {
@@ -211,7 +218,7 @@ export default function EventDetailPage() {
         )}
         <button
           className={`save-btn ${saved ? 'saved' : ''}`}
-          onClick={() => toggleSaved(id)}
+          onClick={handleSaveToggle}
           aria-label={saved ? 'Unsave' : 'Save event'}
         >
           {saved ? '♥' : '♡'}

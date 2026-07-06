@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CATEGORIES } from '../data/events.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
+import { ensureSignedIn } from '../data/authGate.js'
 import './MapEventSheet.css'
 
 export default function MapEventSheet({ event, onClose }) {
@@ -19,6 +20,7 @@ export default function MapEventSheet({ event, onClose }) {
 
   function handleSave(e) {
     e.stopPropagation()
+    if (!ensureSignedIn(navigate)) return
     toggleSaved(event.id)
   }
 

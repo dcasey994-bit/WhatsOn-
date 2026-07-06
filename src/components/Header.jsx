@@ -49,12 +49,19 @@ export default function Header({ title, children }) {
 
       <div className="header-actions">
         {children}
-        {user && (
+        {user ? (
           <div className="avatar-wrap">
             <button ref={avatarRef} className="avatar-btn" onClick={openMenu}>
               {user.avatar}
             </button>
           </div>
+        ) : (
+          <button
+            className="header-signin-btn"
+            onClick={() => navigate('/signin', { state: { from: window.location.pathname } })}
+          >
+            Sign in
+          </button>
         )}
       </div>
 

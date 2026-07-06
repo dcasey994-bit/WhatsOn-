@@ -45,6 +45,15 @@
   position: relative;
 }
 
+.header-signin-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .avatar-btn {
   width: 34px;
   height: 34px;

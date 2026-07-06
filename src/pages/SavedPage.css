@@ -52,3 +52,13 @@
   max-width: 220px;
   line-height: 1.5;
 }
+
+.empty-signin-btn {
+  margin-top: 8px;
+  padding: 12px 32px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 15px;
+  font-weight: 800;
+}
