@@ -152,6 +152,14 @@ export default function EventDetailPage() {
           </div>
         )}
 
+        {/* Special offer */}
+        {event.specialOffer && (
+          <div className="offer-banner">
+            <span className="offer-tag">🎉 Special Offer</span>
+            <p className="offer-text">{event.specialOffer}</p>
+          </div>
+        )}
+
         {/* About */}
         <section className="detail-section">
           <h2>About</h2>

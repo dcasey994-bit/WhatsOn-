@@ -42,6 +42,10 @@ export default function MapEventSheet({ event, onClose }) {
         <h3 className="sheet-title">{event.name}</h3>
         <p className="sheet-venue">📍 {event.venue} · {event.address}</p>
 
+        {event.specialOffer && (
+          <p className="sheet-offer">🎉 {event.specialOffer}</p>
+        )}
+
         <div className="sheet-row">
           <span className="sheet-meta-item">🕐 {event.time}</span>
           {event.distance && <span className="sheet-meta-item">🚶 {event.distance}</span>}

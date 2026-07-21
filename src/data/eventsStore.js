@@ -41,6 +41,7 @@ export function dbEventToLocal(row) {
     ticket_url: row.ticket_url || null,
     artist_bio: '',
     image: row.image_url || null,
+    specialOffer: row.special_offer || null,
     fromDB: true,
   }
 }

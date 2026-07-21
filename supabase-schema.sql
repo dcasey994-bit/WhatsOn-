@@ -90,11 +90,14 @@ create table if not exists events (
   capacity    int,
   ticket_url  text,
   image_url   text,
+  special_offer text,
   created_at  timestamptz default now()
 );
 
 -- If the events table already existed before image support, add the column:
 alter table events add column if not exists image_url text;
+-- Optional per-event promotion shown to customers (e.g. "2-for-1 drinks before 9pm")
+alter table events add column if not exists special_offer text;
 
 alter table events enable row level security;
 

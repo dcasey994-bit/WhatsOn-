@@ -72,6 +72,16 @@
   line-height: 1.4;
 }
 
+.sheet-offer {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
+}
+
 .sheet-row {
   display: flex;
   align-items: center;

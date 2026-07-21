@@ -42,6 +42,10 @@ export default function EventCard({ event }) {
       <h3 className="card-title">{event.name}</h3>
       <p className="card-venue">{event.venue}</p>
 
+      {event.specialOffer && (
+        <p className="card-offer">🎉 {event.specialOffer}</p>
+      )}
+
       <div className="card-meta">
         <span className="meta-item">🕐 {event.time}</span>
         {event.distance && <span className="meta-item">📍 {event.distance}</span>}

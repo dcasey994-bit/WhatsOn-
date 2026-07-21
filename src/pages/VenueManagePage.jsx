@@ -16,6 +16,7 @@ import './VenueManagePage.css'
 const BLANK_EVENT = {
   name: '', category: 'music', date: '', time: '',
   price: '', capacity: '', ticket_url: '', description: '', image_url: '',
+  special_offer: '',
 }
 
 export default function VenueManagePage() {
@@ -87,6 +88,7 @@ export default function VenueManagePage() {
       ticket_url: form.ticket_url || null,
       description: form.description,
       image_url: form.image_url || null,
+      special_offer: form.special_offer?.trim() || null,
     }
     try {
       if (editingId) {
@@ -126,6 +128,7 @@ export default function VenueManagePage() {
       ticket_url: ev.ticket_url ?? '',
       description: ev.description ?? '',
       image_url: ev.image_url ?? '',
+      special_offer: ev.special_offer ?? '',
     })
     setEditingId(ev.id)
     setError(null)
@@ -272,6 +275,10 @@ export default function VenueManagePage() {
             <label>
               Description
               <textarea required value={form.description} onChange={set('description')} rows={4} placeholder="Tell people what to expect..." />
+            </label>
+            <label>
+              Special offer (optional)
+              <input value={form.special_offer} onChange={set('special_offer')} placeholder="e.g. 2-for-1 drinks before 9pm" />
             </label>
             <button type="submit" className="post-btn" disabled={saving || uploading}>
               {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Post Event'}
