@@ -4,7 +4,6 @@ import { CATEGORIES } from '../data/events.js'
 import { useEvent } from '../data/EventsContext.jsx'
 import { fetchEventById } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
-import { useGoingCount } from '../data/goingStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
 import './EventDetailPage.css'
 
@@ -18,7 +17,6 @@ export default function EventDetailPage() {
   const [saved, setSaved] = useState(() => isSaved(id))
   const [going, setGoing] = useState(() => isGoing(id))
   const [shared, setShared] = useState(false)
-  const goingCount = useGoingCount(id)
 
   const event = contextEvent || fetched
 
@@ -104,13 +102,6 @@ export default function EventDetailPage() {
           >
             📍 {event.address}
           </a>
-        </div>
-
-        <div className="hero-stats">
-          <div className="hero-stat">
-            <span className="hero-stat-val">{goingCount}</span>
-            <span className="hero-stat-lbl">Going</span>
-          </div>
         </div>
       </div>
 
