@@ -68,6 +68,8 @@ export async function toggleGoing(id) {
       { user_id: user.id, event_id: id },
       { onConflict: 'user_id,event_id' }
     )
+    // Marking yourself as going also saves the event, so it stays easy to find
+    if (!isSaved(id)) await toggleSaved(id)
   }
   localSet(LS_GOING, set)
   notify()
