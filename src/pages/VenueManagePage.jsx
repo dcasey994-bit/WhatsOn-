@@ -218,8 +218,14 @@ export default function VenueManagePage() {
       })
       setVenue(v => ({ ...v, ...updated }))
       setView('main')
-    } catch {
-      setVenueError('Could not save venue details. Please try again.')
+    } catch (err) {
+      console.error('updateVenue failed:', err)
+      if (err.code === 'PGRST116') {
+        // Update matched 0 rows — RLS silently blocked it, not a real "not found"
+        setVenueError("You don't have permission to edit this venue's details. Only an Admin can — Events Managers can edit events but not venue details.")
+      } else {
+        setVenueError(err.message ? `Could not save: ${err.message}` : 'Could not save venue details. Please try again.')
+      }
     }
     setSavingVenue(false)
   }
