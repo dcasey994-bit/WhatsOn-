@@ -90,16 +90,21 @@ export default function VenueProfilePage() {
         )}
       </div>
 
-      <div className="vp-body">
+      <section className="vp-body">
         <h2 className="vp-heading">
-          {events.length} upcoming {events.length === 1 ? 'event' : 'events'}
+          Events
+          <span className="vp-heading-count">
+            {events.length} upcoming {events.length === 1 ? 'event' : 'events'}
+          </span>
         </h2>
         {events.length === 0 ? (
           <p className="vp-empty">No upcoming events listed yet.</p>
         ) : (
-          events.map(event => <EventCard key={event.id} event={event} />)
+          <div className="vp-events">
+            {events.map(event => <EventCard key={event.id} event={event} />)}
+          </div>
         )}
-      </div>
+      </section>
     </div>
   )
 }

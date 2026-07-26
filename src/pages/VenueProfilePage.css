@@ -51,10 +51,24 @@
 }
 
 .vp-heading {
-  font-size: 15px;
-  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 800;
   color: var(--text);
   margin-bottom: 14px;
+}
+
+.vp-heading-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.vp-events {
+  display: flex;
+  flex-direction: column;
 }
 
 .vp-empty,
