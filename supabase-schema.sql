@@ -41,6 +41,7 @@ create table if not exists venues (
   lat                    double precision not null,
   lng                    double precision not null,
   phone                  text,
+  website                text,
   capacity               int,
   type                   text,
   subscription_status    text not null default 'trialing' check (subscription_status in ('trialing','active','archived')),
@@ -51,6 +52,7 @@ create table if not exists venues (
 );
 
 -- If the venues table already existed, add the new columns:
+alter table venues add column if not exists website                text;
 alter table venues add column if not exists subscription_status    text not null default 'trialing' check (subscription_status in ('trialing','active','archived'));
 alter table venues add column if not exists trial_ends_at          timestamptz not null default (now() + interval '3 months');
 alter table venues add column if not exists stripe_customer_id     text;

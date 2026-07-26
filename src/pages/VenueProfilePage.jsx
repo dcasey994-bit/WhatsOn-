@@ -78,6 +78,16 @@ export default function VenueProfilePage() {
           📍 {venue.address}
         </a>
         {venue.phone && <p className="vp-phone">📞 {venue.phone}</p>}
+        {venue.website && (
+          <a
+            className="vp-website"
+            href={venue.website}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            🌐 {venue.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
+          </a>
+        )}
       </div>
 
       <div className="vp-body">

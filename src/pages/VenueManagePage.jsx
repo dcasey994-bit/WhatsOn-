@@ -337,6 +337,14 @@ export default function VenueManagePage() {
             <a className="vm-detail-value vm-detail-link" href={`tel:${venue.phone}`}>{venue.phone}</a>
           </div>
         )}
+        {venue.website && (
+          <div className="vm-detail-row">
+            <span className="vm-detail-label">Website</span>
+            <a className="vm-detail-value vm-detail-link" href={venue.website} target="_blank" rel="noopener noreferrer">
+              {venue.website.replace(/^https?:\/\//i, '')}
+            </a>
+          </div>
+        )}
         {venue.capacity && (
           <div className="vm-detail-row">
             <span className="vm-detail-label">Capacity</span>

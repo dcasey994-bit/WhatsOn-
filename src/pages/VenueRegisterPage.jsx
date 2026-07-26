@@ -6,7 +6,14 @@ import './VenuePage.css'
 
 const BLANK_VENUE = {
   name: '', address: '',
-  phone: '', capacity: '', type: 'Pub & Live Music Venue',
+  phone: '', website: '', capacity: '', type: 'Pub & Live Music Venue',
+}
+
+// Ensures a bare "example.com" is stored as a valid absolute URL
+function normalizeWebsite(url) {
+  const trimmed = url.trim()
+  if (!trimmed) return null
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
 const VENUE_TYPES = [
@@ -52,6 +59,7 @@ export default function VenueRegisterPage() {
         lat: geocoded.lat,
         lng: geocoded.lng,
         phone: venueForm.phone || null,
+        website: normalizeWebsite(venueForm.website),
         capacity: venueForm.capacity ? Number(venueForm.capacity) : null,
         type: venueForm.type,
       })
@@ -109,6 +117,10 @@ export default function VenueRegisterPage() {
               <input type="number" min="1" value={venueForm.capacity} onChange={setV('capacity')} placeholder="e.g. 200" />
             </label>
           </div>
+          <label>
+            Website (optional)
+            <input value={venueForm.website} onChange={setV('website')} placeholder="e.g. thebedford.co.uk" />
+          </label>
           <button type="submit" className="post-btn" disabled={saving || !geocoded}>
             {saving ? 'Registering…' : 'Register venue'}
           </button>

@@ -28,15 +28,22 @@
 }
 
 .vp-address,
-.vp-phone {
+.vp-phone,
+.vp-website {
   font-size: 13px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-.vp-address {
+.vp-address,
+.vp-website {
+  display: inline-block;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.vp-website {
+  color: var(--accent);
 }
 
 .vp-body {
