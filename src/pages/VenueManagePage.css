@@ -70,6 +70,30 @@
   padding: 14px 16px 8px;
 }
 
+.vm-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 12px;
+}
+
+.vm-section-head .vm-section-title {
+  padding-right: 0;
+}
+
+.vm-edit-btn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-border);
+}
+
+.vm-edit-btn:active {
+  background: var(--accent-dim);
+}
+
 .vm-detail-row {
   display: flex;
   align-items: flex-start;

@@ -14,6 +14,13 @@ export async function geocodeAddress(address) {
   return { lat: Number(data[0].lat), lng: Number(data[0].lon), display: data[0].display_name }
 }
 
+// Ensures a bare "example.com" is stored as a valid absolute URL
+export function normalizeWebsite(url) {
+  const trimmed = (url || '').trim()
+  if (!trimmed) return null
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+}
+
 // Convert a DB event row (with joined venue) to the shape the UI expects
 export function dbEventToLocal(row) {
   return {
@@ -176,6 +183,18 @@ export async function registerVenue(fields) {
     role: 'admin',
   })
   return venue
+}
+
+// Update a venue's own details (admins only — enforced by RLS)
+export async function updateVenue(venueId, fields) {
+  const { data, error } = await supabase
+    .from('venues')
+    .update(fields)
+    .eq('id', venueId)
+    .select()
+    .single()
+  if (error) throw error
+  return data
 }
 
 // Returns 'active' | 'trialing' | 'archived'

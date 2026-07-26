@@ -6,6 +6,7 @@ import {
   createEvent, updateEvent, deleteEvent, uploadEventImage,
   getSubscriptionState, trialDaysLeft, startCheckout,
   fetchVenueMembers, addVenueMember, removeVenueMember, updateMemberRole,
+  updateVenue, geocodeAddress, normalizeWebsite,
 } from '../data/eventsStore.js'
 import { getUser } from '../data/authStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
@@ -19,6 +20,11 @@ const BLANK_EVENT = {
   special_offer: '',
 }
 
+const VENUE_TYPES = [
+  'Pub & Live Music Venue', 'Live Music Venue', 'Bar', 'Club',
+  'Theatre', 'Comedy Club', 'Restaurant', 'Other',
+]
+
 export default function VenueManagePage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -26,7 +32,7 @@ export default function VenueManagePage() {
   const [upcomingEvents, setUpcomingEvents] = useState([])
   const [pastEvents, setPastEvents] = useState([])
   const [eventTab, setEventTab] = useState('upcoming')
-  const [view, setView] = useState('main')  // 'main' | 'add'
+  const [view, setView] = useState('main')  // 'main' | 'add' | 'edit-venue'
   const [loading, setLoading] = useState(true)
   const [notMine, setNotMine] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -40,6 +46,11 @@ export default function VenueManagePage() {
   const [inviteRole, setInviteRole] = useState('events_manager')
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState(null)
+  const [venueForm, setVenueForm] = useState(null)
+  const [geocoded, setGeocoded] = useState(null)
+  const [geocoding, setGeocoding] = useState(false)
+  const [savingVenue, setSavingVenue] = useState(false)
+  const [venueError, setVenueError] = useState(null)
   const reloadEvents = useReloadEvents()
 
   async function loadEvents(venueId) {
@@ -155,6 +166,62 @@ export default function VenueManagePage() {
       setError('Could not upload image. Please try a smaller JPG or PNG.')
     }
     setUploading(false)
+  }
+
+  function startEditVenue() {
+    setVenueForm({
+      name: venue.name,
+      address: venue.address,
+      phone: venue.phone ?? '',
+      website: venue.website ?? '',
+      capacity: venue.capacity ?? '',
+      type: venue.type || VENUE_TYPES[0],
+    })
+    setGeocoded({ lat: venue.lat, lng: venue.lng, display: venue.address })
+    setVenueError(null)
+    setView('edit-venue')
+  }
+
+  function setVF(field) {
+    return e => setVenueForm(f => ({ ...f, [field]: e.target.value }))
+  }
+
+  async function handleLookupVenueAddress() {
+    if (!venueForm.address.trim()) return
+    setGeocoding(true)
+    setVenueError(null)
+    setGeocoded(null)
+    try {
+      const result = await geocodeAddress(venueForm.address)
+      setGeocoded(result)
+    } catch {
+      setVenueError('Address not found. Try a more specific address including postcode.')
+    }
+    setGeocoding(false)
+  }
+
+  async function handleSaveVenue(e) {
+    e.preventDefault()
+    if (!geocoded) { setVenueError('Please verify your address first.'); return }
+    setSavingVenue(true)
+    setVenueError(null)
+    try {
+      const updated = await updateVenue(venue.id, {
+        name: venueForm.name,
+        address: venueForm.address,
+        lat: geocoded.lat,
+        lng: geocoded.lng,
+        phone: venueForm.phone || null,
+        website: normalizeWebsite(venueForm.website),
+        capacity: venueForm.capacity ? Number(venueForm.capacity) : null,
+        type: venueForm.type,
+      })
+      setVenue(v => ({ ...v, ...updated }))
+      setView('main')
+    } catch {
+      setVenueError('Could not save venue details. Please try again.')
+    }
+    setSavingVenue(false)
   }
 
   async function handleInvite(e) {
@@ -289,6 +356,66 @@ export default function VenueManagePage() {
     )
   }
 
+  // ── Edit venue details ────────────────────────────────────────────────────
+  if (view === 'edit-venue' && venueForm) {
+    return (
+      <div className="venue-page">
+        <Header title={venue.name} />
+        <div className="add-event-form">
+          <button className="vp-back-link" onClick={() => setView('main')}>← Back</button>
+          {venueError && <p className="form-error">{venueError}</p>}
+          <h3 className="section-heading">Edit Venue</h3>
+          <form onSubmit={handleSaveVenue}>
+            <label>
+              Venue name
+              <input required value={venueForm.name} onChange={setVF('name')} placeholder="e.g. The Bedford" />
+            </label>
+            <label>
+              Address
+              <div className="address-row">
+                <input
+                  required
+                  value={venueForm.address}
+                  onChange={e => { setVF('address')(e); setGeocoded(null) }}
+                  placeholder="e.g. 77 Bedford Hill, Balham, SW12 9HD"
+                />
+                <button type="button" className="lookup-btn" onClick={handleLookupVenueAddress} disabled={geocoding || !venueForm.address.trim()}>
+                  {geocoding ? '…' : 'Verify'}
+                </button>
+              </div>
+            </label>
+            {geocoded && (
+              <p className="geocode-confirm">📍 {geocoded.display}</p>
+            )}
+            <label>
+              Venue type
+              <select value={venueForm.type} onChange={setVF('type')}>
+                {VENUE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </label>
+            <div className="form-row">
+              <label>
+                Phone (optional)
+                <input value={venueForm.phone} onChange={setVF('phone')} placeholder="020 ..." />
+              </label>
+              <label>
+                Capacity (optional)
+                <input type="number" min="1" value={venueForm.capacity} onChange={setVF('capacity')} placeholder="e.g. 200" />
+              </label>
+            </div>
+            <label>
+              Website (optional)
+              <input value={venueForm.website} onChange={setVF('website')} placeholder="e.g. thebedford.co.uk" />
+            </label>
+            <button type="submit" className="post-btn" disabled={savingVenue || !geocoded}>
+              {savingVenue ? 'Saving…' : 'Save changes'}
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
   // ── Main per-venue page ────────────────────────────────────────────────────
   return (
     <div className="venue-page">
@@ -318,7 +445,12 @@ export default function VenueManagePage() {
 
       {/* Venue details */}
       <div className="vm-section">
-        <h2 className="vm-section-title">Venue Details</h2>
+        <div className="vm-section-head">
+          <h2 className="vm-section-title">Venue Details</h2>
+          {isAdmin && (
+            <button className="vm-edit-btn" onClick={startEditVenue}>Edit</button>
+          )}
+        </div>
         <div className="vm-detail-row">
           <span className="vm-detail-label">Type</span>
           <span className="vm-detail-value">{venue.type || '—'}</span>

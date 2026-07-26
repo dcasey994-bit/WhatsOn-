@@ -1,19 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { registerVenue, geocodeAddress } from '../data/eventsStore.js'
+import { registerVenue, geocodeAddress, normalizeWebsite } from '../data/eventsStore.js'
 import Header from '../components/Header.jsx'
 import './VenuePage.css'
 
 const BLANK_VENUE = {
   name: '', address: '',
   phone: '', website: '', capacity: '', type: 'Pub & Live Music Venue',
-}
-
-// Ensures a bare "example.com" is stored as a valid absolute URL
-function normalizeWebsite(url) {
-  const trimmed = url.trim()
-  if (!trimmed) return null
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
 const VENUE_TYPES = [
