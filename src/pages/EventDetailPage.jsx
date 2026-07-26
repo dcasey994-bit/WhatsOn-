@@ -181,7 +181,13 @@ export default function EventDetailPage() {
         {/* Venue */}
         <section className="detail-section venue-section">
           <h2>Venue</h2>
-          <p className="venue-name">{event.venue}</p>
+          {event.fromDB && event.venueId ? (
+            <button className="venue-name venue-name-link" onClick={() => navigate(`/venue/${event.venueId}`)}>
+              {event.venue} ›
+            </button>
+          ) : (
+            <p className="venue-name">{event.venue}</p>
+          )}
           <a
             className="venue-addr"
             href={`https://maps.google.com/?q=${event.lat},${event.lng}`}
