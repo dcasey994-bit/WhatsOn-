@@ -91,26 +91,32 @@ export default function EventDetailPage() {
             {cat.label}
           </span>
           <h1 className="hero-title">{event.name}</h1>
-          {event.fromDB && event.venueId ? (
-            <button className="detail-venue hero-sub detail-venue-link" onClick={() => navigate(`/venue/${event.venueId}`)}>
-              {event.venue} ›
-            </button>
-          ) : (
-            <p className="detail-venue hero-sub">{event.venue}</p>
-          )}
-          <a
-            className="hero-link"
-            href={`https://maps.google.com/?q=${event.lat},${event.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            📍 {event.address}
-          </a>
         </div>
       </div>
 
       {/* Body */}
       <div className="detail-body detail-body-base">
+        {/* Venue — the whole card opens the venue's page */}
+        {event.fromDB && event.venueId ? (
+          <button
+            className="detail-section venue-card"
+            onClick={() => navigate(`/venue/${event.venueId}`)}
+          >
+            <span className="venue-card-body">
+              <span className="section-label">Venue</span>
+              <span className="venue-card-name">{event.venue}</span>
+              <span className="venue-card-addr">{event.address}</span>
+            </span>
+            <span className="venue-card-chevron" aria-hidden="true">›</span>
+          </button>
+        ) : (
+          <section className="detail-section">
+            <h2>Venue</h2>
+            <p className="venue-card-name">{event.venue}</p>
+            <p className="venue-card-addr">{event.address}</p>
+          </section>
+        )}
+
         {/* Info row */}
         <div className="detail-meta-row">
           <div className="meta-box">
@@ -182,31 +188,6 @@ export default function EventDetailPage() {
           <p>{event.artist_bio}</p>
         </section>
 
-        {/* Venue */}
-        <section className="detail-section venue-section">
-          <h2>Venue</h2>
-          {event.fromDB && event.venueId ? (
-            <button className="venue-name venue-name-link" onClick={() => navigate(`/venue/${event.venueId}`)}>
-              {event.venue} ›
-            </button>
-          ) : (
-            <p className="venue-name">{event.venue}</p>
-          )}
-          <a
-            className="venue-addr"
-            href={`https://maps.google.com/?q=${event.lat},${event.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {event.address}
-          </a>
-          {event.capacity != null && (
-            <div className="detail-row venue-cap-row">
-              <span className="detail-row-label">Capacity</span>
-              <span className="detail-row-value">{event.capacity.toLocaleString()}</span>
-            </div>
-          )}
-        </section>
       </div>
 
       {/* Sticky CTA */}
