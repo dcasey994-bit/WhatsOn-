@@ -116,3 +116,24 @@
   margin-bottom: 12px;
   font-weight: 500;
 }
+
+/* Shown when the day/category filter genuinely has nothing, so an empty
+   map doesn't read as a loading failure. */
+.map-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  z-index: 400;
+  pointer-events: none;
+  white-space: nowrap;
+}

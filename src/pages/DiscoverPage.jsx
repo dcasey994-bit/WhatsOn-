@@ -4,7 +4,7 @@ import { divIcon } from 'leaflet'
 import { useNavigate } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css'
 import { CATEGORIES, getCategory } from '../data/events.js'
-import { useEvents, useEventsError, useReloadEvents } from '../data/EventsContext.jsx'
+import { useEvents, useEventsError, useEventsLoading, useReloadEvents } from '../data/EventsContext.jsx'
 import { fetchAllVenues } from '../data/eventsStore.js'
 import { useUserLocation } from '../data/location.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
@@ -82,6 +82,7 @@ export default function DiscoverPage() {
   const [venuesError, setVenuesError] = useState(false)
   const events = useEvents()
   const eventsError = useEventsError()
+  const eventsLoading = useEventsLoading()
   const reloadEvents = useReloadEvents()
   const { coords } = useUserLocation()
   const navigate = useNavigate()
@@ -204,6 +205,12 @@ export default function DiscoverPage() {
             </Marker>
           ))}
         </MapContainer>
+
+        {mapMode === 'events' && !eventsLoading && !eventsError && filtered.length === 0 && (
+          <div className="map-empty">
+            No events on this day
+          </div>
+        )}
 
         {mapMode === 'events' && (
           <MapEventSheet event={selected} onClose={() => setSelected(null)} />

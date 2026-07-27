@@ -1,22 +1,22 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { fetchUpcomingEvents, dbEventToLocal } from './eventsStore.js'
-import { EVENTS } from './events.js'
 
-const EventsContext = createContext(EVENTS)
+const EventsContext = createContext({ events: [], reload: () => {}, error: false, loading: true })
 
 export function EventsProvider({ children }) {
-  const [events, setEvents] = useState(EVENTS)
+  const [events, setEvents] = useState([])
   const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     try {
-      const rows = await fetchUpcomingEvents()
-      if (rows.length > 0) setEvents(rows)
+      setEvents(await fetchUpcomingEvents())
       setError(false)
     } catch {
       setError(true)
     }
+    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -37,13 +37,9 @@ export function EventsProvider({ children }) {
           if (data) {
             const today = new Date().toISOString().split('T')[0]
             if (data.date >= today) {
-              setEvents(prev => {
-                // Replace mock events once real ones exist, else append
-                const realOnly = prev.filter(e => e.fromDB)
-                return [...realOnly, dbEventToLocal(data)].sort(
-                  (a, b) => (a.startsAt || a.time).localeCompare(b.startsAt || b.time)
-                )
-              })
+              setEvents(prev => [...prev, dbEventToLocal(data)].sort(
+                (a, b) => (a.startsAt || a.time).localeCompare(b.startsAt || b.time)
+              ))
             }
           }
         }
@@ -52,11 +48,7 @@ export function EventsProvider({ children }) {
         'postgres_changes',
         { event: 'DELETE', schema: 'public', table: 'events' },
         ({ old: row }) => {
-          setEvents(prev => {
-            const next = prev.filter(e => e.id !== row.id)
-            // Fall back to mock events if DB is now empty
-            return next.some(e => e.fromDB) ? next : EVENTS
-          })
+          setEvents(prev => prev.filter(e => e.id !== row.id))
         }
       )
       .subscribe()
@@ -65,7 +57,7 @@ export function EventsProvider({ children }) {
   }, [load])
 
   return (
-    <EventsContext.Provider value={{ events, reload: load, error }}>
+    <EventsContext.Provider value={{ events, reload: load, error, loading }}>
       {children}
     </EventsContext.Provider>
   )
@@ -79,9 +71,15 @@ export function useReloadEvents() {
   return useContext(EventsContext).reload
 }
 
-// True when the last events fetch failed (the list may be stale or mock data)
+// True when the last events fetch failed
 export function useEventsError() {
   return useContext(EventsContext).error
+}
+
+// True until the first fetch settles — lets pages tell "still loading" apart
+// from "genuinely nothing on"
+export function useEventsLoading() {
+  return useContext(EventsContext).loading
 }
 
 export function useEvent(id) {
