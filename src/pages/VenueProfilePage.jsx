@@ -64,8 +64,6 @@ export default function VenueProfilePage() {
     )
   }
 
-  const hasContact = venue.phone || venue.website || venue.capacity
-
   return (
     <div className="venue-profile detail-shell">
       {/* Hero */}
@@ -74,49 +72,50 @@ export default function VenueProfilePage() {
         <div className="hero-content">
           {venue.type && <span className="hero-badge vp-type-badge">{venue.type}</span>}
           <h1 className="hero-title">{venue.name}</h1>
-          <a
-            className="hero-link"
-            href={`https://maps.google.com/?q=${venue.lat},${venue.lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            📍 {venue.address}
-          </a>
         </div>
       </div>
 
       {/* Body */}
       <div className="detail-body-base">
-        {hasContact && (
-          <section className="detail-section">
-            <h2>Venue Info</h2>
-            {venue.phone && (
-              <div className="detail-row">
-                <span className="detail-row-label">Phone</span>
-                <a className="detail-row-value" href={`tel:${venue.phone}`}>{venue.phone}</a>
-              </div>
-            )}
-            {venue.website && (
-              <div className="detail-row">
-                <span className="detail-row-label">Website</span>
-                <a
-                  className="detail-row-value"
-                  href={venue.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {venue.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
-                </a>
-              </div>
-            )}
-            {venue.capacity != null && (
-              <div className="detail-row">
-                <span className="detail-row-label">Capacity</span>
-                <span className="detail-row-value">{venue.capacity.toLocaleString()}</span>
-              </div>
-            )}
-          </section>
-        )}
+        <section className="detail-section">
+          <h2>Venue Info</h2>
+          <div className="detail-row">
+            <span className="detail-row-label">Address</span>
+            <a
+              className="detail-row-value"
+              href={`https://maps.google.com/?q=${venue.lat},${venue.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {venue.address}
+            </a>
+          </div>
+          {venue.phone && (
+            <div className="detail-row">
+              <span className="detail-row-label">Phone</span>
+              <a className="detail-row-value" href={`tel:${venue.phone}`}>{venue.phone}</a>
+            </div>
+          )}
+          {venue.website && (
+            <div className="detail-row">
+              <span className="detail-row-label">Website</span>
+              <a
+                className="detail-row-value"
+                href={venue.website}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {venue.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
+              </a>
+            </div>
+          )}
+          {venue.capacity != null && (
+            <div className="detail-row">
+              <span className="detail-row-label">Capacity</span>
+              <span className="detail-row-value">{venue.capacity.toLocaleString()}</span>
+            </div>
+          )}
+        </section>
 
         <section className="vp-events-section">
           <h2 className="section-label">
