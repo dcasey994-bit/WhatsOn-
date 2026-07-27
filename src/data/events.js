@@ -6,6 +6,13 @@ export const CATEGORIES = {
   sports:  { label: 'Live Sports',  color: '#2979ff', bg: '#2979ff22' },
 }
 
+// Always returns a usable category. Events created before a category was
+// retired (e.g. the old 'jazz' and 'theatre') would otherwise be undefined
+// here and crash any component that reads cat.color / cat.bg / cat.label.
+export function getCategory(key) {
+  return CATEGORIES[key] || CATEGORIES.music
+}
+
 export const EVENTS = [
   {
     id: 1,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CATEGORIES } from '../data/events.js'
+import { getCategory } from '../data/events.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
 import './MapEventSheet.css'
@@ -16,7 +16,7 @@ export default function MapEventSheet({ event, onClose }) {
 
   if (!event) return null
 
-  const cat = CATEGORIES[event.category]
+  const cat = getCategory(event.category)
 
   function handleSave(e) {
     e.stopPropagation()

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CATEGORIES } from '../data/events.js'
+import { getCategory } from '../data/events.js'
 import { useEvent } from '../data/EventsContext.jsx'
 import { fetchEventById } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
@@ -26,11 +26,16 @@ export default function EventDetailPage() {
     if (contextEvent) { setLookupDone(true); return }
     let active = true
     setLookupDone(false)
-    fetchEventById(id).then(ev => {
-      if (!active) return
-      setFetched(ev)
-      setLookupDone(true)
-    })
+    fetchEventById(id)
+      .then(ev => {
+        if (!active) return
+        setFetched(ev)
+        setLookupDone(true)
+      })
+      .catch(() => {
+        // Without this the page would sit on "Loading…" forever
+        if (active) setLookupDone(true)
+      })
     return () => { active = false }
   }, [id, contextEvent])
 
@@ -50,7 +55,7 @@ export default function EventDetailPage() {
     )
   }
 
-  const cat = CATEGORIES[event.category]
+  const cat = getCategory(event.category)
 
   function handleGoing() {
     if (!ensureSignedIn(navigate)) return

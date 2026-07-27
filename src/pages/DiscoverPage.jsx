@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, CircleMarker, Marker, Tooltip, useMap } from '
 import { divIcon } from 'leaflet'
 import { useNavigate } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css'
-import { CATEGORIES } from '../data/events.js'
+import { CATEGORIES, getCategory } from '../data/events.js'
 import { useEvents, useEventsError, useReloadEvents } from '../data/EventsContext.jsx'
 import { fetchAllVenues } from '../data/eventsStore.js'
 import { useUserLocation } from '../data/location.js'
@@ -174,7 +174,7 @@ export default function DiscoverPage() {
 
           {/* Events mode — markers for events on the selected day */}
           {mapMode === 'events' && filtered.map(event => {
-            const cat = CATEGORIES[event.category]
+            const cat = getCategory(event.category)
             const isSelected = selected?.id === event.id
             return (
               <CircleMarker

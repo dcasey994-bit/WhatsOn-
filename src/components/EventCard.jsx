@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CATEGORIES } from '../data/events.js'
+import { getCategory } from '../data/events.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
 import './EventCard.css'
 
 export default function EventCard({ event }) {
   const navigate = useNavigate()
-  const cat = CATEGORIES[event.category]
+  const cat = getCategory(event.category)
   const [saved, setSaved] = useState(() => isSaved(event.id))
 
   useEffect(() => subscribe(() => setSaved(isSaved(event.id))), [event.id])
