@@ -153,6 +153,24 @@
   gap: 12px;
 }
 
+/* Tapping the tile body opens the event; edit/delete sit outside it so the
+   two actions never fight over the same click target. */
+.vc-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+.vc-open:active .vc-name {
+  color: var(--accent);
+}
+
 .vc-dot {
   width: 10px;
   height: 10px;
@@ -166,6 +184,7 @@
 }
 
 .vc-name {
+  display: block;
   font-size: 14px;
   font-weight: 700;
   color: var(--text);
@@ -176,6 +195,7 @@
 }
 
 .vc-meta {
+  display: block;
   font-size: 12px;
   color: var(--text-muted);
 }

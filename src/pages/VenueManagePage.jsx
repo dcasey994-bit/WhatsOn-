@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CATEGORIES } from '../data/events.js'
+import { CATEGORIES, getCategory } from '../data/events.js'
 import {
   fetchVenueById, fetchVenueEvents, fetchPastVenueEvents,
   createEvent, updateEvent, deleteEvent, uploadEventImage,
@@ -565,22 +565,28 @@ export default function VenueManagePage() {
         ) : (
           <div className="event-rows">
             {events.map(event => {
-              const cat = CATEGORIES[event.category] || CATEGORIES.music
+              const cat = getCategory(event.category)
               const dateLabel = new Date(event.date + 'T00:00:00').toLocaleDateString('en-GB', {
                 weekday: 'short', day: 'numeric', month: 'short',
               })
               return (
                 <div key={event.id} className="venue-event-row">
-                  <span className="vc-dot" style={{ background: cat.color }} />
-                  <div className="vc-info">
-                    <p className="vc-name">{event.name}</p>
-                    <p className="vc-meta">
-                      <span className="vc-cat" style={{ color: cat.color }}>{cat.label}</span>
-                      &nbsp;·&nbsp;{dateLabel}
-                      &nbsp;·&nbsp;{event.time?.slice(0, 5)}
-                      &nbsp;·&nbsp;{Number(event.price) === 0 ? 'Free' : `£${event.price}`}
-                    </p>
-                  </div>
+                  <button
+                    className="vc-open"
+                    onClick={() => navigate(`/event/${event.id}`)}
+                    aria-label={`Open ${event.name}`}
+                  >
+                    <span className="vc-dot" style={{ background: cat.color }} />
+                    <span className="vc-info">
+                      <span className="vc-name">{event.name}</span>
+                      <span className="vc-meta">
+                        <span className="vc-cat" style={{ color: cat.color }}>{cat.label}</span>
+                        &nbsp;·&nbsp;{dateLabel}
+                        &nbsp;·&nbsp;{event.time?.slice(0, 5)}
+                        &nbsp;·&nbsp;{Number(event.price) === 0 ? 'Free' : `£${event.price}`}
+                      </span>
+                    </span>
+                  </button>
                   {eventTab === 'upcoming' && (
                     <button className="edit-event-btn" onClick={() => handleEdit(event)} aria-label="Edit event">✎</button>
                   )}
