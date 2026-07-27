@@ -1,7 +1,5 @@
 .detail-page {
-  min-height: 100dvh;
   padding-bottom: calc(90px + var(--nav-height));
-  background: var(--bg);
 }
 
 .detail-missing {
@@ -14,29 +12,10 @@
   color: var(--text-muted);
 }
 
-.detail-hero {
-  padding: 60px 20px 24px;
-  position: relative;
-}
-
 .detail-hero.has-image {
   padding-top: 160px;
   background-size: cover;
   background-position: center;
-}
-
-.back-btn {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-muted);
-  padding: 7px 14px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 20px;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 
 .back-link {
@@ -46,29 +25,6 @@
   padding: 8px 16px;
   background: var(--accent-dim);
   border-radius: 10px;
-}
-
-.hero-content {
-  margin-top: 8px;
-}
-
-.cat-badge-lg {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-block;
-  margin-bottom: 12px;
-}
-
-.detail-title {
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.2;
-  color: var(--text);
-  margin-bottom: 8px;
 }
 
 .detail-venue {
@@ -85,13 +41,6 @@
   cursor: pointer;
   color: var(--accent);
   display: inline-block;
-}
-
-.detail-address {
-  font-size: 13px;
-  color: var(--text-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .hero-stats {
@@ -126,13 +75,6 @@
   width: 1px;
   height: 30px;
   background: var(--surface-tint);
-}
-
-.detail-body {
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 .detail-meta-row {
@@ -199,28 +141,6 @@
   line-height: 1.4;
 }
 
-.detail-section {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
-}
-
-.detail-section h2 {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
-
-.detail-section > p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--text-muted);
-}
-
 .lineup-list {
   list-style: none;
   display: flex;
@@ -262,11 +182,18 @@
   display: inline-block;
 }
 
-.venue-addr,
-.venue-cap {
+.venue-addr {
   font-size: 13px !important;
   color: var(--text-muted) !important;
   margin-top: 3px;
+  display: inline-block;
+}
+
+.venue-cap-row {
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .detail-actions {
@@ -288,7 +215,7 @@
   padding: 14px;
   border-radius: 14px;
   background: var(--accent);
-  color: #000;
+  color: var(--accent-text);
   font-size: 15px;
   font-weight: 800;
   transition: opacity 0.15s, transform 0.1s;

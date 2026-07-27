@@ -1,69 +1,38 @@
+/* Layout, hero and card primitives come from detail-shared.css so this page
+   matches the event detail page. Only venue-specific styling lives here. */
+
 .venue-profile {
-  min-height: 100vh;
-  padding-bottom: 90px;
+  padding-bottom: calc(24px + var(--nav-height));
 }
 
 .vp-hero {
-  padding: 60px 20px 24px;
-  position: relative;
-  background: linear-gradient(160deg, rgba(0, 255, 136, 0.08) 0%, rgba(15, 15, 20, 0.99) 70%);
+  background: linear-gradient(160deg, var(--accent-dim) 0%, var(--hero-fade) 70%);
   border-bottom: 1px solid var(--border);
 }
 
-.vp-name {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--text);
-  line-height: 1.2;
-  margin-bottom: 6px;
-}
-
-.vp-type {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-}
-
-.vp-address,
-.vp-phone,
-.vp-website {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.vp-address,
-.vp-website {
-  display: inline-block;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.vp-website {
+.vp-type-badge {
+  background: var(--accent-dim);
   color: var(--accent);
 }
 
-.vp-body {
-  padding: 20px 16px;
+.vp-events-section {
+  display: flex;
+  flex-direction: column;
 }
 
-.vp-heading {
+.vp-events-section .section-label {
   display: flex;
   align-items: baseline;
+  justify-content: space-between;
   gap: 8px;
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 14px;
 }
 
-.vp-heading-count {
-  font-size: 13px;
+.vp-events-count {
+  font-size: 12px;
   font-weight: 500;
-  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-dim);
 }
 
 .vp-events {
@@ -76,4 +45,5 @@
   color: var(--text-muted);
   font-size: 14px;
   padding: 20px 16px;
+  text-align: center;
 }

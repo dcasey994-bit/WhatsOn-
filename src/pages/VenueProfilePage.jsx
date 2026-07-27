@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { fetchVenueById, fetchPublicVenueEvents } from '../data/eventsStore.js'
 import EventCard from '../components/EventCard.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
+import './detail-shared.css'
 import './VenueProfilePage.css'
 
 export default function VenueProfilePage() {
@@ -35,7 +36,7 @@ export default function VenueProfilePage() {
 
   if (loading) {
     return (
-      <div className="venue-profile">
+      <div className="venue-profile detail-shell">
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <p className="vp-loading">Loading…</p>
       </div>
@@ -44,7 +45,7 @@ export default function VenueProfilePage() {
 
   if (error) {
     return (
-      <div className="venue-profile">
+      <div className="venue-profile detail-shell">
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <ErrorBanner
           message="Couldn't load this venue. Check your connection."
@@ -56,55 +57,83 @@ export default function VenueProfilePage() {
 
   if (!venue) {
     return (
-      <div className="venue-profile">
+      <div className="venue-profile detail-shell">
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <p className="vp-loading">Venue not found.</p>
       </div>
     )
   }
 
+  const hasContact = venue.phone || venue.website || venue.capacity
+
   return (
-    <div className="venue-profile">
-      <div className="vp-hero">
+    <div className="venue-profile detail-shell">
+      {/* Hero */}
+      <div className="vp-hero detail-hero-base">
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
-        <h1 className="vp-name">{venue.name}</h1>
-        {venue.type && <p className="vp-type">{venue.type}</p>}
-        <a
-          className="vp-address"
-          href={`https://maps.google.com/?q=${venue.lat},${venue.lng}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          📍 {venue.address}
-        </a>
-        {venue.phone && <p className="vp-phone">📞 {venue.phone}</p>}
-        {venue.website && (
+        <div className="hero-content">
+          {venue.type && <span className="hero-badge vp-type-badge">{venue.type}</span>}
+          <h1 className="hero-title">{venue.name}</h1>
           <a
-            className="vp-website"
-            href={venue.website}
+            className="hero-link"
+            href={`https://maps.google.com/?q=${venue.lat},${venue.lng}`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            🌐 {venue.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
+            📍 {venue.address}
           </a>
-        )}
+        </div>
       </div>
 
-      <section className="vp-body">
-        <h2 className="vp-heading">
-          Events
-          <span className="vp-heading-count">
-            {events.length} upcoming {events.length === 1 ? 'event' : 'events'}
-          </span>
-        </h2>
-        {events.length === 0 ? (
-          <p className="vp-empty">No upcoming events listed yet.</p>
-        ) : (
-          <div className="vp-events">
-            {events.map(event => <EventCard key={event.id} event={event} />)}
-          </div>
+      {/* Body */}
+      <div className="detail-body-base">
+        {hasContact && (
+          <section className="detail-section">
+            <h2>Venue Info</h2>
+            {venue.phone && (
+              <div className="detail-row">
+                <span className="detail-row-label">Phone</span>
+                <a className="detail-row-value" href={`tel:${venue.phone}`}>{venue.phone}</a>
+              </div>
+            )}
+            {venue.website && (
+              <div className="detail-row">
+                <span className="detail-row-label">Website</span>
+                <a
+                  className="detail-row-value"
+                  href={venue.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {venue.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
+                </a>
+              </div>
+            )}
+            {venue.capacity != null && (
+              <div className="detail-row">
+                <span className="detail-row-label">Capacity</span>
+                <span className="detail-row-value">{venue.capacity.toLocaleString()}</span>
+              </div>
+            )}
+          </section>
         )}
-      </section>
+
+        <section className="vp-events-section">
+          <h2 className="section-label">
+            Events
+            <span className="vp-events-count">
+              {events.length} upcoming
+            </span>
+          </h2>
+          {events.length === 0 ? (
+            <p className="vp-empty">No upcoming events listed yet.</p>
+          ) : (
+            <div className="vp-events">
+              {events.map(event => <EventCard key={event.id} event={event} />)}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   )
 }

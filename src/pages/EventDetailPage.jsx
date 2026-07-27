@@ -5,6 +5,7 @@ import { useEvent } from '../data/EventsContext.jsx'
 import { fetchEventById } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
+import './detail-shared.css'
 import './EventDetailPage.css'
 
 export default function EventDetailPage() {
@@ -75,27 +76,30 @@ export default function EventDetailPage() {
 
   const heroStyle = event.image
     ? { backgroundImage: `linear-gradient(to top, rgba(15,15,20,0.98) 12%, rgba(15,15,20,0.55) 60%, rgba(15,15,20,0.35)), url(${event.image})` }
-    : { background: `linear-gradient(160deg, ${cat.bg} 0%, rgba(15,15,20,0.99) 70%)` }
+    : { background: `linear-gradient(160deg, ${cat.bg} 0%, var(--hero-fade) 70%)` }
 
   return (
-    <div className="detail-page">
+    <div className="detail-page detail-shell">
       {/* Hero */}
-      <div className={`detail-hero ${event.image ? 'has-image' : ''}`} style={heroStyle}>
+      <div
+        className={`detail-hero detail-hero-base ${event.image ? 'has-image on-image' : ''}`}
+        style={heroStyle}
+      >
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <div className="hero-content">
-          <span className="cat-badge-lg" style={{ background: cat.bg, color: cat.color }}>
+          <span className="hero-badge" style={{ background: cat.bg, color: cat.color }}>
             {cat.label}
           </span>
-          <h1 className="detail-title">{event.name}</h1>
+          <h1 className="hero-title">{event.name}</h1>
           {event.fromDB && event.venueId ? (
-            <button className="detail-venue detail-venue-link" onClick={() => navigate(`/venue/${event.venueId}`)}>
+            <button className="detail-venue hero-sub detail-venue-link" onClick={() => navigate(`/venue/${event.venueId}`)}>
               {event.venue} ›
             </button>
           ) : (
-            <p className="detail-venue">{event.venue}</p>
+            <p className="detail-venue hero-sub">{event.venue}</p>
           )}
           <a
-            className="detail-address"
+            className="hero-link"
             href={`https://maps.google.com/?q=${event.lat},${event.lng}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -106,7 +110,7 @@ export default function EventDetailPage() {
       </div>
 
       {/* Body */}
-      <div className="detail-body">
+      <div className="detail-body detail-body-base">
         {/* Info row */}
         <div className="detail-meta-row">
           <div className="meta-box">
@@ -197,7 +201,10 @@ export default function EventDetailPage() {
             {event.address}
           </a>
           {event.capacity != null && (
-            <p className="venue-cap">Capacity: {event.capacity.toLocaleString()}</p>
+            <div className="detail-row venue-cap-row">
+              <span className="detail-row-label">Capacity</span>
+              <span className="detail-row-value">{event.capacity.toLocaleString()}</span>
+            </div>
           )}
         </section>
       </div>

@@ -38,6 +38,7 @@
   --surface-tint: rgba(255, 255, 255, 0.08);
   --surface-tint-2: rgba(255, 255, 255, 0.04);
   --overlay-bg: rgba(15, 15, 20, 0.88);
+  --hero-fade: rgba(15, 15, 20, 0.99);
 
   /* Category colours */
   --cat-music: #00c853;
@@ -88,6 +89,7 @@
     --surface-tint: rgba(0, 0, 0, 0.06);
     --surface-tint-2: rgba(0, 0, 0, 0.04);
     --overlay-bg: rgba(244, 244, 248, 0.92);
+    --hero-fade: rgba(244, 244, 248, 0.99);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     color-scheme: light;
   }
@@ -118,6 +120,7 @@
   --surface-tint: rgba(0, 0, 0, 0.06);
   --surface-tint-2: rgba(0, 0, 0, 0.04);
   --overlay-bg: rgba(244, 244, 248, 0.92);
+  --hero-fade: rgba(244, 244, 248, 0.99);
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   color-scheme: light;
 }

@@ -1,0 +1,141 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Shared design primitives for the customer-facing detail pages
+   (event detail + venue profile) so both follow one visual language.
+   Page-specific styling stays in each page's own stylesheet.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Page shell — full height, clears the fixed bottom nav */
+.detail-shell {
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+/* Hero band sitting behind the absolute back button */
+.detail-hero-base {
+  padding: 60px 20px 24px;
+  position: relative;
+}
+
+/* When a hero sits on a photo, the scrim is always dark — so its text
+   stays light regardless of the active theme. */
+.detail-hero-base.on-image,
+.detail-hero-base.on-image .hero-title,
+.detail-hero-base.on-image .hero-sub {
+  color: #ffffff;
+}
+
+.detail-hero-base.on-image .hero-sub,
+.detail-hero-base.on-image .hero-link {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 7px 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Badge above the hero title (event category / venue type) */
+.hero-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.hero-content {
+  margin-top: 8px;
+}
+
+.hero-title {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.hero-link {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: inline-block;
+}
+
+/* Stacked content area below the hero */
+.detail-body-base {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Card surface used for every content block */
+.detail-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.detail-section h2,
+.section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.detail-section > p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* Label / value row inside a card */
+.detail-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detail-row-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.detail-row-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+a.detail-row-value {
+  color: var(--accent);
+}
