@@ -11,11 +11,11 @@
 --   3. update profiles set is_demo = true where email = 'demo@whatsonapp.uk';
 --
 -- CONTENTS
---   16 venues · 60 events, all upcoming
+--   16 venues · 60 upcoming events · 7 past events
 --
---   Every event is in the coming week. Nothing is seeded in the past, so
---   the venue-side Past Events tab starts empty and fills naturally as
---   events roll by.
+--   Everything a customer can see is in the coming week. The 7 past events
+--   are venue-side only, populating the Past Events tab, and are dated
+--   beyond the window the roll-forward job sweeps so they stay put.
 --
 -- ABOUT THE DATA
 --   Venue names are fictional. Streets and coordinates are real South London
@@ -175,9 +175,30 @@ begin
   ) as e(venue_name, name, category, dow, time, price, capacity, description, offer)
   join venues v on v.name = e.venue_name and v.is_demo;
 
-  raise notice 'Demo data seeded: % venues, % upcoming events',
+
+  -- ── Past events archive ──────────────────────────────────────────────────
+  -- Only ever seen on the venue side (Past Events), never by customers. All
+  -- sit on venues the demo account manages, and all are dated well beyond
+  -- the 7-day window the roll-forward job sweeps, so they stay put. Because
+  -- they are genuine one-offs rather than weekly slots, they can be occasion
+  -- specific in a way the recurring events cannot.
+  insert into events (venue_id, name, category, date, time, price, capacity, description)
+  select v.id, e.name, e.category, current_date - e.days_ago, e.time, e.price, e.capacity, e.description
+  from (values
+    ('The Hopfield Arms',        'Beer Festival Weekend',          'music',  12, '12:00'::time,  0.00, 180, 'Twenty guest ales, four bands over two days and a queue at the bar that never quite cleared.'),
+    ('The Paper Lantern',        'Ten Years of The Paper Lantern', 'music',  19, '20:00'::time, 15.00, 220, 'Anniversary show with six acts who all played their first gig here. Ran well past curfew.'),
+    ('The Ninth Wave',           'All-Dayer: Six Bands, One Stage','music',  26, '14:00'::time,  8.00, 240, 'Doors at two, last band off at eleven. No changeover gaps and a very tired sound engineer.'),
+    ('The Copper Kettle Tavern', 'Charity Race Night',             'comedy', 33, '19:30'::time,  5.00,  90, 'Eight races on the big screen, a tote run out of a biscuit tin, and £900 raised for the air ambulance.'),
+    ('The Hopfield Arms',        'The Grand Summer Quiz',          'quiz',   40, '19:30'::time,  5.00, 120, 'Fifteen rounds, a £300 pot and a tie-break on the population of Peru that went to a third question.'),
+    ('The Paper Lantern',        'Soul & Funk All-Nighter',        'music',  47, '22:00'::time, 10.00, 200, 'Four DJs, all vinyl, through to six in the morning. Breakfast served to anyone still standing.'),
+    ('The Copper Kettle Tavern', 'Cup Final Screening',            'sports', 54, '15:00'::time,  0.00, 140, 'Every screen on, the garden rigged with speakers, and standing room only by half past two.')
+  ) as e(venue_name, name, category, days_ago, time, price, capacity, description)
+  join venues v on v.name = e.venue_name and v.is_demo;
+
+  raise notice 'Demo data seeded: % venues, % upcoming events, % past events',
     (select count(*) from venues where is_demo),
-    (select count(*) from events e join venues v on v.id = e.venue_id where v.is_demo);
+    (select count(*) from events e join venues v on v.id = e.venue_id where v.is_demo and e.date >= current_date),
+    (select count(*) from events e join venues v on v.id = e.venue_id where v.is_demo and e.date <  current_date);
 end $$;
 
 -- ════════════════════════════════════════════════════════════════════════════
