@@ -11,7 +11,11 @@
 --   3. update profiles set is_demo = true where email = 'demo@whatsonapp.uk';
 --
 -- CONTENTS
---   16 venues · 50 weekly events · 10 past events
+--   16 venues · 60 events, all upcoming
+--
+--   Every event is in the coming week. Nothing is seeded in the past, so
+--   the venue-side Past Events tab starts empty and fills naturally as
+--   events roll by.
 --
 -- ABOUT THE DATA
 --   Venue names are fictional. Streets and coordinates are real South London
@@ -91,9 +95,10 @@ begin
   ) as m(venue_name, role)
   join venues v on v.name = m.venue_name and v.is_demo;
 
-  -- ── Upcoming events — one row per weekly slot ────────────────────────────
-  -- Each sits on its next occurrence, so the 7-day strip shows every one
-  -- exactly once. The roll-forward job below keeps them there.
+  -- ── Events ───────────────────────────────────────────────────────────────
+  -- Each sits on its next occurrence of the given weekday, so the 7-day
+  -- strip shows every one exactly once. The roll-forward job below keeps
+  -- them there permanently.
   insert into events (venue_id, name, category, date, time, price, capacity,
                       description, special_offer)
   select v.id, e.name, e.category, demo_next_dow(e.dow), e.time, e.price, e.capacity,
@@ -156,33 +161,23 @@ begin
     ('The Larkspur',            'Sunday Drag Brunch',        'comedy', 0, '13:00'::time, 15.00, 120, 'Two hours of drag, bottomless fizz and a menu you will barely have time to eat. Booking essential.', 'Bottomless fizz included with every ticket'),
     ('The Ninth Wave',          'Sunday Open Decks',         'music',  0, '18:00'::time,  0.00, 140, 'Bring a USB or a bag of records and take a thirty-minute slot. Everyone from first-timers to residents.', null),
     ('Bellweather & Sons',      'Sunday Quiz',               'quiz',   0, '19:30'::time,  2.00, 120, 'The week''s last quiz, and the friendliest. Seven rounds, a bar tab for the winners, done by half nine.', null)
+    -- ── One-off specials, spread across the week ───────────────────────────
+    ('The Paper Lantern',       'Late Night Soul Social',    'music',  1, '22:00'::time,  7.00, 200, 'Northern soul and rare groove on 45s until 3am. Small room, big speakers, no phones on the dancefloor.', null),
+    ('The Copper Kettle Tavern','Big Match Screening',       'sports', 1, '20:00'::time,  0.00, 140, 'Every screen on and the garden speakers rigged up for the week''s biggest fixture. Get there early.', 'Jugs £12 all match'),
+    ('The Ninth Wave',          'Battle of the Bands',       'music',  2, '19:00'::time,  6.00, 240, 'Four bands, twenty minutes each, and a winner decided by a very loud vote from the floor.', null),
+    ('The Hopfield Arms',       'Quiz Champions Special',    'quiz',   2, '19:30'::time,  5.00, 120, 'Double-length quiz with a £250 prize pot. Twelve rounds and a tie-break that has been known to run long.', null),
+    ('The Paper Lantern',       'Album Launch Night',        'music',  3, '20:00'::time, 10.00, 220, 'A hometown launch show played front to back, with a string section squeezed onto the stage.', null),
+    ('The Hopfield Arms',       'Midweek Cup Live',          'sports', 3, '19:45'::time,  0.00, 140, 'Cup football on the big screen with sound on, extra time and penalties included if it comes to it.', null),
+    ('The Ninth Wave',          'Acoustic Evening with Nora Vale', 'music', 4, '20:00'::time, 9.00, 180, 'A solo set, entirely unplugged, with the bar closed during songs. Sells out most times she plays.', null),
+    ('The Copper Kettle Tavern','Charity Quiz Night',        'quiz',   4, '19:30'::time,  5.00,  90, 'Fundraiser for the local food bank. Raffle between rounds and every penny of the entry goes across.', null),
+    ('The Paper Lantern',       'Comedy Gala Fundraiser',    'comedy', 0, '19:30'::time, 12.00, 210, 'Eight comics donating their time for the local hospice. Runs long, nobody minds.', null),
+    ('The Hopfield Arms',       'Summer Garden Party',       'music',  0, '14:00'::time,  0.00, 180, 'An all-dayer in the beer garden with three bands, a barbecue and considerably better weather than forecast.', 'Garden BBQ plate and a pint £13')
   ) as e(venue_name, name, category, dow, time, price, capacity, description, offer)
   join venues v on v.name = e.venue_name and v.is_demo;
 
-  -- ── Past events — so the Past Events tab is not empty ────────────────────
-  -- All on venues the demo account manages, and dated well over a week back
-  -- so the roll-forward job (below) leaves them where they are.
-  insert into events (venue_id, name, category, date, time, price, capacity, description)
-  select v.id, e.name, e.category, current_date - e.days_ago, e.time, e.price, e.capacity, e.description
-  from (values
-    ('The Hopfield Arms',        'Summer Garden Party',             'music',  14, '14:00'::time,  0.00, 180, 'An all-dayer in the beer garden with three bands, a barbecue and considerably better weather than forecast.'),
-    ('The Paper Lantern',        'Late Night Soul Social',          'music',  17, '22:00'::time,  7.00, 200, 'Northern soul and rare groove on 45s until 3am.'),
-    ('The Hopfield Arms',        'Bank Holiday Quiz Special',       'quiz',   21, '19:30'::time,  5.00, 120, 'Double-length quiz with a £250 prize pot. Twelve rounds and one very long tie-break.'),
-    ('The Ninth Wave',           'Battle of the Bands Final',       'music',  24, '19:00'::time,  6.00, 240, 'Six months of heats came down to four bands and a very loud vote from the floor.'),
-    ('The Paper Lantern',        'Album Launch: The Tessellations', 'music',  28, '20:00'::time, 10.00, 220, 'Hometown launch show for the new record, played front to back with a string section.'),
-    ('The Copper Kettle Tavern', 'Cup Final Screening',             'sports', 33, '15:00'::time,  0.00, 140, 'Every screen on, the garden speakers rigged up and a queue out the door by half past two.'),
-    ('The Ninth Wave',           'Acoustic Evening with Nora Vale', 'music',  38, '20:00'::time,  9.00, 180, 'A sold-out solo set, entirely unplugged, with the bar closed during songs.'),
-    ('The Copper Kettle Tavern', 'Charity Quiz Night',              'quiz',   42, '19:30'::time,  5.00,  90, 'Annual fundraiser for the local food bank. Raised £1,840 across the night.'),
-    ('The Hopfield Arms',        'Beer Festival Weekend',           'music',  49, '12:00'::time,  0.00, 180, 'Twenty guest ales, four bands over two days and a queue at the bar that never quite cleared.'),
-    ('The Paper Lantern',        'Comedy Gala Fundraiser',          'comedy', 56, '19:30'::time, 12.00, 210, 'Eight comics donating their time for the local hospice. Overran by an hour, nobody minded.')
-  ) as e(venue_name, name, category, days_ago, time, price, capacity, description)
-  join venues v on v.name = e.venue_name and v.is_demo;
-
-  raise notice 'Demo data seeded: % venues, % events (% upcoming, % past)',
+  raise notice 'Demo data seeded: % venues, % upcoming events',
     (select count(*) from venues where is_demo),
-    (select count(*) from events e join venues v on v.id = e.venue_id where v.is_demo),
-    (select count(*) from events e join venues v on v.id = e.venue_id where v.is_demo and e.date >= current_date),
-    (select count(*) from events e join venues v on v.id = e.venue_id where v.is_demo and e.date <  current_date);
+    (select count(*) from events e join venues v on v.id = e.venue_id where v.is_demo);
 end $$;
 
 -- ════════════════════════════════════════════════════════════════════════════
