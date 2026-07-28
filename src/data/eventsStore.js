@@ -157,7 +157,12 @@ export async function fetchMyVenues() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
   if (error) throw error
-  return (data || []).map(row => ({ ...row.venues, memberRole: row.role }))
+  // The embed is null when the venue row can't be read — deleted, or hidden by
+  // RLS. Without this guard those become objects with no venue fields, which
+  // getSubscriptionState() reports as 'archived', rendering blank ghost cards.
+  return (data || [])
+    .filter(row => row.venues)
+    .map(row => ({ ...row.venues, memberRole: row.role }))
 }
 
 export async function registerVenue(fields) {
