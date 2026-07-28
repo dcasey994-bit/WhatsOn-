@@ -160,7 +160,7 @@ begin
     ('The Copper Kettle Tavern','Sunday Night Comedy',       'comedy', 0, '19:00'::time,  5.00, 110, 'Five acts, one room and a compere who has seen it all. A soft landing before Monday.', null),
     ('The Larkspur',            'Sunday Drag Brunch',        'comedy', 0, '13:00'::time, 15.00, 120, 'Two hours of drag, bottomless fizz and a menu you will barely have time to eat. Booking essential.', 'Bottomless fizz included with every ticket'),
     ('The Ninth Wave',          'Sunday Open Decks',         'music',  0, '18:00'::time,  0.00, 140, 'Bring a USB or a bag of records and take a thirty-minute slot. Everyone from first-timers to residents.', null),
-    ('Bellweather & Sons',      'Sunday Quiz',               'quiz',   0, '19:30'::time,  2.00, 120, 'The week''s last quiz, and the friendliest. Seven rounds, a bar tab for the winners, done by half nine.', null)
+    ('Bellweather & Sons',      'Sunday Quiz',               'quiz',   0, '19:30'::time,  2.00, 120, 'The week''s last quiz, and the friendliest. Seven rounds, a bar tab for the winners, done by half nine.', null),
     -- ── One-off specials, spread across the week ───────────────────────────
     ('The Paper Lantern',       'Late Night Soul Social',    'music',  1, '22:00'::time,  7.00, 200, 'Northern soul and rare groove on 45s until 3am. Small room, big speakers, no phones on the dancefloor.', null),
     ('The Copper Kettle Tavern','Big Match Screening',       'sports', 1, '20:00'::time,  0.00, 140, 'Every screen on and the garden speakers rigged up for the week''s biggest fixture. Get there early.', 'Jugs £12 all match'),
