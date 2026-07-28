@@ -30,4 +30,5 @@
 ## Scope
 - South London focus: Clapham, Balham, Tooting
 - Two-sided marketplace: customers discover events on a map; venues self-list events
-- Events are currently a hardcoded mock list in `src/data/events.js` (not yet in DB)
+- Events and venues live in Supabase; there is no mock/fallback data. `src/data/events.js` holds only the category definitions.
+- Event categories: Live Music, Entertainment (comedy, drag, cabaret, karaoke), Quiz Night, Live Sports. Retired keys are remapped by `getCategory()`.

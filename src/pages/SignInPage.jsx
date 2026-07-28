@@ -19,7 +19,7 @@ export default function SignInPage() {
     try {
       await signIn(provider)
       // Supabase redirects the browser — no navigate() needed
-    } catch (e) {
+    } catch {
       setError('Something went wrong. Please try again.')
       setLoading(null)
     }
@@ -46,7 +46,7 @@ export default function SignInPage() {
         await signInWithPassword(email.trim(), password)
         // Auth state change handles the rest
       }
-    } catch (err) {
+    } catch {
       setError(
         isSignUp
           ? 'Could not create the account. Try a different email.'
