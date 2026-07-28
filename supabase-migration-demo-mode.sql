@@ -60,7 +60,7 @@ create policy "events: read active venues or members" on events for select using
 -- Create the account first (Authentication → Users → Add user), sign in with
 -- it once so its profile row exists, then run:
 --
---   update profiles set is_demo = true where email = 'demo@whatsonapp.uk';
+--   update profiles set is_demo = true where email = 'bob.67@hotmail.com';
 --
 -- To revoke:
---   update profiles set is_demo = false where email = 'demo@whatsonapp.uk';
+--   update profiles set is_demo = false where email = 'bob.67@hotmail.com';

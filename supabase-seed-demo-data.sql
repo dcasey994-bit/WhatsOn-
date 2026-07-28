@@ -6,9 +6,9 @@
 -- PREREQUISITES
 --   1. Run supabase-migration-demo-mode.sql first.
 --   2. Create the demo account: Authentication → Users → Add user
---      (email demo@whatsonapp.uk), then sign in with it once so its
+--      (email bob.67@hotmail.com), then sign in with it once so its
 --      profile row exists.
---   3. update profiles set is_demo = true where email = 'demo@whatsonapp.uk';
+--   3. update profiles set is_demo = true where email = 'bob.67@hotmail.com';
 --
 -- CONTENTS
 --   16 venues · 60 upcoming events · 7 past events
@@ -40,10 +40,10 @@ do $$
 declare
   demo_user uuid;
 begin
-  select id into demo_user from profiles where email = 'demo@whatsonapp.uk';
+  select id into demo_user from profiles where email = 'bob.67@hotmail.com';
   if demo_user is null then
     raise exception
-      'No profile for demo@whatsonapp.uk. Create the account in Authentication → Users, sign in with it once, then re-run.';
+      'No profile for bob.67@hotmail.com. Create the account in Authentication → Users, sign in with it once, then re-run.';
   end if;
 
   -- Clear previous demo rows. Events and members cascade from venues, but
