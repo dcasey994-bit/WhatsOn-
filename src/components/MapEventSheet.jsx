@@ -40,7 +40,7 @@ export default function MapEventSheet({ event, onClose }) {
         </div>
 
         <h3 className="sheet-title">{event.name}</h3>
-        <p className="sheet-venue">📍 {event.venue} · {event.address}</p>
+        <p className="sheet-venue">📍 {event.venue}</p>
 
         {event.specialOffer && (
           <p className="sheet-offer">🎉 {event.specialOffer}</p>
