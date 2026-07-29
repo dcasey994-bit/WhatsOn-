@@ -72,6 +72,16 @@
   line-height: 1.4;
 }
 
+.sheet-venue-link {
+  display: inline-block;
+  text-align: left;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .sheet-offer {
   font-size: 12px;
   font-weight: 700;
