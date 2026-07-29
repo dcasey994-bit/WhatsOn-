@@ -21,7 +21,11 @@
 --   Coverage: Balham, Clapham (High Street, Old Town, Common), Battersea
 --   Rise, Northcote Road, Clapham Junction and Tooting.
 --
---   Venue names are fictional. Streets and coordinates are real South London
+--   Venue names are fictional, and phone numbers all sit inside Ofcom's
+--   reserved 020 7946 0000-0999 range for drama, so nothing here can dial a
+--   real person. Websites use the reserved example.com domain.
+--
+--   Streets and coordinates are real South London
 --   so the map looks right, but no real business is named or described — a
 --   demo row can never misrepresent an actual pub.
 --
@@ -67,28 +71,28 @@ begin
     ('The Hopfield Arms',       '42 Bedford Hill, Balham, SW12 9RG',            51.4421, -0.1498, '020 7946 0114', 'https://example.com/hopfield',  180, 'Pub & Live Music Venue', 'active'),
     ('The Gilded Ferret',       '8 Chestnut Grove, Balham, SW12 8JB',           51.4448, -0.1543, '020 7946 0221', null,                            120, 'Bar',                    'trialing'),
     ('Nightjar & Crown',        '96 Balham High Road, Balham, SW12 9AA',        51.4459, -0.1521, '020 7946 0338', 'https://example.com/nightjar',  200, 'Pub',                    'active'),
-    ('The Larkspur',            '17 Ramsden Road, Balham, SW12 8QX',            51.4436, -0.1476, '020 7946 1114', 'https://example.com/larkspur',  140, 'Bar',                    'active'),
-    ('Bellweather & Sons',      '55 Balham Grove, Balham, SW12 8AZ',            51.4467, -0.1554, '020 7946 1221', null,                            170, 'Pub',                    'trialing'),
+    ('The Larkspur',            '17 Ramsden Road, Balham, SW12 8QX',            51.4436, -0.1476, '020 7946 0401', 'https://example.com/larkspur',  140, 'Bar',                    'active'),
+    ('Bellweather & Sons',      '55 Balham Grove, Balham, SW12 8AZ',            51.4467, -0.1554, '020 7946 0412', null,                            170, 'Pub',                    'trialing'),
     -- Clapham
     ('The Velvet Antler',       '27 Clapham High Street, Clapham, SW4 7TR',     51.4638, -0.1339, '020 7946 0445', null,                            150, 'Bar',                    'active'),
     ('The Paper Lantern',       '5 Venn Street, Clapham, SW4 0AT',              51.4622, -0.1381, '020 7946 0552', 'https://example.com/lantern',   220, 'Live Music Venue',       'active'),
     ('Hartley''s Social',       '61 Clapham Manor Street, Clapham, SW4 6DZ',    51.4645, -0.1392, '020 7946 0669', null,                            160, 'Pub',                    'trialing'),
     ('The Brass Monkey Rooms',  '3 The Pavement, Clapham, SW4 0HY',             51.4610, -0.1387, '020 7946 0776', 'https://example.com/brass',     300, 'Club',                   'active'),
-    ('The Crooked Compass',     '112 Clapham Park Road, Clapham, SW4 7BZ',      51.4599, -0.1341, '020 7946 1338', null,                            185, 'Pub',                    'active'),
-    ('Sable & Vine',            '9 Old Town, Clapham, SW4 0JT',                 51.4632, -0.1425, '020 7946 1445', 'https://example.com/sable',     105, 'Bar',                    'active'),
+    ('The Crooked Compass',     '112 Clapham Park Road, Clapham, SW4 7BZ',      51.4599, -0.1341, '020 7946 0423', null,                            185, 'Pub',                    'active'),
+    ('Sable & Vine',            '9 Old Town, Clapham, SW4 0JT',                 51.4632, -0.1425, '020 7946 0434', 'https://example.com/sable',     105, 'Bar',                    'active'),
     -- Tooting
     ('The Copper Kettle Tavern','88 Tooting High Street, Tooting, SW17 0RN',    51.4278, -0.1685, '020 7946 0883', null,                            140, 'Pub',                    'active'),
     ('Marlowe''s Tap Room',     '21 Mitcham Road, Tooting, SW17 9PA',           51.4269, -0.1662, '020 7946 0990', 'https://example.com/marlowes',  110, 'Bar',                    'trialing'),
-    ('The Rowan Tree',          '14 Upper Tooting Road, Tooting Bec, SW17 7PG', 51.4342, -0.1621, '020 7946 1007', null,                            190, 'Pub',                    'active'),
-    ('The Thornbury Arms',      '73 Garratt Lane, Tooting, SW17 0PD',           51.4301, -0.1712, '020 7946 1552', null,                            155, 'Pub',                    'trialing'),
-    ('The Ninth Wave',          '30 Trinity Road, Tooting Bec, SW17 7RE',       51.4365, -0.1648, '020 7946 1669', 'https://example.com/ninthwave', 240, 'Live Music Venue',       'active'),
+    ('The Rowan Tree',          '14 Upper Tooting Road, Tooting Bec, SW17 7PG', 51.4342, -0.1621, '020 7946 0456', null,                            190, 'Pub',                    'active'),
+    ('The Thornbury Arms',      '73 Garratt Lane, Tooting, SW17 0PD',           51.4301, -0.1712, '020 7946 0467', null,                            155, 'Pub',                    'trialing'),
+    ('The Ninth Wave',          '30 Trinity Road, Tooting Bec, SW17 7RE',       51.4365, -0.1648, '020 7946 0478', 'https://example.com/ninthwave', 240, 'Live Music Venue',       'active'),
     -- Clapham Old Town, Battersea Rise, Northcote Road & Clapham Junction
-    ('The Old Town Bell',       '22 The Polygon, Clapham Old Town, SW4 0JG',    51.4640, -0.1412, '020 7946 1776', null,                            145, 'Pub & Live Music Venue', 'active'),
-    ('The Tallow Chandler',     '31 Battersea Rise, SW11 1HG',                  51.4601, -0.1648, '020 7946 1883', 'https://example.com/tallow',    165, 'Pub & Live Music Venue', 'active'),
-    ('The Gasworks Tavern',     '88 Northcote Road, SW11 6QW',                  51.4578, -0.1662, '020 7946 1990', null,                            175, 'Pub & Live Music Venue', 'trialing'),
-    ('Rye & Rosemary',          '142 Northcote Road, SW11 6QZ',                 51.4562, -0.1659, '020 7946 2007', 'https://example.com/rye',        95, 'Bar',                    'active'),
-    ('Sixpenny Records',        '54 St John''s Hill, SW11 1SA',                 51.4638, -0.1698, '020 7946 2114', 'https://example.com/sixpenny',  130, 'Live Music Venue',       'active'),
-    ('The Junction Vaults',     '9 Lavender Hill, SW11 5QG',                    51.4652, -0.1668, '020 7946 2221', null,                            200, 'Pub & Live Music Venue', 'trialing')
+    ('The Old Town Bell',       '22 The Polygon, Clapham Old Town, SW4 0JG',    51.4640, -0.1412, '020 7946 0489', null,                            145, 'Pub & Live Music Venue', 'active'),
+    ('The Tallow Chandler',     '31 Battersea Rise, SW11 1HG',                  51.4601, -0.1648, '020 7946 0501', 'https://example.com/tallow',    165, 'Pub & Live Music Venue', 'active'),
+    ('The Gasworks Tavern',     '88 Northcote Road, SW11 6QW',                  51.4578, -0.1662, '020 7946 0512', null,                            175, 'Pub & Live Music Venue', 'trialing'),
+    ('Rye & Rosemary',          '142 Northcote Road, SW11 6QZ',                 51.4562, -0.1659, '020 7946 0523', 'https://example.com/rye',        95, 'Bar',                    'active'),
+    ('Sixpenny Records',        '54 St John''s Hill, SW11 1SA',                 51.4638, -0.1698, '020 7946 0534', 'https://example.com/sixpenny',  130, 'Live Music Venue',       'active'),
+    ('The Junction Vaults',     '9 Lavender Hill, SW11 5QG',                    51.4652, -0.1668, '020 7946 0545', null,                            200, 'Pub & Live Music Venue', 'trialing')
   ) as v(name, address, lat, lng, phone, website, capacity, type, sub);
 
   -- ── Team access for the demo account ─────────────────────────────────────
