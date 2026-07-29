@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Marker, Tooltip, useMap } from 'react-leaflet'
 import { divIcon } from 'leaflet'
-import { useNavigate } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css'
 import { CATEGORIES, getCategory } from '../data/events.js'
 import { useEvents, useEventsError, useEventsLoading, useReloadEvents } from '../data/EventsContext.jsx'
@@ -13,6 +12,7 @@ import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import DayStrip from '../components/DayStrip.jsx'
 import MapEventSheet from '../components/MapEventSheet.jsx'
+import MapVenueSheet from '../components/MapVenueSheet.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
 import './DiscoverPage.css'
 
@@ -78,6 +78,7 @@ export default function DiscoverPage() {
   const [category, setCategory] = useState('all')
   const [day, setDay] = useState(() => todayKey())
   const [selected, setSelected] = useState(null)
+  const [selectedVenue, setSelectedVenue] = useState(null)
   const [venues, setVenues] = useState([])
   const [venuesError, setVenuesError] = useState(false)
   const events = useEvents()
@@ -85,7 +86,6 @@ export default function DiscoverPage() {
   const eventsLoading = useEventsLoading()
   const reloadEvents = useReloadEvents()
   const { coords } = useUserLocation()
-  const navigate = useNavigate()
   const theme = useResolvedTheme()
   const userPinIcon = useMemo(() => makeUserPinIcon(theme), [theme])
   const venuePinIcon = useMemo(() => makeVenuePinIcon(theme), [theme])
@@ -117,6 +117,7 @@ export default function DiscoverPage() {
   function switchMode(mode) {
     setMapMode(mode)
     setSelected(null)
+    setSelectedVenue(null)
   }
 
   return (
@@ -193,13 +194,13 @@ export default function DiscoverPage() {
             )
           })}
 
-          {/* Venues mode — pins that open the venue's profile */}
+          {/* Venues mode — pins open a summary sheet, not the page directly */}
           {mapMode === 'venues' && venues.map(venue => (
             <Marker
               key={venue.id}
               position={[venue.lat, venue.lng]}
               icon={venuePinIcon}
-              eventHandlers={{ click: () => navigate(`/venue/${venue.id}`) }}
+              eventHandlers={{ click: () => setSelectedVenue(venue) }}
             >
               <Tooltip direction="top" offset={[0, -32]}>{venue.name}</Tooltip>
             </Marker>
@@ -214,6 +215,16 @@ export default function DiscoverPage() {
 
         {mapMode === 'events' && (
           <MapEventSheet event={selected} onClose={() => setSelected(null)} />
+        )}
+
+        {mapMode === 'venues' && (
+          <MapVenueSheet
+            venue={selectedVenue}
+            eventCount={selectedVenue
+              ? events.filter(e => e.venueId === selectedVenue.id).length
+              : 0}
+            onClose={() => setSelectedVenue(null)}
+          />
         )}
 
         {mapMode === 'events' && (

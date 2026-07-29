@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getCategory } from '../data/events.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
+import './map-sheet.css'
 import './MapEventSheet.css'
 
 export default function MapEventSheet({ event, onClose }) {
