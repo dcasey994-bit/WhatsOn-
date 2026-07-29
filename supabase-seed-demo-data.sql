@@ -11,7 +11,7 @@
 --   3. update profiles set is_demo = true where email = 'bob.67@hotmail.com';
 --
 -- CONTENTS
---   24 venues · 45 weekly events · 7 past events
+--   32 venues · 62 weekly events · 7 past events
 --   Balham · Clapham · Clapham Junction / Northcote Road · Tooting
 --
 -- ⚠ ABOUT THE DATA — READ BEFORE SHOWING THIS TO ANYONE
@@ -88,7 +88,18 @@ begin
     ('Tooting Tavern',       'Tooting High Street, Tooting, SW17 0SF',            51.4278, -0.1685, 'https://thetootingtavern.co.uk',     170, 'Pub & Live Music Venue', 'active'),
     ('The Trafalgar Arms',   '148-158 Tooting High Street, Tooting, SW17 0RT',    51.4285, -0.1690, 'https://thetrafalgararms.co.uk',     200, 'Pub',                    'active'),
     ('The Wheatsheaf',       '2 Upper Tooting Road, Tooting Bec, SW17 7TS',       51.4342, -0.1621, null,                                 180, 'Pub',                    'trialing'),
-    ('Ramble Inn',           'Mitcham Road, Tooting, SW17 9JG',                   51.4269, -0.1662, null,                                 110, 'Pub',                    'active')
+    ('Ramble Inn',           'Mitcham Road, Tooting, SW17 9JG',                   51.4269, -0.1662, null,                                 110, 'Pub',                    'active'),
+    ('The Selkirk',          '60 Selkirk Road, Tooting, SW17 0ES',                51.4318, -0.1668, null,                                 160, 'Pub',                    'active'),
+    ('Castle Tooting',       'Tooting High Street, Tooting, SW17 0RG',            51.4288, -0.1682, 'https://castletooting.com',          180, 'Pub',                    'trialing'),
+    -- More SW11 (Battersea / Lavender Hill)
+    ('The Thieves',          '51 Lavender Gardens, SW11 1DJ',                     51.4630, -0.1622, null,                                 170, 'Pub',                    'active'),
+    ('The Crown',            '102 Lavender Hill, SW11 5RD',                       51.4661, -0.1610, null,                                 150, 'Pub',                    'trialing'),
+    -- More SW4 (Clapham / Abbeville / Clapham North)
+    ('The Abbeville',        'Abbeville Road, Clapham, SW4 9JW',                  51.4551, -0.1385, 'https://theabbeville.co.uk',         140, 'Pub',                    'active'),
+    ('The Landor',           'Landor Road, Clapham, SW9 9PH',                     51.4661, -0.1215, 'https://thelandorpub.com',           160, 'Pub & Live Music Venue', 'active'),
+    ('The Nel',              'Clapham Common North Side, SW4 0QW',                51.4648, -0.1425, 'https://thenel.co.uk',               190, 'Pub',                    'active'),
+    -- More SW12 (Balham / Clapham South)
+    ('The Avalon',           '16 Balham Hill, Clapham South, SW12 9EB',           51.4506, -0.1487, 'https://theavalonlondon.com',        200, 'Pub',                    'active')
   ) as v(name, address, lat, lng, website, capacity, type, sub);
 
   -- ── Team access for the demo account ─────────────────────────────────────
@@ -163,7 +174,23 @@ begin
     ('The Trafalgar Arms',  'Sunday Quiz',                'quiz',   0, '19:30'::time,  2.00, 170, 'Weekly Sunday quiz from 7:30pm on Tooting High Street.', null),
     ('The Northcote',       'Sunday Night Pub Quiz',      'quiz',   0, '19:30'::time,  2.00, 160, 'Traditional pub quiz every Sunday from 7.30pm. £50 bar tab for first, and a bottle of wine for second to last.', '£50 bar tab for first place'),
     ('Two Brewers',         'The Power of Three',         'comedy', 0, '19:00'::time,  0.00, 220, 'Three drag acts every Sunday. Free entry before 7pm.', 'Free entry before 7pm'),
-    ('Clapham North',       'Super Sunday Football',      'sports', 0, '16:30'::time,  0.00, 180, 'The Sunday afternoon fixtures across the screens at Clapham North.', null)  -- ~time
+    ('Clapham North',       'Super Sunday Football',      'sports', 0, '16:30'::time,  0.00, 180, 'The Sunday afternoon fixtures across the screens at Clapham North.', null),  -- ~time
+    -- ── Added on the SW4 / SW11 / SW12 / SW17 sweep ─────────────────────────
+    ('The Avalon',          'Pub Quiz',                   'quiz',   1, '20:00'::time,  2.50, 170, 'Monday quiz at Clapham South. Teams of up to six, rounds on TV themes, mystery voices, music and pictures. £50 first prize.', '£50 first prize'),
+    ('The Thieves',         'The Big Quiffy Quiz',        'quiz',   2, '20:00'::time,  2.50, 150, 'Lavender Gardens'' Tuesday quiz, running 8pm to 10:30pm. £2.50 per person.', null),
+    ('The Abbeville',       'Pub Quiz',                   'quiz',   2, '20:00'::time,  2.00, 120, 'Weekly quiz at the only pub on Abbeville Road.', null),  -- ~day
+    ('The Crown',           'Pub Quiz',                   'quiz',   3, '20:00'::time,  2.50, 130, 'Quiz night at The Crown on Lavender Hill. £2.50 to play.', null),  -- ~day
+    ('The Landor',          'Quiz Night',                 'quiz',   3, '20:00'::time,  2.00, 140, 'Regular quiz night at The Landor, a Clapham pub with a theatre upstairs.', null),  -- ~day
+    ('Castle Tooting',      'Wednesday Quiz',             'quiz',   3, '20:00'::time,  2.00, 160, 'Long-running Wednesday quiz at the Castle in Tooting.', null),  -- ~time
+    ('The Selkirk',         'Pub Quiz',                   'quiz',   4, '20:00'::time,  2.00, 140, 'Thursday quiz at this Victorian two-bar pub, with a large walled garden out the back.', null),
+    ('The Abbeville',       'Comedy Night',               'comedy', 4, '20:00'::time,  8.00, 110, 'Regular comedy evenings alongside the wine tastings and quizzes at The Abbeville.', null),  -- ~day
+    ('The Abbeville',       'Live Music',                 'music',  5, '20:00'::time,  0.00, 120, 'Live music at The Abbeville, Clapham.', null),  -- ~day
+    ('The Landor',          'Karaoke Night',              'comedy', 5, '21:00'::time,  0.00, 140, 'Karaoke with a difference — recently picked out by Time Out.', null),  -- ~day
+    ('The Avalon',          'Friday DJs',                 'music',  5, '21:00'::time,  0.00, 180, 'DJs from 9pm through to 1am every Friday.', null),
+    ('The Landor',          'Live Music & DJs',           'music',  6, '21:00'::time,  0.00, 150, 'Live music and DJ sets at The Landor.', null),  -- ~day
+    ('The Avalon',          'Saturday DJs',               'music',  6, '21:00'::time,  0.00, 180, 'DJs from 9pm through to 1am every Saturday.', null),
+    ('The Nel',             'Saturday Live Sport',        'sports', 6, '15:00'::time,  0.00, 170, 'The Saturday fixtures across the screens, with a terrace overlooking Clapham Common.', null),  -- ~time
+    ('The Nel',             'Quiz of Legends',            'quiz',   0, '19:00'::time,  2.00, 170, 'Quiz of Legends every Sunday night from 7pm at The Nel.', null)
   ) as e(venue_name, name, category, dow, time, price, capacity, description, offer)
   join venues v on v.name = e.venue_name and v.is_demo;
 
