@@ -8,6 +8,7 @@ import {
   fetchVenueMembers, addVenueMember, removeVenueMember, updateMemberRole,
   updateVenue, geocodeAddress, normalizeWebsite,
 } from '../data/eventsStore.js'
+import { VENUE_TYPES, venueTypeOptions } from '../data/venueTypes.js'
 import { getUser } from '../data/authStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
@@ -19,11 +20,6 @@ const BLANK_EVENT = {
   price: '', capacity: '', ticket_url: '', description: '', image_url: '',
   special_offer: '',
 }
-
-const VENUE_TYPES = [
-  'Pub & Live Music Venue', 'Live Music Venue', 'Bar', 'Club',
-  'Theatre', 'Comedy Club', 'Restaurant', 'Other',
-]
 
 export default function VenueManagePage() {
   const { id } = useParams()
@@ -396,7 +392,7 @@ export default function VenueManagePage() {
             <label>
               Venue type
               <select value={venueForm.type} onChange={setVF('type')}>
-                {VENUE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                {venueTypeOptions(venue.type).map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </label>
             <div className="form-row">

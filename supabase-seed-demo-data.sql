@@ -11,13 +11,16 @@
 --   3. update profiles set is_demo = true where email = 'bob.67@hotmail.com';
 --
 -- CONTENTS
---   16 venues · 60 upcoming events · 7 past events
+--   22 venues · 78 upcoming events · 7 past events
 --
 --   Everything a customer can see is in the coming week. The 7 past events
 --   are venue-side only, populating the Past Events tab, and are dated
 --   beyond the window the roll-forward job sweeps so they stay put.
 --
 -- ABOUT THE DATA
+--   Coverage: Balham, Clapham (High Street, Old Town, Common), Battersea
+--   Rise, Northcote Road, Clapham Junction and Tooting.
+--
 --   Venue names are fictional. Streets and coordinates are real South London
 --   so the map looks right, but no real business is named or described — a
 --   demo row can never misrepresent an actual pub.
@@ -78,7 +81,14 @@ begin
     ('Marlowe''s Tap Room',     '21 Mitcham Road, Tooting, SW17 9PA',           51.4269, -0.1662, '020 7946 0990', 'https://example.com/marlowes',  110, 'Bar',                    'trialing'),
     ('The Rowan Tree',          '14 Upper Tooting Road, Tooting Bec, SW17 7PG', 51.4342, -0.1621, '020 7946 1007', null,                            190, 'Pub',                    'active'),
     ('The Thornbury Arms',      '73 Garratt Lane, Tooting, SW17 0PD',           51.4301, -0.1712, '020 7946 1552', null,                            155, 'Pub',                    'trialing'),
-    ('The Ninth Wave',          '30 Trinity Road, Tooting Bec, SW17 7RE',       51.4365, -0.1648, '020 7946 1669', 'https://example.com/ninthwave', 240, 'Live Music Venue',       'active')
+    ('The Ninth Wave',          '30 Trinity Road, Tooting Bec, SW17 7RE',       51.4365, -0.1648, '020 7946 1669', 'https://example.com/ninthwave', 240, 'Live Music Venue',       'active'),
+    -- Clapham Old Town, Battersea Rise, Northcote Road & Clapham Junction
+    ('The Old Town Bell',       '22 The Polygon, Clapham Old Town, SW4 0JG',    51.4640, -0.1412, '020 7946 1776', null,                            145, 'Pub & Live Music Venue', 'active'),
+    ('The Tallow Chandler',     '31 Battersea Rise, SW11 1HG',                  51.4601, -0.1648, '020 7946 1883', 'https://example.com/tallow',    165, 'Pub & Live Music Venue', 'active'),
+    ('The Gasworks Tavern',     '88 Northcote Road, SW11 6QW',                  51.4578, -0.1662, '020 7946 1990', null,                            175, 'Pub & Live Music Venue', 'trialing'),
+    ('Rye & Rosemary',          '142 Northcote Road, SW11 6QZ',                 51.4562, -0.1659, '020 7946 2007', 'https://example.com/rye',        95, 'Bar',                    'active'),
+    ('Sixpenny Records',        '54 St John''s Hill, SW11 1SA',                 51.4638, -0.1698, '020 7946 2114', 'https://example.com/sixpenny',  130, 'Live Music Venue',       'active'),
+    ('The Junction Vaults',     '9 Lavender Hill, SW11 5QG',                    51.4652, -0.1668, '020 7946 2221', null,                            200, 'Pub & Live Music Venue', 'trialing')
   ) as v(name, address, lat, lng, phone, website, capacity, type, sub);
 
   -- ── Team access for the demo account ─────────────────────────────────────
@@ -171,7 +181,26 @@ begin
     ('The Ninth Wave',          'Acoustic Evening with Nora Vale', 'music', 4, '20:00'::time, 9.00, 180, 'A solo set, entirely unplugged, with the bar closed during songs. Sells out most times she plays.', null),
     ('The Copper Kettle Tavern','Charity Quiz Night',        'quiz',   4, '19:30'::time,  5.00,  90, 'Fundraiser for the local food bank. Raffle between rounds and every penny of the entry goes across.', null),
     ('The Paper Lantern',       'Comedy Gala Fundraiser',    'comedy', 0, '19:30'::time, 12.00, 210, 'Eight comics donating their time for the local hospice. Runs long, nobody minds.', null),
-    ('The Hopfield Arms',       'Summer Garden Party',       'music',  0, '14:00'::time,  0.00, 180, 'An all-dayer in the beer garden with three bands, a barbecue and considerably better weather than forecast.', 'Garden BBQ plate and a pint £13')
+    ('The Hopfield Arms',       'Summer Garden Party',       'music',  0, '14:00'::time,  0.00, 180, 'An all-dayer in the beer garden with three bands, a barbecue and considerably better weather than forecast.', 'Garden BBQ plate and a pint £13'),
+    -- ── Clapham Old Town, Battersea Rise, Northcote Rd & the Junction ──────
+    ('The Gasworks Tavern',     'Gasworks Quiz Night',       'quiz',   1, '20:00'::time,  2.00, 130, 'Northcote Road''s toughest quiz. Six rounds, a picture round that trips everyone, and a bar tab for the winners.', '£50 bar tab for first place'),
+    ('The Tallow Chandler',     'Battersea Rise Quiz',       'quiz',   1, '19:30'::time,  2.50, 120, 'Monday night quiz with a wine round that has caused arguments. Teams of six, cash prize, bottle for last place.', null),
+    ('The Junction Vaults',     'Monday Night Football',     'sports', 1, '20:00'::time,  0.00, 180, 'The Monday night Premier League game across the vaulted back bar, sound on and the kitchen open late.', null),
+    ('Rye & Rosemary',          'Wine Down Tuesday',         'music',  2, '19:00'::time,  0.00,  80, 'A guitarist in the window and something unusual open by the glass. The quietest good night out on Northcote Road.', 'Half-price bottles all evening'),
+    ('The Old Town Bell',       'Old Town Quiz',             'quiz',   2, '20:00'::time,  2.00, 120, 'Seven rounds, spot jackpots between them, and a £50 first prize. Arrive early, it fills by half seven.', 'Spot jackpots between every round'),
+    ('The Tallow Chandler',     'Wing Wednesday & Live Sport','sports',3, '19:00'::time,  0.00, 150, 'Midweek football on every screen with wings coming out of the kitchen all night.', '£1 wings all night'),
+    ('Sixpenny Records',        'Vinyl Wednesdays',          'music',  3, '19:30'::time,  0.00, 110, 'Bring a record, play a side. The bar''s decks are open to anyone with something worth hearing.', null),
+    ('The Gasworks Tavern',     'Thursday Comedy Club',      'comedy', 4, '20:00'::time,  5.00, 120, 'Four acts and a compere in the back room. Cheap in, and the beer is cheaper than town.', null),
+    ('Sixpenny Records',        'Open Decks Thursday',       'music',  4, '20:00'::time,  0.00, 110, 'Thirty-minute slots for anyone with a USB or a bag of records. Sign up at the bar from seven.', null),
+    ('Rye & Rosemary',          'Friday Night Sessions',     'music',  5, '21:00'::time,  0.00,  90, 'Soul, funk and a bit of disco from a rotating cast of local players. Free in, busy by nine.', null),
+    ('Sixpenny Records',        'Friday Night Rock & Roll',  'music',  5, '21:00'::time,  5.00, 130, 'Loud guitars in a small room, the way it is meant to be. Pizza served until midnight.', null),
+    ('The Old Town Bell',       'Acoustic Fridays',          'music',  5, '20:00'::time,  0.00, 120, 'Stripped-back sets from Old Town regulars. Two players, no amps, proper listening crowd.', null),
+    ('The Junction Vaults',     'Comedy at the Vaults',      'comedy', 5, '20:00'::time,  6.00, 160, 'Circuit comics working out new material under the arches. Low ceiling, big laughs.', null),
+    ('The Gasworks Tavern',     'Premier League Saturday',   'sports', 6, '15:00'::time,  0.00, 160, 'The Saturday 3pm kick-offs plus the late game, on every screen and out in the covered yard.', 'Pints £4 during all live football'),
+    ('The Tallow Chandler',     'Saturday Live',             'music',  6, '21:00'::time,  0.00, 150, 'A different band every Saturday — soul, ska, indie, whatever the landlord has booked. Always free.', null),
+    ('Sixpenny Records',        'Saturday Night Live Band',  'music',  6, '21:00'::time,  6.00, 130, 'The week''s headline booking. Touring bands on the way up, plus a local support act.', null),
+    ('Rye & Rosemary',          'Sunday Roast Quiz',         'quiz',   0, '19:30'::time,  2.00,  85, 'Roast first, quiz after. Gentle rounds, generous marking and a bottle of wine for second-to-last.', 'Quiz entry free with a roast'),
+    ('The Old Town Bell',       'Super Sunday Football',     'sports', 0, '16:30'::time,  0.00, 130, 'The Sunday afternoon Premier League fixtures, with the 4:30 game on the big screen in the snug.', null)
   ) as e(venue_name, name, category, dow, time, price, capacity, description, offer)
   join venues v on v.name = e.venue_name and v.is_demo;
 

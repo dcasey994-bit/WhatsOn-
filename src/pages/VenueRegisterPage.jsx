@@ -1,18 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { registerVenue, geocodeAddress, normalizeWebsite } from '../data/eventsStore.js'
+import { VENUE_TYPES } from '../data/venueTypes.js'
 import Header from '../components/Header.jsx'
 import './VenuePage.css'
 
 const BLANK_VENUE = {
   name: '', address: '',
-  phone: '', website: '', capacity: '', type: 'Pub & Live Music Venue',
+  phone: '', website: '', capacity: '', type: 'Pub',
 }
-
-const VENUE_TYPES = [
-  'Pub & Live Music Venue', 'Live Music Venue', 'Bar', 'Club',
-  'Theatre', 'Comedy Club', 'Restaurant', 'Other',
-]
 
 export default function VenueRegisterPage() {
   const navigate = useNavigate()
