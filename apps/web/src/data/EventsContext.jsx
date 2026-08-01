@@ -9,7 +9,12 @@ export function EventsProvider({ children }) {
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // undefined = we have not heard back from Supabase about who we are yet.
+  // null = definitely signed out. A string = that user's id.
+  const [userId, setUserId] = useState(undefined)
+
   const load = useCallback(async () => {
+    setLoading(true)
     try {
       setEvents(await fetchUpcomingEvents())
       setError(false)
@@ -19,7 +24,38 @@ export function EventsProvider({ children }) {
     setLoading(false)
   }, [])
 
+  // Which events are visible depends entirely on who is asking — the demo
+  // account sees demo data, everyone else sees live data, and that is enforced
+  // by RLS. So the fetch has to wait for the session and re-run when it
+  // changes. Previously it ran once on mount, which meant signing in left the
+  // app holding the empty list it had fetched while signed out.
   useEffect(() => {
+    let active = true
+
+    // Sessions are restored from storage asynchronously, so on a cold start
+    // this can resolve after the first render.
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (active) setUserId(session?.user?.id ?? null)
+      })
+      .catch(() => { if (active) setUserId(null) })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Only a change of identity matters. Token refreshes fire this too and
+      // keep the same id; returning `prev` makes React skip the re-render.
+      const next = session?.user?.id ?? null
+      setUserId(prev => (prev === next ? prev : next))
+    })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (userId === undefined) return   // still resolving — stay in the loading state
     load()
 
     // Live updates — new events appear on map instantly, deletions disappear
@@ -53,8 +89,10 @@ export function EventsProvider({ children }) {
       )
       .subscribe()
 
+    // Rebuilt on identity change as well, so the realtime subscription is
+    // authenticated as the current user rather than whoever opened the app.
     return () => supabase.removeChannel(channel)
-  }, [load])
+  }, [userId, load])
 
   return (
     <EventsContext.Provider value={{ events, reload: load, error, loading }}>
