@@ -1,4 +1,7 @@
+# The web app lives in apps/web so a future native app can sit alongside it.
+# `base` makes every other path here relative to that directory.
 [build]
+  base = "apps/web"
   command = "npm run build"
   publish = "dist"
   functions = "netlify/functions"

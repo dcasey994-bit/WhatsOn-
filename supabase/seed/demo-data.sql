@@ -4,7 +4,7 @@
 -- (it clears and rebuilds all demo rows; live data is never touched).
 --
 -- PREREQUISITES
---   1. Run supabase-migration-demo-mode.sql first.
+--   1. Run supabase/migrations/006_demo_mode.sql first.
 --   2. Create the demo account: Authentication → Users → Add user
 --      (email bob.67@hotmail.com), then sign in with it once so its
 --      profile row exists.

@@ -10,7 +10,7 @@
 -- sees ONLY live data. Because it is RLS, demo rows cannot leak through the
 -- map, a shared link, or a direct query with the public anon key.
 --
--- Run this BEFORE supabase-seed-demo-data.sql.
+-- Run this BEFORE supabase/seed/demo-data.sql.
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── 1. Flags ─────────────────────────────────────────────────────────────────

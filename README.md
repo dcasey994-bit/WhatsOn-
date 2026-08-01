@@ -1,16 +1,48 @@
-# React + Vite
+# WhatsOn?
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Find live music, entertainment, quiz nights and live sport happening tonight in
+Clapham, Balham and Tooting. Customers discover events on a map; venues list
+their own events.
 
-Currently, two official plugins are available:
+Live at **[whatsonapp.uk](https://whatsonapp.uk)**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Layout
 
-## React Compiler
+```
+apps/
+  web/                  React 19 + Vite web app (also the PWA / TWA source)
+    src/
+    public/
+    netlify/functions/  Stripe webhook
+supabase/
+  migrations/           Numbered SQL migrations — run in order
+  seed/                 Demo data seed
+netlify.toml            Root config; builds from apps/web
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+A native Android app, if one is built, goes in `apps/android/` alongside the web
+app so both share one set of Supabase migrations.
 
-## Expanding the ESLint configuration
+## Running the web app
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+Copy `apps/web/.env.example` to `apps/web/.env` and fill in the Supabase keys.
+
+## Database
+
+Run the files in `supabase/migrations/` **in numerical order** in the Supabase
+SQL editor. They are idempotent, so re-running one is safe.
+
+`supabase/seed/demo-data.sql` populates the demo account's data and must run
+after `006_demo_mode.sql`.
+
+## Deployment
+
+Netlify builds from `apps/web` (set via `base` in `netlify.toml`) and deploys on
+every push to `claude/live-events-map-vRHxH`. The free plan allows 30 builds a
+month, so push in batches.
