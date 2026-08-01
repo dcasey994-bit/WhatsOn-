@@ -1,8 +1,16 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase.js'
+import { isNative } from '../lib/platform.js'
 import { fetchUpcomingEvents, dbEventToLocal } from './eventsStore.js'
 
 const EventsContext = createContext({ events: [], reload: () => {}, error: false, loading: true })
+
+// How old the list may be before returning to the app is worth a refetch.
+// Realtime keeps things current while the app is open; this covers the case
+// where it was not — asleep in the background, or offline.
+const STALE_AFTER_MS = 5 * 60 * 1000
+
+const byStartTime = (a, b) => (a.startsAt || a.time).localeCompare(b.startsAt || b.time)
 
 export function EventsProvider({ children }) {
   const [events, setEvents] = useState([])
@@ -13,16 +21,26 @@ export function EventsProvider({ children }) {
   // null = definitely signed out. A string = that user's id.
   const [userId, setUserId] = useState(undefined)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const lastLoadedAt = useRef(0)
+
+  // `silent` skips the loading state, so a background refresh does not blank
+  // out a screen the user is already looking at.
+  const load = useCallback(async (opts) => {
+    const silent = opts?.silent === true
+    if (!silent) setLoading(true)
     try {
       setEvents(await fetchUpcomingEvents())
       setError(false)
     } catch {
       setError(true)
     }
+    lastLoadedAt.current = Date.now()
     setLoading(false)
   }, [])
+
+  const reloadIfStale = useCallback(() => {
+    if (Date.now() - lastLoadedAt.current > STALE_AFTER_MS) load({ silent: true })
+  }, [load])
 
   // Which events are visible depends entirely on who is asking — the demo
   // account sees demo data, everyone else sees live data, and that is enforced
@@ -58,27 +76,42 @@ export function EventsProvider({ children }) {
     if (userId === undefined) return   // still resolving — stay in the loading state
     load()
 
-    // Live updates — new events appear on map instantly, deletions disappear
+    // Pull one row and reconcile it into the list. The realtime payload alone
+    // is not enough — it carries no joined venue, and for an UPDATE it cannot
+    // say whether the row is still visible to this user under RLS.
+    const syncRow = async id => {
+      const { data } = await supabase
+        .from('events')
+        .select('*, venues(name, address, lat, lng)')
+        .eq('id', id)
+        // maybeSingle, not single: zero rows is a legitimate answer here — the
+        // event may have been edited out of view rather than deleted.
+        .maybeSingle()
+
+      const today = new Date().toISOString().split('T')[0]
+      const drop = !data || data.date < today
+
+      setEvents(prev => {
+        const without = prev.filter(e => String(e.id) !== String(id))
+        // Rescheduled into the past, or no longer ours to see.
+        if (drop) return without
+        return [...without, dbEventToLocal(data)].sort(byStartTime)
+      })
+    }
+
+    // Live updates — new events appear on the map instantly, deletions
+    // disappear, and edits (time changes, renames, offers) are picked up.
     const channel = supabase
       .channel('events-realtime')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'events' },
-        async ({ new: row }) => {
-          const { data } = await supabase
-            .from('events')
-            .select('*, venues(name, address, lat, lng)')
-            .eq('id', row.id)
-            .single()
-          if (data) {
-            const today = new Date().toISOString().split('T')[0]
-            if (data.date >= today) {
-              setEvents(prev => [...prev, dbEventToLocal(data)].sort(
-                (a, b) => (a.startsAt || a.time).localeCompare(b.startsAt || b.time)
-              ))
-            }
-          }
-        }
+        ({ new: row }) => syncRow(row.id)
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'events' },
+        ({ new: row }) => syncRow(row.id)
       )
       .on(
         'postgres_changes',
@@ -93,6 +126,34 @@ export function EventsProvider({ children }) {
     // authenticated as the current user rather than whoever opened the app.
     return () => supabase.removeChannel(channel)
   }, [userId, load])
+
+  // Refetch when the app comes back to the foreground. This matters far more
+  // in the native shell than on the web: a browser tab gets reloaded all the
+  // time, whereas an Android app can sit in memory for days, and realtime
+  // delivers nothing while the connection is asleep.
+  useEffect(() => {
+    if (isNative()) {
+      let remove
+      let cancelled = false
+      import('@capacitor/app')
+        .then(({ App }) =>
+          App.addListener('appStateChange', ({ isActive }) => {
+            if (isActive) reloadIfStale()
+          })
+        )
+        .then(handle => {
+          if (cancelled) handle.remove()
+          else remove = () => handle.remove()
+        })
+      return () => { cancelled = true; remove?.() }
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') reloadIfStale()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [reloadIfStale])
 
   return (
     <EventsContext.Provider value={{ events, reload: load, error, loading }}>
