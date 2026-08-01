@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { getUser, initAuth } from './data/authStore.js'
+import { getUser, initAuth, initNativeAuthBridge } from './data/authStore.js'
 import { loadSavedFromDB } from './data/savedStore.js'
 import { loadGoingCounts } from './data/goingStore.js'
 import { EventsProvider } from './data/EventsContext.jsx'
@@ -38,6 +38,15 @@ export default function App() {
       loadGoingCounts()          // public counts — no account needed
       if (u) loadSavedFromDB()   // personal saves need one
     })
+  }, [])
+
+  // Native only: catches the deep link Google sends us back on after OAuth.
+  useEffect(() => {
+    let cleanup
+    initNativeAuthBridge(err => {
+      console.error('Native sign-in failed:', err)
+    }).then(fn => { cleanup = fn })
+    return () => cleanup?.()
   }, [])
 
   if (!ready) return <div className="app-loading" />
