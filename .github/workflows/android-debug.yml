@@ -1,0 +1,89 @@
+name: Android debug APK
+
+# Builds an installable debug APK so the app can be tested on a real phone
+# without a local Android Studio install. Download it from the "Artifacts"
+# section at the bottom of the run's summary page.
+
+on:
+  push:
+    branches: [claude/live-events-map-vRHxH]
+    # The native project is just a shell around the web build, so anything
+    # outside apps/web (docs, SQL migrations) cannot change the APK.
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/android-debug.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      # Capacitor 8 / Android Gradle Plugin need JDK 21.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      # compileSdk 36 is newer than the runner image ships with, so ask for it
+      # explicitly rather than relying on Gradle to fetch it.
+      - name: Install SDK platform
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      # These are baked into the bundle at build time. Without them the APK
+      # installs fine but cannot reach Supabase, which looks like an app bug
+      # rather than a missing secret — so fail here, loudly, instead.
+      - name: Check required secrets
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          missing=""
+          [ -z "$VITE_SUPABASE_URL" ]      && missing="$missing VITE_SUPABASE_URL"
+          [ -z "$VITE_SUPABASE_ANON_KEY" ] && missing="$missing VITE_SUPABASE_ANON_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing"
+            echo "Add them under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PAYMENT_LINK: ${{ secrets.VITE_STRIPE_PAYMENT_LINK }}
+          VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
+        run: npm run build
+
+      - name: Copy web build into the native project
+        run: npx cap sync android
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Assemble debug APK
+        working-directory: apps/web/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: whatson-debug-${{ github.run_number }}
+          path: apps/web/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
