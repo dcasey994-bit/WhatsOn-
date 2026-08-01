@@ -1,1 +1,6 @@
+# Digital Asset Links must be served as a real file, not the SPA shell.
+# Android fetches this to verify the TWA — if it returns index.html the app
+# shows a browser address bar instead of running full-screen.
+/.well-known/assetlinks.json  /.well-known/assetlinks.json  200
+
 /*  /index.html  200

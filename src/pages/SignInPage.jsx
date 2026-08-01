@@ -152,9 +152,9 @@ export default function SignInPage() {
 
             <p className="signin-terms">
               By continuing you agree to our{' '}
-              <span className="terms-link">Terms of Service</span>
+              <button className="terms-link" onClick={() => navigate('/terms')}>Terms of Service</button>
               {' '}and{' '}
-              <span className="terms-link">Privacy Policy</span>
+              <button className="terms-link" onClick={() => navigate('/privacy')}>Privacy Policy</button>
             </p>
 
             <button

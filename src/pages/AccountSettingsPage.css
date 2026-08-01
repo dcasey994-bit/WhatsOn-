@@ -94,3 +94,21 @@
   padding: 2px 0;
   width: 100%;
 }
+
+.settings-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+}
+
+.settings-chevron {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-muted);
+}

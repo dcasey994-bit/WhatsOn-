@@ -95,6 +95,17 @@ export default function AccountSettingsPage() {
           </div>
         </section>
 
+        {/* About */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">About</h2>
+          <button className="settings-link-row" onClick={() => navigate('/privacy')}>
+            <span>Privacy Policy</span><span className="settings-chevron">›</span>
+          </button>
+          <button className="settings-link-row" onClick={() => navigate('/terms')}>
+            <span>Terms of Service</span><span className="settings-chevron">›</span>
+          </button>
+        </section>
+
         {/* Actions */}
         <section className="settings-section">
           <button className="settings-signout-btn" onClick={handleSignOut}>

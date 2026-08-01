@@ -15,6 +15,8 @@ import VenueProfilePage from './pages/VenueProfilePage.jsx'
 import VenueManagePage from './pages/VenueManagePage.jsx'
 import EventDetailPage from './pages/EventDetailPage.jsx'
 import AccountSettingsPage from './pages/AccountSettingsPage.jsx'
+import PrivacyPage from './pages/PrivacyPage.jsx'
+import TermsPage from './pages/TermsPage.jsx'
 import BottomNav from './components/BottomNav.jsx'
 
 // After signing in, return to wherever the user was when they hit the gate
@@ -54,6 +56,8 @@ export default function App() {
         <Route path="/saved" element={<SavedPage />} />
         <Route path="/event/:id" element={<EventDetailPage />} />
         <Route path="/venue/:id" element={<VenueProfilePage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
 
         {/* Account required */}
         <Route path="/settings" element={authed(<AccountSettingsPage />)} />
