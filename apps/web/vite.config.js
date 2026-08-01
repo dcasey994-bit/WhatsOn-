@@ -8,6 +8,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registered by hand in main.jsx so the native build can skip it — inside
+      // Capacitor the assets are already local, and a service worker there just
+      // adds a second cache that can serve stale files after an app update.
+      injectRegister: null,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'WhatsOn? — South London Live Events',

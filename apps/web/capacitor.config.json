@@ -1,0 +1,8 @@
+{
+  "appId": "uk.whatsonapp.app",
+  "appName": "WhatsOn?",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#0f0f14"
+  }
+}

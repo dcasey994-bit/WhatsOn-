@@ -13,6 +13,24 @@ dist-ssr
 *.local
 .env
 
+# Capacitor / Android.
+# The native project itself IS committed — it holds the manifest, resources and
+# signing config. These are build output or machine-specific.
+apps/web/android/build/
+apps/web/android/app/build/
+apps/web/android/.gradle/
+apps/web/android/local.properties
+apps/web/android/.idea/
+apps/web/android/app/release/
+apps/web/android/capacitor-cordova-android-plugins/
+# `npx cap copy` writes the whole web build in here — a duplicate of dist/.
+apps/web/android/app/src/main/assets/public/
+apps/web/android/app/src/main/assets/capacitor.config.json
+apps/web/android/app/src/main/assets/capacitor.plugins.json
+# Keystores must never be committed.
+*.keystore
+*.jks
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
