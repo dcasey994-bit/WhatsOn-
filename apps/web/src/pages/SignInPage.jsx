@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signIn, signInWithPassword, signUpWithEmail } from '../data/authStore.js'
+import { authErrorMessage } from '../data/authErrors.js'
 import './SignInPage.css'
 
 export default function SignInPage() {
@@ -19,8 +20,8 @@ export default function SignInPage() {
     try {
       await signIn(provider)
       // Supabase redirects the browser — no navigate() needed
-    } catch {
-      setError('Something went wrong. Please try again.')
+    } catch (err) {
+      setError(authErrorMessage(err))
       setLoading(null)
     }
   }
@@ -46,12 +47,8 @@ export default function SignInPage() {
         await signInWithPassword(email.trim(), password)
         // Auth state change handles the rest
       }
-    } catch {
-      setError(
-        isSignUp
-          ? 'Could not create the account. Try a different email.'
-          : 'Wrong email or password. Please try again.'
-      )
+    } catch (err) {
+      setError(authErrorMessage(err, { isSignUp }))
     }
     setLoading(null)
   }
