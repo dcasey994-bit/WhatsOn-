@@ -171,8 +171,11 @@
 
 .map-cluster {
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-text);
+  /* Category colour only when everything inside shares one; the accent green
+     used previously was close enough to the Live Music green to read as a
+     category of its own. */
+  background: var(--cluster-fill);
+  color: #0f0f14;
   border: 2px solid var(--bg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -201,4 +204,12 @@
 
 .map-dot-mixed .map-dot-count {
   color: var(--dot-ring);
+}
+
+/* A cluster holding more than one category, or any venue-mode cluster, where
+   no single colour would be true. Matches the unfilled pin treatment. */
+.map-cluster-mixed {
+  background: transparent;
+  border-color: var(--text);
+  color: var(--text);
 }

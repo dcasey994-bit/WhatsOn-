@@ -78,12 +78,27 @@ function makeEventPinIcon(theme, color, count) {
   })
 }
 
-function makeClusterIcon(count) {
+// Same rule as the pins: a cluster only takes a category colour when every
+// event inside it is that category. Anything mixed is left unfilled.
+// `catColor` is set on each Marker below and lands in marker.options.
+function clusterFill(cluster) {
+  const colors = new Set()
+  for (const marker of cluster.getAllChildMarkers()) {
+    const c = marker.options.catColor
+    if (!c) return null            // a mixed pin makes the whole cluster mixed
+    colors.add(c)
+    if (colors.size > 1) return null
+  }
+  return colors.size === 1 ? [...colors][0] : null
+}
+
+function makeClusterIcon(count, fill) {
   // Bigger clusters read as heavier without becoming finger-sized.
   const size = count < 10 ? 34 : count < 50 ? 40 : 46
+  const mixed = fill == null
   return divIcon({
     className: '',
-    html: `<div class="map-cluster" style="width:${size}px;height:${size}px">${count}</div>`,
+    html: `<div class="map-cluster${mixed ? ' map-cluster-mixed' : ''}" style="--cluster-fill:${fill ?? 'transparent'};width:${size}px;height:${size}px">${count}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   })
@@ -91,7 +106,7 @@ function makeClusterIcon(count) {
 
 // Shared across both map modes.
 const CLUSTER_PROPS = {
-  iconCreateFunction: cluster => makeClusterIcon(cluster.getChildCount()),
+  iconCreateFunction: cluster => makeClusterIcon(cluster.getChildCount(), clusterFill(cluster)),
   showCoverageOnHover: false,
   // Venues on the same parade (Northcote Road, Balham High Road) should merge
   // when zoomed out but separate readily as you move in.
@@ -271,6 +286,10 @@ export default function DiscoverPage() {
                     key={group.key}
                     position={[group.lat, group.lng]}
                     icon={makeEventPinIcon(theme, fill, group.events.length)}
+                    // Not a Leaflet option — react-leaflet forwards unknown
+                    // props into marker.options, which is how the cluster
+                    // above works out whether its contents share a category.
+                    catColor={fill}
                     eventHandlers={{
                       click: () => {
                         if (group.events.length === 1) {
