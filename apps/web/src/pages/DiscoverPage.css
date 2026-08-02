@@ -137,3 +137,55 @@
   pointer-events: none;
   white-space: nowrap;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Map pins and clusters.
+
+   These replace the old per-event CircleMarker. A pin is now one venue; a
+   number inside means that venue has several events on the selected day.
+   leaflet.markercluster's default skin is not imported, so everything the
+   plugin draws is styled here instead.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.map-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--dot-fill);
+  border: 1.5px solid var(--dot-ring);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The icon box is 26px so the shadow is not clipped; centre the dot in it. */
+  margin: 2px;
+}
+
+.map-dot-count {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  /* Sits on a category colour, which is always light enough for dark text. */
+  color: #0f0f14;
+}
+
+.map-cluster {
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: 2px solid var(--bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* The plugin animates clusters by transforming this wrapper; without a
+   transparent background it paints a white square behind our circle. */
+.leaflet-marker-icon.leaflet-div-icon,
+.marker-cluster {
+  background: transparent;
+  border: none;
+}
