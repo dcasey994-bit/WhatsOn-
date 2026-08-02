@@ -12,6 +12,7 @@ import { useEvents, useEventsError, useEventsLoading, useReloadEvents } from '..
 import { fetchAllVenues } from '../data/eventsStore.js'
 import { useUserLocation } from '../data/location.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
+import { getVenueTypeColor } from '../data/venueTypes.js'
 import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
@@ -47,26 +48,17 @@ function makeUserPinIcon(theme) {
   })
 }
 
-function makeVenuePinIcon(theme) {
-  const c = PIN_COLORS[theme]
-  return divIcon({
-    className: '',
-    html: `<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
-      <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 21 13 21s13-11.25 13-21C26 5.82 20.18 0 13 0z" fill="${c.venue}"/>
-      <circle cx="13" cy="13" r="5" fill="${c.center}"/>
-    </svg>`,
-    iconSize: [26, 34],
-    iconAnchor: [13, 34],
-  })
-}
-
-// One pin per venue. Events at the same venue share the venue's coordinates,
-// so drawing a pin per event stacked them perfectly on top of one another —
-// only the topmost was clickable, and zooming in never separated them.
+// Used by both map modes: in events mode one dot per venue with events on the
+// selected day, in venues mode one dot per venue coloured by its type.
+//
+// Events at a venue share the venue's coordinates, so drawing a dot per event
+// stacked them perfectly — only the topmost was clickable, and zooming never
+// separated them. Hence one dot per venue, with a count.
+//
 // `color` is null when a venue's events span more than one category. Filling
-// the pin with one of them would claim the whole venue is that category, so a
-// mixed pin is left unfilled — the count is the honest signal.
-function makeEventPinIcon(theme, color, count) {
+// the dot with one of them would claim the whole venue is that category, so a
+// mixed dot is left unfilled — the count is the honest signal.
+function makeDotIcon(theme, color, count) {
   const ring = PIN_COLORS[theme].venue
   const inner = count > 1 ? `<span class="map-dot-count">${count}</span>` : ''
   const mixed = color == null
@@ -152,7 +144,6 @@ export default function DiscoverPage() {
   const { coords } = useUserLocation()
   const theme = useResolvedTheme()
   const userPinIcon = useMemo(() => makeUserPinIcon(theme), [theme])
-  const venuePinIcon = useMemo(() => makeVenuePinIcon(theme), [theme])
 
   const loadVenues = useCallback(() => {
     fetchAllVenues()
@@ -285,7 +276,7 @@ export default function DiscoverPage() {
                   <Marker
                     key={group.key}
                     position={[group.lat, group.lng]}
-                    icon={makeEventPinIcon(theme, fill, group.events.length)}
+                    icon={makeDotIcon(theme, fill, group.events.length)}
                     // Not a Leaflet option — react-leaflet forwards unknown
                     // props into marker.options, which is how the cluster
                     // above works out whether its contents share a category.
@@ -316,10 +307,11 @@ export default function DiscoverPage() {
                 <Marker
                   key={venue.id}
                   position={[venue.lat, venue.lng]}
-                  icon={venuePinIcon}
+                  icon={makeDotIcon(theme, getVenueTypeColor(venue.type), 1)}
+                  catColor={getVenueTypeColor(venue.type)}
                   eventHandlers={{ click: () => setSelectedVenue(venue) }}
                 >
-                  <Tooltip direction="top" offset={[0, -32]}>{venue.name}</Tooltip>
+                  <Tooltip direction="top" offset={[0, -14]}>{venue.name}</Tooltip>
                 </Marker>
               ))}
             </MarkerClusterGroup>
