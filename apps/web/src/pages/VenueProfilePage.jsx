@@ -109,12 +109,10 @@ export default function VenueProfilePage() {
               </a>
             </div>
           )}
-          {venue.capacity != null && (
-            <div className="detail-row">
-              <span className="detail-row-label">Capacity</span>
-              <span className="detail-row-value">{venue.capacity.toLocaleString()}</span>
-            </div>
-          )}
+          {/* Capacity is deliberately not shown here. It is operational
+              information for the venue's own team, not something customers
+              browsing for a night out should see. It stays visible in venue
+              management. */}
         </section>
 
         <section className="vp-events-section">
