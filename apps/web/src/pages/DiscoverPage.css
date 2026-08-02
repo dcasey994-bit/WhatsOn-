@@ -189,3 +189,16 @@
   background: transparent;
   border: none;
 }
+
+/* A venue whose events span more than one category. Left unfilled so the pin
+   never implies a category it does not have — the count carries the meaning.
+   The ring already contrasts with both map themes, so the number borrows it
+   rather than the dark colour used on a filled pin. */
+.map-dot-mixed {
+  background: transparent;
+  border-width: 2px;
+}
+
+.map-dot-mixed .map-dot-count {
+  color: var(--dot-ring);
+}

@@ -63,12 +63,16 @@ function makeVenuePinIcon(theme) {
 // One pin per venue. Events at the same venue share the venue's coordinates,
 // so drawing a pin per event stacked them perfectly on top of one another —
 // only the topmost was clickable, and zooming in never separated them.
+// `color` is null when a venue's events span more than one category. Filling
+// the pin with one of them would claim the whole venue is that category, so a
+// mixed pin is left unfilled — the count is the honest signal.
 function makeEventPinIcon(theme, color, count) {
   const ring = PIN_COLORS[theme].venue
   const inner = count > 1 ? `<span class="map-dot-count">${count}</span>` : ''
+  const mixed = color == null
   return divIcon({
     className: '',
-    html: `<div class="map-dot" style="--dot-fill:${color};--dot-ring:${ring}">${inner}</div>`,
+    html: `<div class="map-dot${mixed ? ' map-dot-mixed' : ''}" style="--dot-fill:${color ?? 'transparent'};--dot-ring:${ring}">${inner}</div>`,
     iconSize: [26, 26],
     iconAnchor: [13, 13],
   })
@@ -257,14 +261,16 @@ export default function DiscoverPage() {
               {...CLUSTER_PROPS}
             >
               {venueGroups.map(group => {
-                // With several events, colour by the first — the count is what
-                // carries the meaning at that size, not the category.
-                const cat = getCategory(group.events[0].category)
+                // Compare resolved categories, not raw keys: retired keys are
+                // remapped, so 'jazz' and 'music' are one category, as are
+                // 'karaoke' and 'comedy'.
+                const colors = new Set(group.events.map(e => getCategory(e.category).color))
+                const fill = colors.size === 1 ? [...colors][0] : null
                 return (
                   <Marker
                     key={group.key}
                     position={[group.lat, group.lng]}
-                    icon={makeEventPinIcon(theme, cat.color, group.events.length)}
+                    icon={makeEventPinIcon(theme, fill, group.events.length)}
                     eventHandlers={{
                       click: () => {
                         if (group.events.length === 1) {
