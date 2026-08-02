@@ -213,3 +213,54 @@
   border-color: var(--text);
   color: var(--text);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Current location marker.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.user-dot {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-dot::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--user);
+  /* Keeps the dot readable over busy tiles without adding a hard outline. */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.user-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  border: 1.5px solid var(--user);
+  opacity: 0;
+  animation: userPulse 2.4s ease-out infinite;
+}
+
+/* Half a cycle behind, so there is always a ring on its way out. */
+.user-ring-delayed {
+  animation-delay: 1.2s;
+}
+
+@keyframes userPulse {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  70%  { opacity: 0.12; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .user-ring { animation: none; }
+}

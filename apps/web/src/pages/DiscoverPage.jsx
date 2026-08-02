@@ -35,16 +35,21 @@ const PIN_COLORS = {
   light: { accent: '#009955', venue: '#1a1a24', center: '#ffffff' },
 }
 
+// "You are here" — a small solid dot with two rings pulsing out of it. Black
+// on the light map, white on the dark one, so it reads against the tiles
+// without borrowing a category colour or the accent, both of which would make
+// it look like something you could tap.
 function makeUserPinIcon(theme) {
-  const c = PIN_COLORS[theme]
+  const c = PIN_COLORS[theme].venue
   return divIcon({
     className: '',
-    html: `<svg width="22" height="30" viewBox="0 0 22 30" xmlns="http://www.w3.org/2000/svg">
-      <path d="M11 0C4.925 0 0 4.925 0 11c0 8.25 11 19 11 19s11-10.75 11-19C22 4.925 17.075 0 11 0z" fill="${c.accent}"/>
-      <circle cx="11" cy="11" r="4.5" fill="${c.center}"/>
-    </svg>`,
-    iconSize: [22, 30],
-    iconAnchor: [11, 30],
+    html: `<div class="user-dot" style="--user:${c}">
+             <span class="user-ring"></span>
+             <span class="user-ring user-ring-delayed"></span>
+           </div>`,
+    iconSize: [28, 28],
+    // Centred on the coordinate, unlike a teardrop which points at it.
+    iconAnchor: [14, 14],
   })
 }
 
