@@ -262,7 +262,7 @@ export default function VenueManagePage() {
         <Header title="My Venues" />
         <div className="vm-empty">
           <p>Venue not found.</p>
-          <button className="vl-add-btn" onClick={() => navigate('/venue')}>← Back to My Venues</button>
+          <button className="vl-add-btn" onClick={() => navigate('/manage')}>← Back to My Venues</button>
         </div>
       </div>
     )
@@ -425,7 +425,7 @@ export default function VenueManagePage() {
         <span className="verified-badge">✓ Verified</span>
       </Header>
 
-      <button className="vp-back-link vp-back-pad" onClick={() => navigate('/venue')}>← My Venues</button>
+      <button className="vp-back-link vp-back-pad" onClick={() => navigate('/manage')}>← My Venues</button>
 
       {/* Subscription card — admin only */}
       {isAdmin && (

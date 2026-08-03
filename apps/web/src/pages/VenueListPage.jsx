@@ -45,7 +45,7 @@ export default function VenueListPage() {
         ) : venues.length === 0 ? (
           <div className="vl-empty">
             <p>You haven&apos;t added a venue yet.</p>
-            <button className="vl-add-btn" onClick={() => navigate('/venue/new')}>
+            <button className="vl-add-btn" onClick={() => navigate('/manage/new')}>
               + Add your first venue
             </button>
           </div>
@@ -58,7 +58,7 @@ export default function VenueListPage() {
                 <button
                   key={venue.id}
                   className="vl-card"
-                  onClick={() => navigate(`/venue/manage/${venue.id}`)}
+                  onClick={() => navigate(`/manage/${venue.id}`)}
                 >
                   <div className="vl-card-main">
                     <p className="vl-card-name">{venue.name}</p>
@@ -75,7 +75,7 @@ export default function VenueListPage() {
                 </button>
               )
             })}
-            <button className="vl-add-btn" onClick={() => navigate('/venue/new')}>
+            <button className="vl-add-btn" onClick={() => navigate('/manage/new')}>
               + Add another venue
             </button>
           </>

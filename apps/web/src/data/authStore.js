@@ -85,12 +85,20 @@ export async function signOut() {
   notify()
 }
 
-export function setRole(role) {
+// Which of the two apps to open on next sign-in. It is a preference, NOT the
+// current mode — that is derived from the URL by useAppMode(). Keeping the two
+// apart is what stops the nav claiming you are managing a venue while you are
+// looking at the customer map.
+export function setPreferredMode(mode) {
   const user = getUser()
   if (!user) return
-  const updated = { ...user, role }
+  const updated = { ...user, role: mode }
   localStorage.setItem('whatson_user', JSON.stringify(updated))
   notify()
+}
+
+export function getPreferredMode() {
+  return getUser()?.role === 'venue' ? 'venue' : 'customer'
 }
 
 export function subscribe(fn) {

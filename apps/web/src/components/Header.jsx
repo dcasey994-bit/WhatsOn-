@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { getUser, setRole, signOut, subscribe } from '../data/authStore.js'
+import { getUser, setPreferredMode, signOut, subscribe } from '../data/authStore.js'
+import { useAppMode, homePathFor } from '../data/appMode.js'
 import { fetchMyVenues, getSubscriptionState } from '../data/eventsStore.js'
 import './Header.css'
 
@@ -12,6 +13,9 @@ export default function Header({ title, children }) {
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
   const avatarRef = useRef(null)
   const navigate = useNavigate()
+  // Where the user actually is, per the URL — not a stored flag that can
+  // fall out of step with the page on screen.
+  const mode = useAppMode()
 
   useEffect(() => subscribe(() => setUser(getUser())), [])
 
@@ -34,10 +38,12 @@ export default function Header({ title, children }) {
     setMenu(true)
   }
 
-  function handleRoleToggle(role) {
-    setRole(role)
+  function switchMode(next) {
+    // Remembered only so the next sign-in lands in the right place; the mode
+    // shown in the UI always comes from the route.
+    setPreferredMode(next)
     setMenu(false)
-    navigate(role === 'venue' ? '/venue' : '/discover', { replace: true })
+    navigate(homePathFor(next), { replace: true })
   }
 
   return (
@@ -77,14 +83,14 @@ export default function Header({ title, children }) {
             <p className="mode-label">Mode</p>
             <div className="mode-toggle">
               <button
-                className={`mode-btn ${user.role !== 'venue' ? 'active' : ''}`}
-                onClick={() => handleRoleToggle('customer')}
+                className={`mode-btn ${mode !== 'venue' ? 'active' : ''}`}
+                onClick={() => switchMode('customer')}
               >
                 🗺️ Going out
               </button>
               <button
-                className={`mode-btn ${user.role === 'venue' ? 'active' : ''}`}
-                onClick={() => handleRoleToggle('venue')}
+                className={`mode-btn ${mode === 'venue' ? 'active' : ''}`}
+                onClick={() => switchMode('venue')}
               >
                 🏠 My venue
               </button>
@@ -99,7 +105,7 @@ export default function Header({ title, children }) {
             <hr className="avatar-divider" />
 
             {needsAttention && (
-              <button className="upgrade-btn" onClick={() => { setMenu(false); setRole('venue'); navigate('/venue') }}>
+              <button className="upgrade-btn" onClick={() => switchMode('venue')}>
                 Manage subscriptions
               </button>
             )}

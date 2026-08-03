@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
-import { getUser, subscribe } from '../data/authStore.js'
 import { NavLink } from 'react-router-dom'
+import { useAppMode } from '../data/appMode.js'
 import './BottomNav.css'
 
 function IconMap() {
@@ -71,16 +70,15 @@ const goingOutTabs = [
 ]
 
 const venueTabs = [
-  { to: '/venue',                 label: 'My Venues', Icon: IconBuilding },
-  { to: '/venue/events/upcoming', label: 'Upcoming',  Icon: IconCalendar },
-  { to: '/venue/events/past',     label: 'Past',      Icon: IconClock },
+  { to: '/manage',                 label: 'My Venues', Icon: IconBuilding },
+  { to: '/manage/events/upcoming', label: 'Upcoming',  Icon: IconCalendar },
+  { to: '/manage/events/past',     label: 'Past',      Icon: IconClock },
 ]
 
 export default function BottomNav() {
-  const [user, setUser] = useState(() => getUser())
-  useEffect(() => subscribe(() => setUser(getUser())), [])
-
-  const tabs = user?.role === 'venue' ? venueTabs : goingOutTabs
+  // Derived from the URL, so the tabs cannot disagree with the page on screen
+  // — including after a browser or device back.
+  const tabs = useAppMode() === 'venue' ? venueTabs : goingOutTabs
 
   return (
     <nav className="bottom-nav">

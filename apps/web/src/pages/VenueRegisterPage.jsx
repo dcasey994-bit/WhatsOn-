@@ -52,7 +52,7 @@ export default function VenueRegisterPage() {
         capacity: venueForm.capacity ? Number(venueForm.capacity) : null,
         type: venueForm.type,
       })
-      navigate(`/venue/manage/${v.id}`, { replace: true })
+      navigate(`/manage/${v.id}`, { replace: true })
     } catch {
       setError('Could not register venue. Please try again.')
       setSaving(false)
@@ -63,7 +63,7 @@ export default function VenueRegisterPage() {
     <div className="venue-page">
       <Header title="Add a venue" />
       <div className="add-event-form">
-        <button className="vp-back-link" onClick={() => navigate('/venue')}>← My Venues</button>
+        <button className="vp-back-link" onClick={() => navigate('/manage')}>← My Venues</button>
         <p className="venue-intro">
           Create a venue profile to start listing events on WhatsOn?
         </p>

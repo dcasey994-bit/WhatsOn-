@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { getUser, initAuth, initNativeAuthBridge } from './data/authStore.js'
+import { getUser, getPreferredMode, initAuth, initNativeAuthBridge } from './data/authStore.js'
+import { homePathFor } from './data/appMode.js'
 import { loadSavedFromDB } from './data/savedStore.js'
 import { loadGoingCounts } from './data/goingStore.js'
 import { EventsProvider } from './data/EventsContext.jsx'
@@ -22,7 +23,9 @@ import BottomNav from './components/BottomNav.jsx'
 // After signing in, return to wherever the user was when they hit the gate
 function SignInRoute({ user }) {
   const location = useLocation()
-  if (user) return <Navigate to={location.state?.from || '/discover'} replace />
+  // Back to wherever they were sent from, otherwise the mode they last chose.
+  // This is the only thing the stored preference is used for.
+  if (user) return <Navigate to={location.state?.from || homePathFor(getPreferredMode())} replace />
   return <SignInPage />
 }
 
@@ -70,11 +73,14 @@ export default function App() {
 
         {/* Account required */}
         <Route path="/settings" element={authed(<AccountSettingsPage />)} />
-        <Route path="/venue" element={authed(<VenueListPage />)} />
-        <Route path="/venue/new" element={authed(<VenueRegisterPage />)} />
-        <Route path="/venue/events/upcoming" element={authed(<VenueEventsPage period="upcoming" />)} />
-        <Route path="/venue/events/past" element={authed(<VenueEventsPage period="past" />)} />
-        <Route path="/venue/manage/:id" element={authed(<VenueManagePage />)} />
+        {/* Venue management lives under /manage so it never overlaps the
+            public /venue/:id page above. useAppMode() reads this prefix to
+            decide which of the two apps the user is in. */}
+        <Route path="/manage" element={authed(<VenueListPage />)} />
+        <Route path="/manage/new" element={authed(<VenueRegisterPage />)} />
+        <Route path="/manage/events/upcoming" element={authed(<VenueEventsPage period="upcoming" />)} />
+        <Route path="/manage/events/past" element={authed(<VenueEventsPage period="past" />)} />
+        <Route path="/manage/:id" element={authed(<VenueManagePage />)} />
 
         <Route path="*" element={<Navigate to="/discover" replace />} />
       </Routes>

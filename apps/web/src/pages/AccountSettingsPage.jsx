@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getUser, setRole, signOut } from '../data/authStore.js'
+import { getUser, getPreferredMode, setPreferredMode, signOut } from '../data/authStore.js'
 import { getTheme, setTheme } from '../data/themeStore.js'
 import Header from '../components/Header.jsx'
 import './AccountSettingsPage.css'
@@ -9,7 +9,7 @@ export default function AccountSettingsPage() {
   const navigate = useNavigate()
   const user = getUser()
   const [theme, setThemeState] = useState(() => getTheme())
-  const [mode, setModeState] = useState(() => user?.role || 'customer')
+  const [mode, setModeState] = useState(() => getPreferredMode())
 
   function handleTheme(t) {
     setTheme(t)
@@ -17,7 +17,7 @@ export default function AccountSettingsPage() {
   }
 
   function handleMode(m) {
-    setRole(m)
+    setPreferredMode(m)
     setModeState(m)
   }
 
