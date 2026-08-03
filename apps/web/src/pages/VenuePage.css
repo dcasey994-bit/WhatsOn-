@@ -372,7 +372,6 @@
   font-size: 14px;
 }
 
-.edit-event-btn,
 .delete-event-btn {
   background: none;
   border: none;
@@ -381,10 +380,6 @@
   padding: 4px 8px;
   flex-shrink: 0;
   line-height: 1;
-}
-
-.edit-event-btn:hover {
-  color: var(--accent);
 }
 
 .delete-event-btn:hover {

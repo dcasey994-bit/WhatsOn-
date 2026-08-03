@@ -613,9 +613,6 @@ export default function VenueManagePage() {
                       </span>
                     </span>
                   </button>
-                  {eventTab === 'upcoming' && (
-                    <button className="edit-event-btn" onClick={() => handleEdit(event)} aria-label="Edit event">✎</button>
-                  )}
                   <button className="delete-event-btn" onClick={() => handleDelete(event.id)} aria-label="Delete event">✕</button>
                 </div>
               )
