@@ -44,4 +44,19 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- The map centres on the user and shows how far away each event is.
+         Capacitor's BridgeWebChromeClient already handles the WebView's
+         geolocation prompt and requests these at runtime, but Android denies
+         a request for anything not declared here without showing a dialog —
+         which made navigator.geolocation fail silently in the app while
+         working fine on the web. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Declared optional so the app is not hidden on Play from devices
+         without GPS. Nothing here requires a fix; the map falls back to a
+         default centre. -->
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.location.network" android:required="false" />
 </manifest>
