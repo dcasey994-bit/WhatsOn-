@@ -7,9 +7,9 @@ upscale it ~3x and lose the edges, the geometry is reproduced here and drawn
 at whatever size is asked for. The constants below were measured off the
 original export — keep them in step with assets/icon.svg.
 
-Feeds @capacitor/assets, which turns these three into every Android launcher
-density. The web icons under public/icons/ are still the old teardrop pin and
-are deliberately not touched here.
+Covers both surfaces: the three sources @capacitor/assets turns into every
+Android launcher density, and the PWA icons the website and iOS home screen
+use directly.
 
 Usage:  python3 scripts/generate-icons.py && npx @capacitor/assets generate --android
 Needs:  pillow
@@ -67,12 +67,39 @@ def render(size, *, full_bleed=False, foreground_only=False, background_only=Fal
     return im.resize((size, size), Image.LANCZOS)
 
 
+# The splash is a wide canvas centre-cropped to every screen shape, so the mark
+# sits small in the middle where nothing can clip it. Its background matches the
+# app's --bg rather than the icon's, because that is what it fades into.
+SPLASH_SIZE = 2732
+SPLASH_BG = (15, 15, 20, 255)           # #0f0f14
+SPLASH_MARK = 760
+
+
+def render_splash():
+    im = Image.new('RGBA', (SPLASH_SIZE, SPLASH_SIZE), SPLASH_BG)
+    mark = render(SPLASH_MARK, foreground_only=True)
+    off = (SPLASH_SIZE - SPLASH_MARK) // 2
+    im.alpha_composite(mark, (off, off))
+    return im
+
+
 TARGETS = [
     # (path, size, kwargs)
+    # Sources for @capacitor/assets, which fans these out to every density.
     ('assets/icon.png', 1024, {}),
     ('assets/icon-foreground.png', 1024, dict(foreground_only=True)),
     ('assets/icon-background.png', 1024, dict(background_only=True)),
 
+    # Used directly by the website and the iOS home screen.
+    ('public/icons/icon-192.png', 192, {}),
+    ('public/icons/icon-512.png', 512, {}),
+    # Maskable and Apple slots are masked by the platform, so they must not
+    # carry transparent corners of their own — the mask shows through them.
+    ('public/icons/icon-maskable-192.png', 192, dict(full_bleed=True)),
+    ('public/icons/icon-maskable-512.png', 512, dict(full_bleed=True)),
+    ('public/icons/apple-touch-icon.png', 180, dict(full_bleed=True)),
+    # Play's listing icon must be opaque.
+    ('public/icons/icon-1024.png', 1024, dict(full_bleed=True)),
 ]
 
 if __name__ == '__main__':
@@ -80,3 +107,7 @@ if __name__ == '__main__':
         render(size, **kwargs).save(path)
         print(f'{path:44} {size}x{size}')
 
+    splash = render_splash()
+    for path in ('assets/splash.png', 'assets/splash-dark.png'):
+        splash.save(path)
+        print(f'{path:44} {SPLASH_SIZE}x{SPLASH_SIZE}')
