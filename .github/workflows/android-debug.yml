@@ -131,7 +131,11 @@ jobs:
             gh release create debug-latest --title "Latest debug build" --notes "Rolling debug APK." --prerelease
           fi
           gh release upload debug-latest whatson-debug.apk --clobber
-          gh release edit debug-latest --notes "Rolling debug APK, replaced on every build — not a real release. Build ${{ github.run_number }}, commit ${{ github.sha }}."
+          # Refreshing the notes is cosmetic. The GitHub API returns the odd 500
+          # here, and a failed description must not fail a build whose APK is
+          # already published.
+          gh release edit debug-latest --notes "Rolling debug APK, replaced on every build — not a real release. Build ${{ github.run_number }}, commit ${{ github.sha }}." \
+            || echo "::warning::Could not refresh the release notes; the APK uploaded fine."
           echo "### APK ready" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "<${{ github.server_url }}/${{ github.repository }}/releases/download/debug-latest/whatson-debug.apk>" >> $GITHUB_STEP_SUMMARY
