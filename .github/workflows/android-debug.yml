@@ -1,8 +1,14 @@
 name: Android debug APK
 
 # Builds an installable debug APK so the app can be tested on a real phone
-# without a local Android Studio install. Download it from the "Artifacts"
-# section at the bottom of the run's summary page.
+# without a local Android Studio install.
+#
+# Each build is published to the rolling "debug-latest" release, so there is a
+# fixed URL you can bookmark on the phone — no GitHub login, no zip to extract:
+#
+#   https://github.com/dcasey994-bit/WhatsOn-/releases/download/debug-latest/whatson-debug.apk
+#
+# It is also uploaded as a run artifact, which keeps a per-run copy around.
 
 on:
   push:
@@ -13,6 +19,10 @@ on:
       - 'apps/web/**'
       - '.github/workflows/android-debug.yml'
   workflow_dispatch:
+
+# Needed to publish the release below; everything else here only reads.
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -82,6 +92,23 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Gradle signs debug builds with ~/.android/debug.keystore, generating one
+      # if it is missing. Every run gets a fresh VM, so without this each APK
+      # was signed with a different key and Android refused to install it over
+      # the previous one — meaning uninstall (and sign in again) every time.
+      # Reusing one keystore makes builds install straight over the top.
+      - name: Restore the shared debug keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::warning::ANDROID_DEBUG_KEYSTORE_B64 is not set. This APK gets a throwaway signing key, so it will not install over an existing copy of the app — you would have to uninstall first. Add the secret to fix that."
+            exit 0
+          fi
+          mkdir -p ~/.android
+          echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+          echo "Debug keystore restored ($(wc -c < ~/.android/debug.keystore) bytes)"
+
       - name: Assemble debug APK
         working-directory: apps/web/android
         run: ./gradlew assembleDebug --no-daemon
@@ -92,3 +119,19 @@ jobs:
           path: apps/web/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+      # A fixed, login-free URL to install from on the phone. The tag stays put
+      # and only the attached APK is replaced, so the bookmark never changes.
+      - name: Publish to the rolling debug release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk whatson-debug.apk
+          if ! gh release view debug-latest >/dev/null 2>&1; then
+            gh release create debug-latest --title "Latest debug build" --notes "Rolling debug APK." --prerelease
+          fi
+          gh release upload debug-latest whatson-debug.apk --clobber
+          gh release edit debug-latest --notes "Rolling debug APK, replaced on every build — not a real release. Build ${{ github.run_number }}, commit ${{ github.sha }}."
+          echo "### APK ready" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<${{ github.server_url }}/${{ github.repository }}/releases/download/debug-latest/whatson-debug.apk>" >> $GITHUB_STEP_SUMMARY
