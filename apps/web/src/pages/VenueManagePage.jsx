@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { CATEGORIES, getCategory } from '../data/events.js'
 import {
   fetchVenueById, fetchVenueEvents, fetchPastVenueEvents,
@@ -24,6 +24,10 @@ const BLANK_EVENT = {
 export default function VenueManagePage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  // Read once at mount. The effect below clears this from history, and it must
+  // not re-run (and refetch the venue) when it does — a ref is not reactive.
+  const requestedEditRef = useRef(location.state?.editEventId ?? null)
   const [venue, setVenue] = useState(null)
   const [upcomingEvents, setUpcomingEvents] = useState([])
   const [pastEvents, setPastEvents] = useState([])
@@ -56,6 +60,7 @@ export default function VenueManagePage() {
     ])
     setUpcomingEvents(upcoming)
     setPastEvents(past)
+    return [...upcoming, ...past]
   }
 
   useEffect(() => {
@@ -73,11 +78,25 @@ export default function VenueManagePage() {
       if (v.memberRole === 'admin') {
         loads.push(fetchVenueMembers(v.id).then(setMembers).catch(() => {}))
       }
-      await Promise.all(loads)
-      if (active) setLoading(false)
+      const [allEvents] = await Promise.all(loads)
+      if (!active) return
+      setLoading(false)
+
+      // Arrived from the Upcoming/Past lists, which span every venue and have
+      // no editor of their own. Open the event they picked.
+      const wanted = requestedEditRef.current
+      if (wanted) {
+        requestedEditRef.current = null
+        const ev = allEvents.find(e => String(e.id) === String(wanted))
+        if (ev) handleEdit(ev)
+        // Consume it, so going back or refreshing does not reopen the editor.
+        navigate(location.pathname, { replace: true, state: null })
+      }
     })
     return () => { active = false }
-  }, [id])
+    // navigate and location.pathname are stable for a given route; including
+    // them would refetch the venue when the editor state is cleared below.
+  }, [id])  // eslint-disable-line react-hooks/exhaustive-deps
 
   const events = eventTab === 'upcoming' ? upcomingEvents : pastEvents
 
@@ -291,7 +310,18 @@ export default function VenueManagePage() {
           <button className="vp-back-link" onClick={() => { setView('main'); setEditingId(null) }}>← Back</button>
           {success && <div className="success-banner">🎉 {success}</div>}
           {error && <p className="form-error">{error}</p>}
-          <h3 className="section-heading">{editingId ? 'Edit Event' : 'New Event'}</h3>
+          <div className="form-heading-row">
+            <h3 className="section-heading">{editingId ? 'Edit Event' : 'New Event'}</h3>
+            {editingId && (
+              <button
+                type="button"
+                className="view-public-link"
+                onClick={() => navigate(`/event/${editingId}`)}
+              >
+                View public page ↗
+              </button>
+            )}
+          </div>
           <form onSubmit={handleAddEvent}>
             <label>
               Event name
@@ -569,8 +599,8 @@ export default function VenueManagePage() {
                 <div key={event.id} className="venue-event-row">
                   <button
                     className="vc-open"
-                    onClick={() => navigate(`/event/${event.id}`)}
-                    aria-label={`Open ${event.name}`}
+                    onClick={() => handleEdit(event)}
+                    aria-label={`Edit ${event.name}`}
                   >
                     <span className="vc-dot" style={{ background: cat.color }} />
                     <span className="vc-info">

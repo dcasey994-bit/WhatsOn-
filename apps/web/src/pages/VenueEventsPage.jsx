@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CATEGORIES } from '../data/events.js'
+import { getCategory } from '../data/events.js'
 import { fetchMyVenueEvents } from '../data/eventsStore.js'
 import Header from '../components/Header.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
@@ -40,12 +40,18 @@ export default function VenueEventsPage({ period }) {
           <p className="ve-status">No {period} events across your venues.</p>
         ) : (
           events.map(ev => {
-            const cat = CATEGORIES[ev.category] || CATEGORIES.music
+            const cat = getCategory(ev.category)
             const dateLabel = new Date((ev.dateKey || '') + 'T00:00:00').toLocaleDateString('en-GB', {
               weekday: 'short', day: 'numeric', month: 'short',
             })
             return (
-              <button key={ev.id} className="ve-row" onClick={() => navigate(`/event/${ev.id}`)}>
+              <button
+                key={ev.id}
+                className="ve-row"
+                // These lists span every venue, and the editor lives on the
+                // venue page — so go there and tell it which event to open.
+                onClick={() => navigate(`/manage/${ev.venueId}`, { state: { editEventId: ev.id } })}
+              >
                 <span className="ve-dot" style={{ background: cat.color }} />
                 <div className="ve-info">
                   <p className="ve-name">{ev.name}</p>
