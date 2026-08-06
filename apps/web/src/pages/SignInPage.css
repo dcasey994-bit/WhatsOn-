@@ -71,7 +71,7 @@
 .pin-music  { background: #00c85322; animation-delay: 0s; }
 .pin-comedy { background: #ffab0022; animation-delay: 0.4s; }
 .pin-karaoke{ background: #aa00ff22; animation-delay: 0.8s; }
-.pin-quiz   { background: #ff408122; animation-delay: 1.2s; }
+.pin-quiz   { background: #2979ff22; animation-delay: 1.2s; }
 .pin-jazz   { background: #00bcd422; animation-delay: 1.6s; }
 
 @keyframes floatPin {
