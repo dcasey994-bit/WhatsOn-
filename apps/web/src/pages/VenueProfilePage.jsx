@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { fetchVenueById, fetchPublicVenueEvents } from '../data/eventsStore.js'
+import { resolveVenueType } from '../data/venueTypes.js'
 import EventCard from '../components/EventCard.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
 import './detail-shared.css'
@@ -70,7 +71,7 @@ export default function VenueProfilePage() {
       <div className="vp-hero detail-hero-base">
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <div className="hero-content">
-          {venue.type && <span className="hero-badge vp-type-badge">{venue.type}</span>}
+          {venue.type && <span className="hero-badge vp-type-badge">{resolveVenueType(venue.type)}</span>}
           <h1 className="hero-title">{venue.name}</h1>
         </div>
       </div>

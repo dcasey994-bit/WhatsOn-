@@ -8,7 +8,7 @@ import {
   fetchVenueMembers, addVenueMember, removeVenueMember, updateMemberRole,
   updateVenue, geocodeAddress, normalizeWebsite,
 } from '../data/eventsStore.js'
-import { VENUE_TYPES, venueTypeOptions } from '../data/venueTypes.js'
+import { VENUE_TYPES, venueTypeOptions, resolveVenueType } from '../data/venueTypes.js'
 import { getUser } from '../data/authStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
@@ -190,7 +190,7 @@ export default function VenueManagePage() {
       phone: venue.phone ?? '',
       website: venue.website ?? '',
       capacity: venue.capacity ?? '',
-      type: venue.type || VENUE_TYPES[0],
+      type: resolveVenueType(venue.type) || VENUE_TYPES[0],
     })
     setGeocoded({ lat: venue.lat, lng: venue.lng, display: venue.address })
     setVenueError(null)
@@ -485,7 +485,7 @@ export default function VenueManagePage() {
         </div>
         <div className="vm-detail-row">
           <span className="vm-detail-label">Type</span>
-          <span className="vm-detail-value">{venue.type || '—'}</span>
+          <span className="vm-detail-value">{resolveVenueType(venue.type) || '—'}</span>
         </div>
         <div className="vm-detail-row">
           <span className="vm-detail-label">Address</span>

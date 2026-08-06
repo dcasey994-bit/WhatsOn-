@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchMyVenues, getSubscriptionState, trialDaysLeft } from '../data/eventsStore.js'
+import { resolveVenueType } from '../data/venueTypes.js'
 import Header from '../components/Header.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
 import './VenueListPage.css'
@@ -62,7 +63,7 @@ export default function VenueListPage() {
                 >
                   <div className="vl-card-main">
                     <p className="vl-card-name">{venue.name}</p>
-                    <p className="vl-card-type">{venue.type || 'Venue'}</p>
+                    <p className="vl-card-type">{resolveVenueType(venue.type) || 'Venue'}</p>
                     <p className="vl-card-addr">{venue.address}</p>
                   </div>
                   <div className="vl-card-side">

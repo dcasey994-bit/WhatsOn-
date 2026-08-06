@@ -62,7 +62,7 @@ begin
               else now() + interval '3 months' end
   from (values
     -- Balham
-    ('The Bedford',          '77 Bedford Hill, Balham, SW12 9HD',                 51.4434, -0.1527, 'https://thebedford.com',              350, 'Pub & Live Music Venue', 'active'),
+    ('The Bedford',          '77 Bedford Hill, Balham, SW12 9HD',                 51.4434, -0.1527, 'https://thebedford.com',              350, 'Pub',                    'active'),
     ('Balham Bowls Club',    '7-9 Ramsden Road, Balham, SW12 8QX',                51.4441, -0.1493, 'https://balhambowlsclub.com',        120, 'Pub',                    'active'),
     ('The Devonshire',       '39 Balham High Road, Balham, SW12 9AN',             51.4459, -0.1520, null,                                 160, 'Pub',                    'trialing'),
     ('The Nightingale',      '97 Nightingale Lane, Balham, SW12 8NX',             51.4479, -0.1560, 'https://thenightingalebalham.co.uk',  140, 'Pub',                    'active'),
@@ -71,13 +71,13 @@ begin
     -- Clapham
     ('The Railway',          '18 Clapham High Street, Clapham, SW4 7UR',          51.4650, -0.1330, null,                                 180, 'Pub',                    'active'),
     ('Two Brewers',          '114 Clapham High Street, Clapham, SW4 7UJ',         51.4638, -0.1339, 'https://the2brewers.com',            250, 'Club',                   'active'),
-    ('The Clapham Grand',    '21-25 St John''s Hill, SW11 1TT',                   51.4642, -0.1700, 'https://claphamgrand.com',           800, 'Live Music Venue',       'active'),
+    ('The Clapham Grand',    '21-25 St John''s Hill, SW11 1TT',                   51.4642, -0.1700, 'https://claphamgrand.com',           800, 'Theatre',                'active'),
     ('The Windmill',         'Windmill Drive, Clapham Common South Side, SW4 9DE',51.4598, -0.1445, 'https://windmillclapham.co.uk',      220, 'Pub',                    'active'),
-    ('Clapham North',        '409 Clapham Road, SW9 9BT',                         51.4658, -0.1310, 'https://claphamnorthpub.co.uk',      200, 'Pub & Live Music Venue', 'active'),
+    ('Clapham North',        '409 Clapham Road, SW9 9BT',                         51.4658, -0.1310, 'https://claphamnorthpub.co.uk',      200, 'Pub',                    'active'),
     ('The Alexandra',        '14 Clapham Common South Side, SW4 7AA',             51.4610, -0.1387, null,                                 240, 'Pub',                    'trialing'),
     ('Belle Vue',            '1 Clapham Common South Side, SW4 7AA',              51.4614, -0.1380, 'https://bellevueclapham.com',        180, 'Pub',                    'active'),
-    ('The Bread & Roses',    '68 Clapham Manor Street, Clapham, SW4 6DZ',         51.4645, -0.1392, 'https://breadandrosespub.co.uk',     150, 'Pub & Live Music Venue', 'active'),
-    ('Venn Street Records',  '78 Venn Street, Clapham, SW4 0BD',                  51.4622, -0.1381, 'https://vennstreetrecords.com',      130, 'Live Music Venue',       'active'),
+    ('The Bread & Roses',    '68 Clapham Manor Street, Clapham, SW4 6DZ',         51.4645, -0.1392, 'https://breadandrosespub.co.uk',     150, 'Pub',                    'active'),
+    ('Venn Street Records',  '78 Venn Street, Clapham, SW4 0BD',                  51.4622, -0.1381, 'https://vennstreetrecords.com',      130, 'Bar',                    'active'),
     -- Clapham Junction, Battersea Rise & Northcote Road
     ('The Northcote',        'Northcote Road, SW11 1NT',                          51.4592, -0.1662, 'https://thenorthcote.co.uk',         190, 'Pub',                    'active'),
     ('Northcote Records',    '8-10 Northcote Road, SW11 1NT',                     51.4600, -0.1665, 'https://northcoterecords.com',       140, 'Bar',                    'active'),
@@ -85,7 +85,7 @@ begin
     ('The Falcon',           '2 St John''s Hill, SW11 1RU',                       51.4645, -0.1704, null,                                 260, 'Pub',                    'active'),
     ('The Goat',             'Battersea Rise, SW11 1EE',                          51.4601, -0.1648, null,                                 150, 'Pub',                    'trialing'),
     -- Tooting
-    ('Tooting Tavern',       'Tooting High Street, Tooting, SW17 0SF',            51.4278, -0.1685, 'https://thetootingtavern.co.uk',     170, 'Pub & Live Music Venue', 'active'),
+    ('Tooting Tavern',       'Tooting High Street, Tooting, SW17 0SF',            51.4278, -0.1685, 'https://thetootingtavern.co.uk',     170, 'Pub',                    'active'),
     ('The Trafalgar Arms',   '148-158 Tooting High Street, Tooting, SW17 0RT',    51.4285, -0.1690, 'https://thetrafalgararms.co.uk',     200, 'Pub',                    'active'),
     ('The Wheatsheaf',       '2 Upper Tooting Road, Tooting Bec, SW17 7TS',       51.4342, -0.1621, null,                                 180, 'Pub',                    'trialing'),
     ('Ramble Inn',           'Mitcham Road, Tooting, SW17 9JG',                   51.4269, -0.1662, null,                                 110, 'Pub',                    'active'),
@@ -96,7 +96,7 @@ begin
     ('The Crown',            '102 Lavender Hill, SW11 5RD',                       51.4661, -0.1610, null,                                 150, 'Pub',                    'trialing'),
     -- More SW4 (Clapham / Abbeville / Clapham North)
     ('The Abbeville',        'Abbeville Road, Clapham, SW4 9JW',                  51.4551, -0.1385, 'https://theabbeville.co.uk',         140, 'Pub',                    'active'),
-    ('The Landor',           'Landor Road, Clapham, SW9 9PH',                     51.4661, -0.1215, 'https://thelandorpub.com',           160, 'Pub & Live Music Venue', 'active'),
+    ('The Landor',           'Landor Road, Clapham, SW9 9PH',                     51.4661, -0.1215, 'https://thelandorpub.com',           160, 'Pub',                    'active'),
     ('The Nel',              'Clapham Common North Side, SW4 0QW',                51.4648, -0.1425, 'https://thenel.co.uk',               190, 'Pub',                    'active'),
     -- More SW12 (Balham / Clapham South)
     ('The Avalon',           '16 Balham Hill, Clapham South, SW12 9EB',           51.4506, -0.1487, 'https://theavalonlondon.com',        200, 'Pub',                    'active')
