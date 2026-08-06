@@ -14,6 +14,9 @@ on:
         description: 'Version name shown to users (e.g. 1.0.0)'
         required: true
         default: '1.0.0'
+      version_code:
+        description: 'versionCode override — leave blank to use the run number'
+        required: false
 
 jobs:
   bundle:
@@ -90,8 +93,10 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: upload
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
-          # Monotonic and unique per run, which is all Play requires of it.
-          ANDROID_VERSION_CODE: ${{ github.run_number }}
+          # The run number is monotonic and unique, which is all Play asks of a
+          # versionCode. The override exists for the case where Play has
+          # already seen a higher one and the run number would be rejected.
+          ANDROID_VERSION_CODE: ${{ inputs.version_code || github.run_number }}
           ANDROID_VERSION_NAME: ${{ inputs.version_name }}
         run: ./gradlew bundleRelease --no-daemon
 
@@ -121,6 +126,6 @@ jobs:
           echo "### Release bundle ready" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- versionName: \`${{ inputs.version_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- versionCode: \`${{ github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- versionCode: \`${{ inputs.version_code || github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Download it from Artifacts below and upload in the Play Console." >> $GITHUB_STEP_SUMMARY
