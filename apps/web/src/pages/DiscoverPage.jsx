@@ -12,10 +12,11 @@ import { useEvents, useEventsError, useEventsLoading, useReloadEvents } from '..
 import { fetchAllVenues } from '../data/eventsStore.js'
 import { useUserLocation } from '../data/location.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
-import { getVenueTypeColor, VENUE_TYPES, VENUE_TYPE_COLORS } from '../data/venueTypes.js'
+import { getVenueTypeColor, resolveVenueType, VENUE_TYPES, VENUE_TYPE_COLORS } from '../data/venueTypes.js'
 import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
+import VenueTypeFilter from '../components/VenueTypeFilter.jsx'
 import DayStrip from '../components/DayStrip.jsx'
 import MapEventSheet from '../components/MapEventSheet.jsx'
 import MapVenueSheet from '../components/MapVenueSheet.jsx'
@@ -53,16 +54,9 @@ function makeUserPinIcon(theme) {
   })
 }
 
-// Used by both map modes: in events mode one dot per venue with events on the
-// selected day, in venues mode one dot per venue coloured by its type.
-//
-// Events at a venue share the venue's coordinates, so drawing a dot per event
-// stacked them perfectly — only the topmost was clickable, and zooming never
-// separated them. Hence one dot per venue, with a count.
-//
-// Slice order. Pies read left to right against the key beside the map, so the
-// slices run in the order the key lists them rather than by size — the same
-// category always sits in the same place on every dot.
+// Slice order for the pies below. They are read against the key beside the
+// map, so slices run in the order the key lists them rather than by size —
+// the same category then sits in the same place on every dot.
 //
 // One list per map mode: the two palettes reuse several of the same colours,
 // so a single shared ranking would order venue types by the event categories
@@ -70,6 +64,13 @@ function makeUserPinIcon(theme) {
 const CATEGORY_ORDER = Object.values(CATEGORIES).map(c => c.color)
 const VENUE_TYPE_ORDER = VENUE_TYPES.map(t => VENUE_TYPE_COLORS[t])
 
+// Used by both map modes: in events mode one dot per venue with events on the
+// selected day, in venues mode one dot per venue coloured by its type.
+//
+// Events at a venue share the venue's coordinates, so drawing a dot per event
+// stacked them perfectly — only the topmost was clickable, and zooming never
+// separated them. Hence one dot per venue, with a count.
+//
 // `counts` is a list of [categoryColour, howMany] pairs. One entry fills the
 // dot with that colour; several make it a pie, so a venue with two live music
 // nights and one quiz reads as two thirds green.
@@ -160,6 +161,14 @@ const CLUSTER_PROPS = {
   disableClusteringAtZoom: 17,
 }
 
+// Types a set of venues uses, in the order the list declares them so the chips,
+// the key and the pie slices always agree. Retired types resolve first,
+// otherwise an unmigrated row would show up as a type the app no longer offers.
+function typesIn(venues) {
+  const present = new Set(venues.map(v => resolveVenueType(v.type)))
+  return VENUE_TYPES.filter(t => present.has(t))
+}
+
 // Re-renders when the effective light/dark theme changes (toggle or OS setting)
 function useResolvedTheme() {
   const [theme, setTheme] = useState(() => getResolvedTheme())
@@ -182,6 +191,7 @@ function FlyToOnce({ lat, lng }) {
 export default function DiscoverPage() {
   const [mapMode, setMapMode] = useState('events')  // 'events' | 'venues'
   const [category, setCategory] = useState('all')
+  const [venueType, setVenueType] = useState('all')
   const [day, setDay] = useState(() => todayKey())
   const [selected, setSelected] = useState(null)
   const [selectedGroup, setSelectedGroup] = useState(null)  // venue with >1 event
@@ -239,6 +249,19 @@ export default function DiscoverPage() {
     return [...map.values()]
   }, [filtered])
 
+  // The chips offer everything on the map; the key describes what is left
+  // after filtering, so it never names a colour with nothing to point at.
+  const venueTypesPresent = useMemo(() => typesIn(venues), [venues])
+
+  const filteredVenues = useMemo(
+    () => venueType === 'all'
+      ? venues
+      : venues.filter(v => resolveVenueType(v.type) === venueType),
+    [venues, venueType]
+  )
+
+  const venueTypesShown = useMemo(() => typesIn(filteredVenues), [filteredVenues])
+
   function handleCategoryChange(cat) {
     setCategory(cat)
     setSelected(null)
@@ -282,6 +305,14 @@ export default function DiscoverPage() {
           />
           <CategoryFilter active={category} onChange={handleCategoryChange} />
         </>
+      )}
+
+      {mapMode === 'venues' && (
+        <VenueTypeFilter
+          types={venueTypesPresent}
+          active={venueType}
+          onChange={t => { setVenueType(t); setSelectedVenue(null) }}
+        />
       )}
 
       {mapMode === 'events' && eventsError && (
@@ -354,11 +385,11 @@ export default function DiscoverPage() {
           {/* Venues mode — pins open a summary sheet, not the page directly */}
           {mapMode === 'venues' && (
             <MarkerClusterGroup
-              key={`venues-${theme}`}
+              key={`venues-${venueType}-${theme}`}
               {...CLUSTER_PROPS}
               iconCreateFunction={clusterIconFn(VENUE_TYPE_ORDER)}
             >
-              {venues.map(venue => (
+              {filteredVenues.map(venue => (
                 <Marker
                   key={venue.id}
                   position={[venue.lat, venue.lng]}
@@ -406,6 +437,17 @@ export default function DiscoverPage() {
               <span key={key} className="legend-item">
                 <span className="legend-dot" style={{ background: cat.color }} />
                 {cat.label}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {mapMode === 'venues' && venueTypesShown.length > 0 && (
+          <div className="map-legend">
+            {venueTypesShown.map(type => (
+              <span key={type} className="legend-item">
+                <span className="legend-dot" style={{ background: VENUE_TYPE_COLORS[type] }} />
+                {type}
               </span>
             ))}
           </div>
