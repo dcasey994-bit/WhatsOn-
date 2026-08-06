@@ -60,42 +60,65 @@ function makeUserPinIcon(theme) {
 // stacked them perfectly — only the topmost was clickable, and zooming never
 // separated them. Hence one dot per venue, with a count.
 //
-// `color` is null when a venue's events span more than one category. Filling
-// the dot with one of them would claim the whole venue is that category, so a
-// mixed dot is left unfilled — the count is the honest signal.
-function makeDotIcon(theme, color, count) {
+// `counts` is a list of [categoryColour, howMany] pairs. One entry fills the
+// dot with that colour; several make it a pie, so a venue with two live music
+// nights and one quiz reads as two thirds green.
+function makeDotIcon(theme, counts, count) {
   const ring = PIN_COLORS[theme].venue
   const inner = count > 1 ? `<span class="map-dot-count">${count}</span>` : ''
-  const mixed = color == null
   return divIcon({
     className: '',
-    html: `<div class="map-dot${mixed ? ' map-dot-mixed' : ''}" style="--dot-fill:${color ?? 'transparent'};--dot-ring:${ring}">${inner}</div>`,
+    html: `<div class="map-dot" style="--dot-fill:${pieFill(counts)};--dot-ring:${ring}">${inner}</div>`,
     iconSize: [26, 26],
     iconAnchor: [13, 13],
   })
 }
 
-// Same rule as the pins: a cluster only takes a category colour when every
-// event inside it is that category. Anything mixed is left unfilled.
-// `catColor` is set on each Marker below and lands in marker.options.
-function clusterFill(cluster) {
-  const colors = new Set()
-  for (const marker of cluster.getAllChildMarkers()) {
-    const c = marker.options.catColor
-    if (!c) return null            // a mixed pin makes the whole cluster mixed
-    colors.add(c)
-    if (colors.size > 1) return null
-  }
-  return colors.size === 1 ? [...colors][0] : null
+// Tally a list of colours into [colour, count] pairs.
+function countColors(colors) {
+  const counts = new Map()
+  for (const c of colors) counts.set(c, (counts.get(c) ?? 0) + 1)
+  return [...counts]
 }
 
-function makeClusterIcon(count, fill) {
+// A cluster's mix is the sum of its children's. `catCounts` is set on each
+// Marker below and lands in marker.options.
+function clusterCounts(cluster) {
+  const counts = new Map()
+  for (const marker of cluster.getAllChildMarkers())
+    for (const [color, n] of marker.options.catCounts ?? [])
+      counts.set(color, (counts.get(color) ?? 0) + n)
+  return [...counts]
+}
+
+// One category is a plain fill. More than one becomes a pie with a slice per
+// category, sized by how many events it contributes — a blank circle said only
+// "mixed", which is the one thing you already knew from the count.
+//
+// Slices are ordered largest first so the same mix always draws the same wheel
+// regardless of the order the markers happened to arrive in.
+function pieFill(counts) {
+  if (!counts.length) return 'transparent'
+  if (counts.length === 1) return counts[0][0]
+  const sorted = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  const total = sorted.reduce((n, [, c]) => n + c, 0)
+  let acc = 0
+  const stops = sorted.map(([color, n]) => {
+    const from = (acc / total) * 100
+    acc += n
+    return `${color} ${from.toFixed(2)}% ${(acc / total * 100).toFixed(2)}%`
+  })
+  return `conic-gradient(${stops.join(',')})`
+}
+
+const totalOf = counts => counts.reduce((n, [, c]) => n + c, 0)
+
+function makeClusterIcon(count, counts) {
   // Bigger clusters read as heavier without becoming finger-sized.
   const size = count < 10 ? 34 : count < 50 ? 40 : 46
-  const mixed = fill == null
   return divIcon({
     className: '',
-    html: `<div class="map-cluster${mixed ? ' map-cluster-mixed' : ''}" style="--cluster-fill:${fill ?? 'transparent'};width:${size}px;height:${size}px">${count}</div>`,
+    html: `<div class="map-cluster" style="--cluster-fill:${pieFill(counts)};width:${size}px;height:${size}px">${count}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   })
@@ -103,7 +126,13 @@ function makeClusterIcon(count, fill) {
 
 // Shared across both map modes.
 const CLUSTER_PROPS = {
-  iconCreateFunction: cluster => makeClusterIcon(cluster.getChildCount(), clusterFill(cluster)),
+  // The number counts events, not pins, so it agrees with the pie drawn from
+  // the same tally — a cluster of three venues holding five events between
+  // them says 5, the same as a single venue with five would.
+  iconCreateFunction: cluster => {
+    const counts = clusterCounts(cluster)
+    return makeClusterIcon(totalOf(counts) || cluster.getChildCount(), counts)
+  },
   showCoverageOnHover: false,
   // Venues on the same parade (Northcote Road, Balham High Road) should merge
   // when zoomed out but separate readily as you move in.
@@ -275,17 +304,16 @@ export default function DiscoverPage() {
                 // Compare resolved categories, not raw keys: retired keys are
                 // remapped, so 'jazz' and 'music' are one category, as are
                 // 'karaoke' and 'comedy'.
-                const colors = new Set(group.events.map(e => getCategory(e.category).color))
-                const fill = colors.size === 1 ? [...colors][0] : null
+                const counts = countColors(group.events.map(e => getCategory(e.category).color))
                 return (
                   <Marker
                     key={group.key}
                     position={[group.lat, group.lng]}
-                    icon={makeDotIcon(theme, fill, group.events.length)}
+                    icon={makeDotIcon(theme, counts, group.events.length)}
                     // Not a Leaflet option — react-leaflet forwards unknown
                     // props into marker.options, which is how the cluster
-                    // above works out whether its contents share a category.
-                    catColor={fill}
+                    // above adds up the mix of everything inside it.
+                    catCounts={counts}
                     eventHandlers={{
                       click: () => {
                         if (group.events.length === 1) {
@@ -312,8 +340,8 @@ export default function DiscoverPage() {
                 <Marker
                   key={venue.id}
                   position={[venue.lat, venue.lng]}
-                  icon={makeDotIcon(theme, getVenueTypeColor(venue.type), 1)}
-                  catColor={getVenueTypeColor(venue.type)}
+                  icon={makeDotIcon(theme, [[getVenueTypeColor(venue.type), 1]], 1)}
+                  catCounts={[[getVenueTypeColor(venue.type), 1]]}
                   eventHandlers={{ click: () => setSelectedVenue(venue) }}
                 >
                   <Tooltip direction="top" offset={[0, -14]}>{venue.name}</Tooltip>

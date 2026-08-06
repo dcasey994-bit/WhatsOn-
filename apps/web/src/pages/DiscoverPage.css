@@ -161,21 +161,27 @@
   margin: 2px;
 }
 
+.map-dot-count,
+.map-cluster {
+  /* Sits on category colours, which are always light enough for dark text.
+     The halo keeps the digits legible where a pie's slice boundary runs
+     through them. */
+  color: #0f0f14;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
 .map-dot-count {
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
-  /* Sits on a category colour, which is always light enough for dark text. */
-  color: #0f0f14;
 }
 
 .map-cluster {
   border-radius: 50%;
-  /* Category colour only when everything inside shares one; the accent green
-     used previously was close enough to the Live Music green to read as a
-     category of its own. */
+  /* A single category fills flat; a mix draws as a pie. The accent green used
+     previously was close enough to the Live Music green to read as a category
+     of its own, so neither case borrows it. */
   background: var(--cluster-fill);
-  color: #0f0f14;
   border: 2px solid var(--bg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -191,27 +197,6 @@
 .marker-cluster {
   background: transparent;
   border: none;
-}
-
-/* A venue whose events span more than one category. Left unfilled so the pin
-   never implies a category it does not have — the count carries the meaning.
-   The ring already contrasts with both map themes, so the number borrows it
-   rather than the dark colour used on a filled pin. */
-.map-dot-mixed {
-  background: transparent;
-  border-width: 2px;
-}
-
-.map-dot-mixed .map-dot-count {
-  color: var(--dot-ring);
-}
-
-/* A cluster holding more than one category, or any venue-mode cluster, where
-   no single colour would be true. Matches the unfilled pin treatment. */
-.map-cluster-mixed {
-  background: transparent;
-  border-color: var(--text);
-  color: var(--text);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
