@@ -12,7 +12,7 @@ import { useEvents, useEventsError, useEventsLoading, useReloadEvents } from '..
 import { fetchAllVenues } from '../data/eventsStore.js'
 import { useUserLocation } from '../data/location.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
-import { getVenueTypeColor } from '../data/venueTypes.js'
+import { getVenueTypeColor, VENUE_TYPES, VENUE_TYPE_COLORS } from '../data/venueTypes.js'
 import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
 import Header from '../components/Header.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
@@ -60,15 +60,25 @@ function makeUserPinIcon(theme) {
 // stacked them perfectly — only the topmost was clickable, and zooming never
 // separated them. Hence one dot per venue, with a count.
 //
+// Slice order. Pies read left to right against the key beside the map, so the
+// slices run in the order the key lists them rather than by size — the same
+// category always sits in the same place on every dot.
+//
+// One list per map mode: the two palettes reuse several of the same colours,
+// so a single shared ranking would order venue types by the event categories
+// that happen to share their colour.
+const CATEGORY_ORDER = Object.values(CATEGORIES).map(c => c.color)
+const VENUE_TYPE_ORDER = VENUE_TYPES.map(t => VENUE_TYPE_COLORS[t])
+
 // `counts` is a list of [categoryColour, howMany] pairs. One entry fills the
 // dot with that colour; several make it a pie, so a venue with two live music
 // nights and one quiz reads as two thirds green.
-function makeDotIcon(theme, counts, count) {
+function makeDotIcon(theme, counts, count, order) {
   const ring = PIN_COLORS[theme].venue
   const inner = count > 1 ? `<span class="map-dot-count">${count}</span>` : ''
   return divIcon({
     className: '',
-    html: `<div class="map-dot" style="--dot-fill:${pieFill(counts)};--dot-ring:${ring}">${inner}</div>`,
+    html: `<div class="map-dot" style="--dot-fill:${pieFill(counts, order)};--dot-ring:${ring}">${inner}</div>`,
     iconSize: [26, 26],
     iconAnchor: [13, 13],
   })
@@ -95,12 +105,16 @@ function clusterCounts(cluster) {
 // category, sized by how many events it contributes — a blank circle said only
 // "mixed", which is the one thing you already knew from the count.
 //
-// Slices are ordered largest first so the same mix always draws the same wheel
-// regardless of the order the markers happened to arrive in.
-function pieFill(counts) {
+// `order` is the list of colours in key order; anything not in it (a retired
+// or legacy colour) sorts to the end rather than disappearing.
+function pieFill(counts, order) {
   if (!counts.length) return 'transparent'
   if (counts.length === 1) return counts[0][0]
-  const sorted = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  const rank = color => {
+    const i = order.indexOf(color)
+    return i === -1 ? order.length : i
+  }
+  const sorted = [...counts].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0]))
   const total = sorted.reduce((n, [, c]) => n + c, 0)
   let acc = 0
   const stops = sorted.map(([color, n]) => {
@@ -113,26 +127,29 @@ function pieFill(counts) {
 
 const totalOf = counts => counts.reduce((n, [, c]) => n + c, 0)
 
-function makeClusterIcon(count, counts) {
+// The cluster's number counts events, not pins, so it agrees with the pie
+// drawn from the same tally — a cluster of three venues holding five events
+// between them says 5, the same as a single venue with five would.
+function clusterIconFn(order) {
+  return cluster => {
+    const counts = clusterCounts(cluster)
+    return makeClusterIcon(totalOf(counts) || cluster.getChildCount(), counts, order)
+  }
+}
+
+function makeClusterIcon(count, counts, order) {
   // Bigger clusters read as heavier without becoming finger-sized.
   const size = count < 10 ? 34 : count < 50 ? 40 : 46
   return divIcon({
     className: '',
-    html: `<div class="map-cluster" style="--cluster-fill:${pieFill(counts)};width:${size}px;height:${size}px">${count}</div>`,
+    html: `<div class="map-cluster" style="--cluster-fill:${pieFill(counts, order)};width:${size}px;height:${size}px">${count}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   })
 }
 
-// Shared across both map modes.
+// Shared across both map modes; only the slice order differs.
 const CLUSTER_PROPS = {
-  // The number counts events, not pins, so it agrees with the pie drawn from
-  // the same tally — a cluster of three venues holding five events between
-  // them says 5, the same as a single venue with five would.
-  iconCreateFunction: cluster => {
-    const counts = clusterCounts(cluster)
-    return makeClusterIcon(totalOf(counts) || cluster.getChildCount(), counts)
-  },
   showCoverageOnHover: false,
   // Venues on the same parade (Northcote Road, Balham High Road) should merge
   // when zoomed out but separate readily as you move in.
@@ -299,6 +316,7 @@ export default function DiscoverPage() {
             <MarkerClusterGroup
               key={`events-${day}-${category}-${theme}`}
               {...CLUSTER_PROPS}
+              iconCreateFunction={clusterIconFn(CATEGORY_ORDER)}
             >
               {venueGroups.map(group => {
                 // Compare resolved categories, not raw keys: retired keys are
@@ -309,7 +327,7 @@ export default function DiscoverPage() {
                   <Marker
                     key={group.key}
                     position={[group.lat, group.lng]}
-                    icon={makeDotIcon(theme, counts, group.events.length)}
+                    icon={makeDotIcon(theme, counts, group.events.length, CATEGORY_ORDER)}
                     // Not a Leaflet option — react-leaflet forwards unknown
                     // props into marker.options, which is how the cluster
                     // above adds up the mix of everything inside it.
@@ -335,12 +353,16 @@ export default function DiscoverPage() {
 
           {/* Venues mode — pins open a summary sheet, not the page directly */}
           {mapMode === 'venues' && (
-            <MarkerClusterGroup key={`venues-${theme}`} {...CLUSTER_PROPS}>
+            <MarkerClusterGroup
+              key={`venues-${theme}`}
+              {...CLUSTER_PROPS}
+              iconCreateFunction={clusterIconFn(VENUE_TYPE_ORDER)}
+            >
               {venues.map(venue => (
                 <Marker
                   key={venue.id}
                   position={[venue.lat, venue.lng]}
-                  icon={makeDotIcon(theme, [[getVenueTypeColor(venue.type), 1]], 1)}
+                  icon={makeDotIcon(theme, [[getVenueTypeColor(venue.type), 1]], 1, VENUE_TYPE_ORDER)}
                   catCounts={[[getVenueTypeColor(venue.type), 1]]}
                   eventHandlers={{ click: () => setSelectedVenue(venue) }}
                 >
