@@ -1,7 +1,12 @@
 .day-strip {
   display: flex;
   gap: 8px;
-  padding: 0 16px 12px;
+  /* The strip sat flush against whatever is above it with all its breathing
+     space below, which read as belonging to the filter bar rather than
+     sitting between the two. The 2px bottom pairs with the filter bar's own
+     10px of top padding, so the gap above and below comes to 12px either
+     side. */
+  padding: 12px 16px 2px;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;

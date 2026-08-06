@@ -2,7 +2,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 16px 12px;
+  /* No bottom margin: the day strip below now carries its own top padding,
+     and keeping both stacked 24px between them. */
+  margin: 0 16px;
   padding: 0 12px;
   background: var(--card);
   border: 1px solid var(--border);
