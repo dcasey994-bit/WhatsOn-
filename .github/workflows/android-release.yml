@@ -62,6 +62,16 @@ jobs:
             exit 1
           fi
 
+      # Re-running a workflow keeps the original run_number and replays the
+      # original inputs, so a re-run silently rebuilds the identical version
+      # — same name, same code — and Play then rejects the upload. Catch it
+      # here, where the cause is obvious.
+      - name: Reject a re-run without an explicit versionCode
+        if: ${{ github.run_attempt != 1 && !inputs.version_code }}
+        run: |
+          echo "::error::This is attempt ${{ github.run_attempt }} of run ${{ github.run_number }}, so it would rebuild versionCode ${{ github.run_number }} — the same one the first attempt produced, with the same version name. Start a fresh run from 'Run workflow' instead, or supply a versionCode override."
+          exit 1
+
       - name: Install dependencies
         run: npm ci
 
