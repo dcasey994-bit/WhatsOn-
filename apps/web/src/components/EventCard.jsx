@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { publicPath } from '../data/appMode.js'
 import { getCategory } from '../data/events.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
@@ -7,6 +8,7 @@ import './EventCard.css'
 
 export default function EventCard({ event }) {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const cat = getCategory(event.category)
   const [saved, setSaved] = useState(() => isSaved(event.id))
 
@@ -19,7 +21,7 @@ export default function EventCard({ event }) {
   }
 
   return (
-    <div className="event-card" onClick={() => navigate(`/event/${event.id}`)}>
+    <div className="event-card" onClick={() => navigate(publicPath(pathname, `/event/${event.id}`))}>
       {event.image && (
         <div className="card-image" style={{ backgroundImage: `url(${event.image})` }} />
       )}

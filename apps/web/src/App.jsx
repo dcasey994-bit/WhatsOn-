@@ -81,6 +81,11 @@ export default function App() {
         <Route path="/manage/events/upcoming" element={authed(<VenueEventsPage period="upcoming" />)} />
         <Route path="/manage/events/past" element={authed(<VenueEventsPage period="past" />)} />
         <Route path="/manage/:id" element={authed(<VenueManagePage />)} />
+        {/* The public pages again, inside venue mode. An owner checking how a
+            listing looks should not be dropped into the customer app to do
+            it — same components, same data, just reached from this side. */}
+        <Route path="/manage/preview/event/:id" element={authed(<EventDetailPage />)} />
+        <Route path="/manage/preview/venue/:id" element={authed(<VenueProfilePage />)} />
 
         <Route path="*" element={<Navigate to="/discover" replace />} />
       </Routes>

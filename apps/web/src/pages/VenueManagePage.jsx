@@ -316,9 +316,9 @@ export default function VenueManagePage() {
               <button
                 type="button"
                 className="view-public-link"
-                onClick={() => navigate(`/event/${editingId}`)}
+                onClick={() => navigate(`/manage/preview/event/${editingId}`)}
               >
-                View public page ↗
+                Preview public page ↗
               </button>
             )}
           </div>

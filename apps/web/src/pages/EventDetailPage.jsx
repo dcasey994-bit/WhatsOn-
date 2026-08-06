@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { publicPath } from '../data/appMode.js'
 import { getCategory } from '../data/events.js'
 import { useEvent } from '../data/EventsContext.jsx'
 import { fetchEventById } from '../data/eventsStore.js'
@@ -11,6 +12,7 @@ import './EventDetailPage.css'
 export default function EventDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const contextEvent = useEvent(id)
 
   const [fetched, setFetched] = useState(null)
@@ -105,7 +107,7 @@ export default function EventDetailPage() {
         {event.fromDB && event.venueId ? (
           <button
             className="detail-section venue-card"
-            onClick={() => navigate(`/venue/${event.venueId}`)}
+            onClick={() => navigate(publicPath(pathname, `/venue/${event.venueId}`))}
           >
             <span className="venue-card-body">
               <span className="section-label">Venue</span>

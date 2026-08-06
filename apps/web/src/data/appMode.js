@@ -26,6 +26,14 @@ export function useAppMode() {
   return isVenuePath(pathname) ? 'venue' : 'customer'
 }
 
+// The public event and venue pages are reachable from both sides: as
+// themselves, and under /manage/preview as a preview for the venue team. A
+// link between them has to stay on whichever side it was followed from, or
+// the preview quietly hands the owner back to the customer app.
+export function publicPath(pathname, path) {
+  return isVenuePath(pathname) ? `${VENUE_ROOT}/preview${path}` : path
+}
+
 // Where each mode starts. Used by the mode switch and by sign-in.
 export function homePathFor(mode) {
   return mode === 'venue' ? VENUE_ROOT : '/discover'
