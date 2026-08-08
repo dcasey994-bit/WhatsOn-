@@ -3,6 +3,7 @@ import { useEvents, useEventsError, useEventsLoading, useReloadEvents } from '..
 import { fetchAllVenues } from '../data/eventsStore.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
 import { resolveVenueType, VENUE_TYPES } from '../data/venueTypes.js'
+import { useView, useSwitchView } from '../data/appMode.js'
 import Header from '../components/Header.jsx'
 import ViewToggle from '../components/ViewToggle.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
@@ -20,7 +21,8 @@ export default function BrowsePage() {
   const eventsError = useEventsError()
   const eventsLoading = useEventsLoading()
   const reloadEvents = useReloadEvents()
-  const [mode, setMode] = useState('events')   // 'events' | 'venues'
+  const mode = useView()
+  const switchView = useSwitchView()
   const [category, setCategory] = useState('all')
   const [venueType, setVenueType] = useState('all')
   const [day, setDay] = useState(() => todayKey())
@@ -81,12 +83,12 @@ export default function BrowsePage() {
       <Header>
         <span className="event-count">{count} {noun}</span>
       </Header>
+      <ViewToggle mode={mode} onChange={switchView} />
       <SearchBar
         value={query}
         onChange={setQuery}
         placeholder={showingVenues ? 'Search venues…' : 'Search events or venues…'}
       />
-      <ViewToggle mode={mode} onChange={setMode} />
 
       {showingVenues ? (
         <VenueTypeFilter types={venueTypesPresent} active={venueType} onChange={setVenueType} />

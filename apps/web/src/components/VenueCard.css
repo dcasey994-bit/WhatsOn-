@@ -28,6 +28,13 @@
   gap: 10px;
 }
 
+.vlist-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .vlist-card-name {
   font-size: 15px;
   font-weight: 700;

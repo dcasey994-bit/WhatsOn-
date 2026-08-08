@@ -34,9 +34,9 @@ export default defineConfig({
           { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
         shortcuts: [
-          { name: "What's on tonight", short_name: 'Tonight', url: '/discover' },
-          { name: 'Browse events', short_name: 'Browse', url: '/browse' },
-          { name: 'Saved events', short_name: 'Saved', url: '/saved' },
+          { name: "What's on tonight", short_name: 'Tonight', url: '/going-out/events/discover' },
+          { name: 'Browse events', short_name: 'Browse', url: '/going-out/events/browse' },
+          { name: 'Saved events', short_name: 'Saved', url: '/going-out/events/saved' },
         ],
       },
       workbox: {

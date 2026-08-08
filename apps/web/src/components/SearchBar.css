@@ -2,9 +2,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  /* No bottom margin: the day strip below now carries its own top padding,
-     and keeping both stacked 24px between them. */
-  margin: 0 16px;
+  /* The view toggle sits directly above and the day strip below carries its
+     own top padding, so this only owns the gap under the toggle. */
+  margin: 10px 16px 0;
   padding: 0 12px;
   background: var(--card);
   border: 1px solid var(--border);

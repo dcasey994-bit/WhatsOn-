@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { useAppMode } from '../data/appMode.js'
+import { useAppMode, useView, goingOutPath } from '../data/appMode.js'
 import './BottomNav.css'
 
 function IconMap() {
@@ -63,10 +63,13 @@ function IconClock() {
   )
 }
 
+// Paths are built from the view the user is currently on, so changing tab
+// keeps you looking at the same thing — switch to venues on the map and Browse
+// opens the venue list, not the event one.
 const goingOutTabs = [
-  { to: '/discover', label: 'Discover', Icon: IconMap },
-  { to: '/browse',   label: 'Browse',   Icon: IconList },
-  { to: '/saved',    label: 'Saved',    Icon: IconHeart },
+  { page: 'discover', label: 'Discover', Icon: IconMap },
+  { page: 'browse',   label: 'Browse',   Icon: IconList },
+  { page: 'saved',    label: 'Saved',    Icon: IconHeart },
 ]
 
 const venueTabs = [
@@ -78,7 +81,10 @@ const venueTabs = [
 export default function BottomNav() {
   // Derived from the URL, so the tabs cannot disagree with the page on screen
   // — including after a browser or device back.
-  const tabs = useAppMode() === 'venue' ? venueTabs : goingOutTabs
+  const view = useView()
+  const tabs = useAppMode() === 'venue'
+    ? venueTabs
+    : goingOutTabs.map(t => ({ ...t, to: goingOutPath(view, t.page) }))
 
   return (
     <nav className="bottom-nav">

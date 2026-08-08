@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { resolveVenueType } from '../data/venueTypes.js'
+import VenueSaveButton from './VenueSaveButton.jsx'
 import './map-sheet.css'
 import './MapVenueSheet.css'
 
@@ -15,7 +16,10 @@ export default function MapVenueSheet({ venue, eventCount = 0, onClose }) {
       <div className="sheet-inner">
         <div className="sheet-top-row">
           <span className="cat-badge-sm venue-sheet-badge">{resolveVenueType(venue.type) || 'Venue'}</span>
-          <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
+          <div className="venue-sheet-top-right">
+            <VenueSaveButton venueId={venue.id} />
+            <button className="sheet-close" onClick={onClose} aria-label="Close">✕</button>
+          </div>
         </div>
 
         <h3 className="sheet-title">{venue.name}</h3>

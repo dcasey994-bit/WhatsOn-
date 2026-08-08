@@ -14,6 +14,7 @@ import { useUserLocation } from '../data/location.js'
 import { matchesDay, todayKey } from '../data/dateFilter.js'
 import { getVenueTypeColor, resolveVenueType, VENUE_TYPES, VENUE_TYPE_COLORS } from '../data/venueTypes.js'
 import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
+import { useView, useSwitchView } from '../data/appMode.js'
 import Header from '../components/Header.jsx'
 import ViewToggle from '../components/ViewToggle.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
@@ -190,7 +191,6 @@ function FlyToOnce({ lat, lng }) {
 }
 
 export default function DiscoverPage() {
-  const [mapMode, setMapMode] = useState('events')  // 'events' | 'venues'
   const [category, setCategory] = useState('all')
   const [venueType, setVenueType] = useState('all')
   const [day, setDay] = useState(() => todayKey())
@@ -199,6 +199,8 @@ export default function DiscoverPage() {
   const [selectedVenue, setSelectedVenue] = useState(null)
   const [venues, setVenues] = useState([])
   const [venuesError, setVenuesError] = useState(false)
+  const mapMode = useView()
+  const switchView = useSwitchView()
   const events = useEvents()
   const eventsError = useEventsError()
   const eventsLoading = useEventsLoading()
@@ -269,11 +271,13 @@ export default function DiscoverPage() {
     setSelectedGroup(null)
   }
 
-  function switchMode(mode) {
-    setMapMode(mode)
+  // The view lives in the URL now, but the page stays mounted across the
+  // change, so an open sheet has to be dismissed here rather than by unmounting.
+  function switchMode(view) {
     setSelected(null)
     setSelectedGroup(null)
     setSelectedVenue(null)
+    switchView(view)
   }
 
   return (

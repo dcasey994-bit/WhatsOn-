@@ -47,3 +47,11 @@
   padding: 20px 16px;
   text-align: center;
 }
+
+/* Badge on the left, save on the right, on the row above the venue name. */
+.vp-hero-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

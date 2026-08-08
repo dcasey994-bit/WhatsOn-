@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { getUser, getPreferredMode, initAuth, initNativeAuthBridge } from './data/authStore.js'
-import { homePathFor } from './data/appMode.js'
-import { loadSavedFromDB } from './data/savedStore.js'
+import { homePathFor, goingOutPath } from './data/appMode.js'
+import { loadSavedFromDB, loadSavedVenuesFromDB } from './data/savedStore.js'
 import { loadGoingCounts } from './data/goingStore.js'
 import { EventsProvider } from './data/EventsContext.jsx'
 import SignInPage from './pages/SignInPage.jsx'
@@ -19,6 +19,8 @@ import AccountSettingsPage from './pages/AccountSettingsPage.jsx'
 import PrivacyPage from './pages/PrivacyPage.jsx'
 import TermsPage from './pages/TermsPage.jsx'
 import BottomNav from './components/BottomNav.jsx'
+
+const CUSTOMER_HOME = goingOutPath('events', 'discover')
 
 // After signing in, return to wherever the user was when they hit the gate
 function SignInRoute({ user }) {
@@ -39,7 +41,7 @@ export default function App() {
       setUser(u)
       setReady(true)
       loadGoingCounts()          // public counts — no account needed
-      if (u) loadSavedFromDB()   // personal saves need one
+      if (u) { loadSavedFromDB(); loadSavedVenuesFromDB() }   // personal saves need one
     })
   }, [])
 
@@ -59,13 +61,21 @@ export default function App() {
   return (
     <EventsProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/discover" replace />} />
+        <Route path="/" element={<Navigate to={CUSTOMER_HOME} replace />} />
         <Route path="/signin" element={<SignInRoute user={user} />} />
 
-        {/* Public — browse without an account */}
-        <Route path="/discover" element={<DiscoverPage />} />
-        <Route path="/browse" element={<BrowsePage />} />
-        <Route path="/saved" element={<SavedPage />} />
+        {/* Public — browse without an account.
+            /going-out/<events|venues>/<page>: both halves of what you are
+            looking at live in the path, so the toggle is the same one on all
+            three pages and a shared link opens the view it was shared from. */}
+        <Route path="/going-out/:view/discover" element={<DiscoverPage />} />
+        <Route path="/going-out/:view/browse" element={<BrowsePage />} />
+        <Route path="/going-out/:view/saved" element={<SavedPage />} />
+        {/* The flat paths these replaced. Kept because they are in the wild —
+            shared links, home-screen shortcuts, anyone's history. */}
+        <Route path="/discover" element={<Navigate to={CUSTOMER_HOME} replace />} />
+        <Route path="/browse" element={<Navigate to={goingOutPath('events', 'browse')} replace />} />
+        <Route path="/saved" element={<Navigate to={goingOutPath('events', 'saved')} replace />} />
         <Route path="/event/:id" element={<EventDetailPage />} />
         <Route path="/venue/:id" element={<VenueProfilePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
@@ -87,7 +97,7 @@ export default function App() {
         <Route path="/manage/preview/event/:id" element={authed(<EventDetailPage />)} />
         <Route path="/manage/preview/venue/:id" element={authed(<VenueProfilePage />)} />
 
-        <Route path="*" element={<Navigate to="/discover" replace />} />
+        <Route path="*" element={<Navigate to={CUSTOMER_HOME} replace />} />
       </Routes>
       {location.pathname !== '/signin' && <BottomNav />}
     </EventsProvider>

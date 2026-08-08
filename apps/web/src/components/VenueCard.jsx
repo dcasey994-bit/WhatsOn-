@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { publicPath } from '../data/appMode.js'
 import { resolveVenueType, getVenueTypeColor } from '../data/venueTypes.js'
+import VenueSaveButton from './VenueSaveButton.jsx'
 import './VenueCard.css'
 
 export default function VenueCard({ venue, eventCount = 0 }) {
@@ -16,14 +17,17 @@ export default function VenueCard({ venue, eventCount = 0 }) {
     >
       <div className="vlist-card-top">
         <p className="vlist-card-name">{venue.name}</p>
-        {type && (
-          // Same dot as the map key, so a venue found in the list and the
-          // same venue found on the map are recognisably the same thing.
-          <span className="vlist-card-type">
-            <span className="vlist-card-dot" style={{ background: color }} />
-            {type}
-          </span>
-        )}
+        <div className="vlist-card-right">
+          {type && (
+            // Same dot as the map key, so a venue found in the list and the
+            // same venue found on the map are recognisably the same thing.
+            <span className="vlist-card-type">
+              <span className="vlist-card-dot" style={{ background: color }} />
+              {type}
+            </span>
+          )}
+          <VenueSaveButton venueId={venue.id} />
+        </div>
       </div>
       <p className="vlist-card-addr">{venue.address}</p>
       {eventCount > 0 && (

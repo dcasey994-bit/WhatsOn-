@@ -18,3 +18,9 @@
   color: var(--accent);
   margin-bottom: 14px;
 }
+
+.venue-sheet-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

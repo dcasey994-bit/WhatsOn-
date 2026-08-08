@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signIn, signInWithPassword, signUpWithEmail } from '../data/authStore.js'
 import { authErrorMessage } from '../data/authErrors.js'
+import { homePathFor } from '../data/appMode.js'
 import './SignInPage.css'
 
 export default function SignInPage() {
@@ -156,7 +157,7 @@ export default function SignInPage() {
 
             <button
               className="signin-skip"
-              onClick={() => navigate('/discover')}
+              onClick={() => navigate(homePathFor('customer'))}
             >
               Just browsing? Explore without an account →
             </button>

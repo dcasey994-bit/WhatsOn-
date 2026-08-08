@@ -1,0 +1,19 @@
+/* Matches the event heart on EventCard: muted until saved, then the pink the
+   rest of the app already uses for a save. */
+.venue-save-btn {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  padding: 0 2px;
+  transition: color 0.15s, transform 0.1s;
+}
+
+.venue-save-btn:active {
+  transform: scale(0.9);
+}
+
+.venue-save-btn.saved {
+  color: #ff4081;
+}
