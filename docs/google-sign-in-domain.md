@@ -30,13 +30,17 @@ Worth doing whichever route follows, and it may improve the screen on its own.
    `lqafmjidqbshssqrxmkr.supabase.co` alone — see below.
 5. Save, then sign in with Google in a private window and look at the screen.
 
-Whether Google replaces the host with the app name depends on the consent
-screen's publishing and verification state. It costs nothing to find out, so
-test it before paying for step 2.
+**Tried, and it does not fix the screen.** Branding was set in full and the
+sign-in screen still reads `lqafmjidqbshssqrxmkr.supabase.co`. Authorized
+domains are meant to be ones you can prove you own in Search Console;
+`supabase.co` is not one of ours, so Google has no basis to show our app name
+in place of it. Do the branding anyway — it is right for the consent screen in
+its own right — but step 2 is the only thing that changes the host.
 
-Authorized domains normally have to be ones you can prove you own in Search
-Console. `supabase.co` is not one of them, which is why Google may keep showing
-the raw host however the branding is set — and why step 2 is the actual fix.
+**Status: deferred until closer to public launch.** The people who see this
+today are named testers on the internal track. It matters when strangers
+arrive from the Play listing, and the whole move is better done in one sitting
+than in pieces around a release.
 
 ### Do not remove the supabase.co authorized domain yet
 
