@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { VENUE_HOME } from '../data/appMode.js'
 import { CATEGORIES, getCategory } from '../data/events.js'
 import {
   fetchVenueById, fetchVenueEvents, fetchPastVenueEvents,
@@ -281,7 +282,7 @@ export default function VenueManagePage() {
         <Header title="My Venues" />
         <div className="vm-empty">
           <p>Venue not found.</p>
-          <button className="vl-add-btn" onClick={() => navigate('/manage')}>← Back to My Venues</button>
+          <button className="vl-add-btn" onClick={() => navigate(VENUE_HOME)}>← Back to My Venues</button>
         </div>
       </div>
     )
@@ -455,7 +456,7 @@ export default function VenueManagePage() {
         <span className="verified-badge">✓ Verified</span>
       </Header>
 
-      <button className="vp-back-link vp-back-pad" onClick={() => navigate('/manage')}>← My Venues</button>
+      <button className="vp-back-link vp-back-pad" onClick={() => navigate(VENUE_HOME)}>← My Venues</button>
 
       {/* Subscription card — admin only */}
       {isAdmin && (

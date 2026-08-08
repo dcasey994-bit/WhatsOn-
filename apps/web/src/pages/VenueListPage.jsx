@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { venuePath, NEW_VENUE_PATH } from '../data/appMode.js'
 import { fetchMyVenues, getSubscriptionState, trialDaysLeft } from '../data/eventsStore.js'
 import { resolveVenueType } from '../data/venueTypes.js'
 import Header from '../components/Header.jsx'
@@ -46,7 +47,7 @@ export default function VenueListPage() {
         ) : venues.length === 0 ? (
           <div className="vl-empty">
             <p>You haven&apos;t added a venue yet.</p>
-            <button className="vl-add-btn" onClick={() => navigate('/manage/new')}>
+            <button className="vl-add-btn" onClick={() => navigate(NEW_VENUE_PATH)}>
               + Add your first venue
             </button>
           </div>
@@ -59,7 +60,7 @@ export default function VenueListPage() {
                 <button
                   key={venue.id}
                   className="vl-card"
-                  onClick={() => navigate(`/manage/${venue.id}`)}
+                  onClick={() => navigate(venuePath(venue.id))}
                 >
                   <div className="vl-card-main">
                     <p className="vl-card-name">{venue.name}</p>
@@ -76,7 +77,7 @@ export default function VenueListPage() {
                 </button>
               )
             })}
-            <button className="vl-add-btn" onClick={() => navigate('/manage/new')}>
+            <button className="vl-add-btn" onClick={() => navigate(NEW_VENUE_PATH)}>
               + Add another venue
             </button>
           </>

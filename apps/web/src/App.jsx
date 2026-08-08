@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { getUser, getPreferredMode, initAuth, initNativeAuthBridge } from './data/authStore.js'
-import { homePathFor, goingOutPath } from './data/appMode.js'
+import { homePathFor, goingOutPath, VENUE_HOME, NEW_VENUE_PATH, venuePath } from './data/appMode.js'
 import { loadSavedFromDB, loadSavedVenuesFromDB } from './data/savedStore.js'
 import { loadGoingCounts } from './data/goingStore.js'
 import { EventsProvider } from './data/EventsContext.jsx'
@@ -21,6 +21,12 @@ import TermsPage from './pages/TermsPage.jsx'
 import BottomNav from './components/BottomNav.jsx'
 
 const CUSTOMER_HOME = goingOutPath('events', 'discover')
+
+// /manage/<uuid> moved to /manage/venues/<uuid>; carry the id across.
+function LegacyVenueRedirect() {
+  const { id } = useParams()
+  return <Navigate to={venuePath(id)} replace />
+}
 
 // After signing in, return to wherever the user was when they hit the gate
 function SignInRoute({ user }) {
@@ -86,11 +92,15 @@ export default function App() {
         {/* Venue management lives under /manage so it never overlaps the
             public /venue/:id page above. useAppMode() reads this prefix to
             decide which of the two apps the user is in. */}
-        <Route path="/manage" element={authed(<VenueListPage />)} />
-        <Route path="/manage/new" element={authed(<VenueRegisterPage />)} />
+        <Route path="/manage/venues" element={authed(<VenueListPage />)} />
+        <Route path="/manage/venues/new" element={authed(<VenueRegisterPage />)} />
+        <Route path="/manage/venues/:id" element={authed(<VenueManagePage />)} />
         <Route path="/manage/events/upcoming" element={authed(<VenueEventsPage period="upcoming" />)} />
         <Route path="/manage/events/past" element={authed(<VenueEventsPage period="past" />)} />
-        <Route path="/manage/:id" element={authed(<VenueManagePage />)} />
+        {/* Where venue pages used to live. Owners have these bookmarked. */}
+        <Route path="/manage" element={<Navigate to={VENUE_HOME} replace />} />
+        <Route path="/manage/new" element={<Navigate to={NEW_VENUE_PATH} replace />} />
+        <Route path="/manage/:id" element={<LegacyVenueRedirect />} />
         {/* The public pages again, inside venue mode. An owner checking how a
             listing looks should not be dropped into the customer app to do
             it — same components, same data, just reached from this side. */}

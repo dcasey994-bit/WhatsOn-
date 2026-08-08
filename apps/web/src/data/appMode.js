@@ -20,6 +20,14 @@ export function isVenuePath(pathname) {
   return pathname === VENUE_ROOT || pathname.startsWith(`${VENUE_ROOT}/`)
 }
 
+// The venues a user manages, under their own segment rather than hanging off
+// the root — /manage/events/* already sat one level down, so a bare /manage/:id
+// left venue pages as the odd ones out and blocked any future static segment
+// from being added at that level.
+export const VENUE_HOME = `${VENUE_ROOT}/venues`
+export const venuePath = id => `${VENUE_HOME}/${id}`
+export const NEW_VENUE_PATH = `${VENUE_HOME}/new`
+
 // 'venue' | 'customer' — where the user is right now.
 export function useAppMode() {
   const { pathname } = useLocation()
@@ -76,5 +84,5 @@ export function useSwitchView() {
 
 // Where each mode starts. Used by the mode switch and by sign-in.
 export function homePathFor(mode) {
-  return mode === 'venue' ? VENUE_ROOT : goingOutPath('events', 'discover')
+  return mode === 'venue' ? VENUE_HOME : goingOutPath('events', 'discover')
 }

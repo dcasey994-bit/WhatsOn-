@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { venuePath } from '../data/appMode.js'
 import { getCategory } from '../data/events.js'
 import { fetchMyVenueEvents } from '../data/eventsStore.js'
 import Header from '../components/Header.jsx'
@@ -50,7 +51,7 @@ export default function VenueEventsPage({ period }) {
                 className="ve-row"
                 // These lists span every venue, and the editor lives on the
                 // venue page — so go there and tell it which event to open.
-                onClick={() => navigate(`/manage/${ev.venueId}`, { state: { editEventId: ev.id } })}
+                onClick={() => navigate(venuePath(ev.venueId), { state: { editEventId: ev.id } })}
               >
                 <span className="ve-dot" style={{ background: cat.color }} />
                 <div className="ve-info">

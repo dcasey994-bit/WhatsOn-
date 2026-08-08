@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { useAppMode, useView, goingOutPath } from '../data/appMode.js'
+import { useAppMode, useView, goingOutPath, VENUE_HOME } from '../data/appMode.js'
 import './BottomNav.css'
 
 function IconMap() {
@@ -73,7 +73,7 @@ const goingOutTabs = [
 ]
 
 const venueTabs = [
-  { to: '/manage',                 label: 'My Venues', Icon: IconBuilding },
+  { to: VENUE_HOME,                label: 'My Venues', Icon: IconBuilding },
   { to: '/manage/events/upcoming', label: 'Upcoming',  Icon: IconCalendar },
   { to: '/manage/events/past',     label: 'Past',      Icon: IconClock },
 ]
