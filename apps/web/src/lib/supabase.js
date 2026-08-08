@@ -14,6 +14,12 @@ export const supabase = createClient(
       // PKCE returns a single short-lived ?code= instead, which the client
       // exchanges for the session and then strips from the URL itself.
       flowType: 'pkce',
+      // Pinned, not defaulted. supabase-js derives this key from the project
+      // URL, so moving auth to a custom domain would rename it and sign
+      // everyone out on the next visit. The value is the one the default
+      // already produces, so pinning it costs nothing today and makes that
+      // move invisible.
+      storageKey: 'sb-lqafmjidqbshssqrxmkr-auth-token',
     },
   }
 )

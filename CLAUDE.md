@@ -21,7 +21,9 @@
 - Supabase for auth + database
 
 ## Supabase
-- Project URL: `https://lqafmjidqbshssqrxmkr.supabase.co`
+- Project URL: `https://lqafmjidqbshssqrxmkr.supabase.co` — read from `VITE_SUPABASE_URL`;
+  nothing in `src/` hardcodes it. Moving auth to `auth.whatsonapp.uk` so the Google
+  sign-in screen stops naming supabase.co: `docs/google-sign-in-domain.md`
 - Auth providers enabled: Google OAuth, Email (magic link)
 - Tables: `saved_events`, `going_events`, `venues`, `events` (RLS enabled); schema in `supabase/migrations/001_schema.sql`
 - Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) in `.env` locally and Netlify env settings.
