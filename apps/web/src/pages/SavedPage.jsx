@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEvents } from '../data/EventsContext.jsx'
-import { fetchAllVenues } from '../data/eventsStore.js'
-import { getSavedIds, getSavedVenueIds, subscribe } from '../data/savedStore.js'
+import { fetchAllVenues, fetchEventsByIds } from '../data/eventsStore.js'
+import { getSavedIds, getSavedVenueIds, unsaveEvents, subscribe } from '../data/savedStore.js'
 import { getUser, subscribe as subscribeAuth } from '../data/authStore.js'
 import { useView, useSwitchView, goingOutPath } from '../data/appMode.js'
+import { todayKey } from '../data/dateFilter.js'
 import Header from '../components/Header.jsx'
 import ViewToggle from '../components/ViewToggle.jsx'
 import EventCard from '../components/EventCard.jsx'
@@ -23,6 +24,9 @@ export default function SavedPage() {
   const [venues, setVenues] = useState([])
   const [venuesError, setVenuesError] = useState(false)
   const [venuesLoading, setVenuesLoading] = useState(true)
+  const [savedEvents, setSavedEvents] = useState([])
+  const [savedEventsError, setSavedEventsError] = useState(false)
+  const [savedEventsLoading, setSavedEventsLoading] = useState(true)
 
   useEffect(() => subscribe(() => {
     setSavedIds(getSavedIds())
@@ -42,7 +46,27 @@ export default function SavedPage() {
   const showingVenues = view === 'venues'
   useEffect(() => { if (showingVenues && user) loadVenues() }, [showingVenues, user, loadVenues])
 
-  const saved = events.filter(e => savedIds.has(String(e.id)))
+  // Fetched by id rather than filtered out of `events`, which only holds
+  // today onwards — that is what made a saved event vanish the morning after
+  // it happened while the save itself was still sitting in the database.
+  const savedKey = useMemo(() => [...savedIds].sort().join(','), [savedIds])
+
+  useEffect(() => {
+    if (showingVenues || !user) return
+    let cancelled = false
+    fetchEventsByIds(savedIds)
+      .then(list => { if (!cancelled) { setSavedEvents(list); setSavedEventsError(false) } })
+      .catch(() => { if (!cancelled) setSavedEventsError(true) })
+      .finally(() => { if (!cancelled) setSavedEventsLoading(false) })
+    return () => { cancelled = true }
+    // savedKey, not savedIds — the set is a new object on every notification.
+  }, [savedKey, showingVenues, user])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  // dateKey, not date — dbEventToLocal turns `date` into a display label
+  // ("Today", "Sat 9 Aug") and keeps the sortable ISO date in dateKey.
+  const today = todayKey()
+  const upcoming = savedEvents.filter(e => e.dateKey >= today)
+  const past = savedEvents.filter(e => e.dateKey < today)
   const savedVenues = useMemo(
     () => venues
       .filter(v => savedVenueIds.has(String(v.id)))
@@ -57,7 +81,7 @@ export default function SavedPage() {
     return counts
   }, [events])
 
-  const count = showingVenues ? savedVenues.length : saved.length
+  const count = showingVenues ? savedVenues.length : savedEvents.length
 
   if (!user) {
     return (
@@ -95,6 +119,12 @@ export default function SavedPage() {
       {showingVenues && venuesError && (
         <ErrorBanner message="Couldn't load venues. Check your connection." onRetry={loadVenues} />
       )}
+      {!showingVenues && savedEventsError && (
+        <ErrorBanner
+          message="Couldn't load your saved events. Check your connection."
+          onRetry={() => setSavedIds(getSavedIds())}
+        />
+      )}
 
       <div className="saved-list">
         {showingVenues ? (
@@ -114,7 +144,9 @@ export default function SavedPage() {
               ))}
             </>
           )
-        ) : saved.length === 0 ? (
+        ) : savedEventsLoading && !savedEventsError ? (
+          <p className="saved-status">Loading saved events…</p>
+        ) : savedEvents.length === 0 && !savedEventsError ? (
           <div className="empty-state">
             <div className="empty-icon">♡</div>
             <h3>Nothing saved yet</h3>
@@ -122,10 +154,32 @@ export default function SavedPage() {
           </div>
         ) : (
           <>
-            <p className="saved-section-label">Your saved events</p>
-            {saved.map(event => (
-              <EventCard key={event.id} event={event} />
-            ))}
+            {upcoming.length > 0 && (
+              <>
+                <p className="saved-section-label">Your saved events</p>
+                {upcoming.map(event => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </>
+            )}
+            {past.length > 0 && (
+              <>
+                <div className="saved-past-head">
+                  <p className="saved-section-label">Been and gone</p>
+                  <button
+                    className="saved-clear-past"
+                    onClick={() => unsaveEvents(past.map(e => e.id))}
+                  >
+                    Clear past
+                  </button>
+                </div>
+                <div className="saved-past">
+                  {past.map(event => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

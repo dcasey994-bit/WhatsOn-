@@ -88,6 +88,28 @@ export async function fetchEventById(eventId) {
   return data ? dbEventToLocal(data) : null
 }
 
+// Saved events are looked up by id rather than filtered out of the upcoming
+// list, because a saved event that has already happened still belongs on the
+// Saved page — filtering the upcoming list made it vanish the morning after.
+//
+// Ids written before events lived in the database were plain integers, and
+// asking Postgres to compare one against a uuid column is an error rather than
+// a miss, so anything that is not a uuid is dropped here.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export async function fetchEventsByIds(ids) {
+  const usable = [...ids].map(String).filter(id => UUID.test(id))
+  if (!usable.length) return []
+  const { data, error } = await supabase
+    .from('events')
+    .select('*, venues(name, address, lat, lng)')
+    .in('id', usable)
+    .order('date', { ascending: true })
+    .order('time', { ascending: true })
+  if (error) throw error
+  return (data || []).map(dbEventToLocal)
+}
+
 // All events across the current user's venues, chronological. period: 'upcoming' | 'past'
 export async function fetchMyVenueEvents(period) {
   const venues = await fetchMyVenues()

@@ -50,6 +50,22 @@ export async function loadSavedFromDB() {
   }
 }
 
+// Drops a batch of saves in one go — used by "Clear past" on the Saved page,
+// where removing them one at a time would be a request each and a re-render
+// each.
+export async function unsaveEvents(ids) {
+  const list = [...ids].map(String)
+  if (!list.length) return
+  const set = localGet(LS_SAVED)
+  list.forEach(id => set.delete(id))
+  const user = getUser()
+  if (user) {
+    await supabase.from('saved_events').delete().eq('user_id', user.id).in('event_id', list)
+  }
+  localSet(LS_SAVED, set)
+  notify()
+}
+
 // ── Saved venues ───────────────────────────────────────────────────────────
 // Same shape as saved events. Kept in a separate set because a venue id and an
 // event id are both uuids — one set would let them collide silently.

@@ -69,3 +69,31 @@
   font-size: 14px;
   padding: 40px 20px;
 }
+
+/* Events that have already happened. Kept rather than dropped — the save was
+   still in the database, and having them vanish overnight was the bug — but
+   dimmed so they never compete with what is still to come. */
+.saved-past-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.saved-clear-past {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  padding: 4px 0;
+}
+
+.saved-clear-past:active {
+  color: var(--text);
+}
+
+.saved-past {
+  opacity: 0.55;
+}
