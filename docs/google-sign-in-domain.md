@@ -26,11 +26,28 @@ Worth doing whichever route follows, and it may improve the screen on its own.
    - **Application home page**: `https://whatsonapp.uk`
    - **Privacy policy**: `https://whatsonapp.uk/privacy`
    - **Terms of service**: `https://whatsonapp.uk/terms`
-4. Save, then sign in with Google in a private window and look at the screen.
+4. Under **Authorized domains**, add `whatsonapp.uk`. Leave
+   `lqafmjidqbshssqrxmkr.supabase.co` alone — see below.
+5. Save, then sign in with Google in a private window and look at the screen.
 
 Whether Google replaces the host with the app name depends on the consent
 screen's publishing and verification state. It costs nothing to find out, so
 test it before paying for step 2.
+
+Authorized domains normally have to be ones you can prove you own in Search
+Console. `supabase.co` is not one of them, which is why Google may keep showing
+the raw host however the branding is set — and why step 2 is the actual fix.
+
+### Do not remove the supabase.co authorized domain yet
+
+Every redirect URI's domain must be registered as an authorized domain, and
+`https://lqafmjidqbshssqrxmkr.supabase.co/auth/v1/callback` is still the
+redirect URI. Removing the domain while that URI is live leaves the OAuth
+client inconsistent and sign-in fails. Order, after step 2 is working:
+
+1. Remove the old **redirect URI** (2c step 8)
+2. Sign in again to confirm
+3. *Then* remove the `lqafmjidqbshssqrxmkr.supabase.co` **authorized domain**
 
 ---
 
