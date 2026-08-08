@@ -108,9 +108,9 @@ export function subscribe(fn) {
 
 // Turn the deep link Android hands back after OAuth into a Supabase session.
 //
-// Which half of this runs depends on the client's flowType. supabase-js
-// defaults to 'implicit', which returns the tokens in the URL fragment. The
-// 'code' branch covers 'pkce' so switching later doesn't silently break sign-in.
+// Which half of this runs depends on the client's flowType. The client is on
+// 'pkce', so it is the 'code' branch that runs; the fragment branch stays for
+// anything issued under the old implicit flow that is still in flight.
 async function completeNativeAuth(rawUrl) {
   const url = new URL(rawUrl)
   const fragment = new URLSearchParams(url.hash.replace(/^#/, ''))
