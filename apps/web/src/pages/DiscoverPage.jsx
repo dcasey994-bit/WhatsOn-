@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { MapContainer, TileLayer, Marker, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import { divIcon } from 'leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
@@ -216,7 +216,8 @@ export default function DiscoverPage() {
   const eventsError = useEventsError()
   const eventsLoading = useEventsLoading()
   const reloadEvents = useReloadEvents()
-  const { coords } = useUserLocation()
+  const { coords, status: locationStatus, request: requestLocation } = useUserLocation()
+  const mapRef = useRef(null)
   const theme = useResolvedTheme()
   const userPinIcon = useMemo(() => makeUserPinIcon(theme), [theme])
 
@@ -276,6 +277,15 @@ export default function DiscoverPage() {
 
   const venueTypesShown = useMemo(() => typesIn(filteredVenues), [filteredVenues])
 
+  // The map only centres on you once, at startup, so this is the way back.
+  // It takes a fresh fix first — recentring on a position from when the app
+  // opened would put you somewhere you no longer are.
+  async function recentre() {
+    const fix = await requestLocation() ?? coords
+    if (!fix || !mapRef.current) return
+    mapRef.current.setView([fix.lat, fix.lng], mapRef.current.getZoom())
+  }
+
   function handleCategoryChange(cat) {
     setCategory(cat)
     setSelected(null)
@@ -326,6 +336,7 @@ export default function DiscoverPage() {
 
       <div className="map-wrapper">
         <MapContainer
+          ref={mapRef}
           // Initial values only — react-leaflet does not track these after
           // mount, which is why the two helpers below drive the view instead.
           center={getMapView()?.center ?? center}
@@ -408,6 +419,22 @@ export default function DiscoverPage() {
             </MarkerClusterGroup>
           )}
         </MapContainer>
+
+        <button
+          className={`map-recentre ${locationStatus === 'locating' ? 'is-locating' : ''}`}
+          onClick={recentre}
+          disabled={locationStatus === 'locating'}
+          aria-label="Centre the map on my location"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="12" cy="12" r="7" />
+            <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
+            <line x1="12" y1="1.5" x2="12" y2="4.5" />
+            <line x1="12" y1="19.5" x2="12" y2="22.5" />
+            <line x1="1.5" y1="12" x2="4.5" y2="12" />
+            <line x1="19.5" y1="12" x2="22.5" y2="12" />
+          </svg>
+        </button>
 
         {mapMode === 'events' && !eventsLoading && !eventsError && filtered.length === 0 && (
           <div className="map-empty">

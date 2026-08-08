@@ -87,6 +87,51 @@
   font-weight: 500;
 }
 
+/* Back to your own location. Opposite corner from the key, and above the
+   sheets rather than behind them. */
+.map-recentre {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+  transition: transform 0.1s, color 0.15s;
+}
+
+.map-recentre svg {
+  width: 20px;
+  height: 20px;
+}
+
+.map-recentre:active {
+  transform: scale(0.92);
+}
+
+/* Pulses while the fix is in flight, so a slow GPS does not read as a dead
+   button. */
+.map-recentre.is-locating {
+  color: var(--accent);
+  animation: recentrePulse 1.1s ease-in-out infinite;
+}
+
+@keyframes recentrePulse {
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-recentre.is-locating { animation: none; }
+}
+
 /* Shown when the day/category filter genuinely has nothing, so an empty
    map doesn't read as a loading failure. */
 .map-empty {

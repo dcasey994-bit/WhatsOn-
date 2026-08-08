@@ -18,22 +18,30 @@ export function formatDistance(km) {
   return `${km.toFixed(1)} km`
 }
 
-// Hook: asks the browser for the user's location once on mount
+// Hook: asks the browser for the user's location once on mount. It does not
+// watch — a fresh fix only happens when request() is called again.
 export function useUserLocation() {
   const [coords, setCoords] = useState(null)
   const [status, setStatus] = useState('idle') // idle | locating | granted | denied | unavailable
 
+  // Resolves with the new coordinates, or null if the fix failed. Callers that
+  // want to act on the position — the recentre button — need it back rather
+  // than waiting for a state update they cannot tell apart from the last one.
   const request = useCallback(() => {
-    if (!('geolocation' in navigator)) { setStatus('unavailable'); return }
+    if (!('geolocation' in navigator)) { setStatus('unavailable'); return Promise.resolve(null) }
     setStatus('locating')
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        setStatus('granted')
-      },
-      () => setStatus('denied'),
-      { enableHighAccuracy: true, timeout: 10000 }
-    )
+    return new Promise(resolve => {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const next = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+          setCoords(next)
+          setStatus('granted')
+          resolve(next)
+        },
+        () => { setStatus('denied'); resolve(null) },
+        { enableHighAccuracy: true, timeout: 10000 }
+      )
+    })
   }, [])
 
   useEffect(() => { request() }, [request])
