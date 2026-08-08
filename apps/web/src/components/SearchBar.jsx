@@ -1,6 +1,6 @@
 import './SearchBar.css'
 
-export default function SearchBar({ value, onChange, placeholder = 'Search events or venues…' }) {
+export default function SearchBar({ value, onChange, placeholder = 'Search events…' }) {
   return (
     <div className="search-bar">
       <span className="search-icon">🔍</span>

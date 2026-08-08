@@ -87,7 +87,7 @@ export default function BrowsePage() {
       <SearchBar
         value={query}
         onChange={setQuery}
-        placeholder={showingVenues ? 'Search venues…' : 'Search events or venues…'}
+        placeholder={showingVenues ? 'Search venues…' : 'Search events…'}
       />
 
       {showingVenues ? (
