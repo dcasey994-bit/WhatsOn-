@@ -15,6 +15,7 @@ import { matchesDay, todayKey } from '../data/dateFilter.js'
 import { getVenueTypeColor, resolveVenueType, VENUE_TYPES, VENUE_TYPE_COLORS } from '../data/venueTypes.js'
 import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
 import Header from '../components/Header.jsx'
+import ViewToggle from '../components/ViewToggle.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
 import VenueTypeFilter from '../components/VenueTypeFilter.jsx'
 import DayStrip from '../components/DayStrip.jsx'
@@ -281,21 +282,7 @@ export default function DiscoverPage() {
         <span className="tonight-badge">Tonight</span>
       </Header>
 
-      {/* Events / Venues toggle */}
-      <div className="view-toggle-bar">
-        <button
-          className={`vtoggle-btn ${mapMode === 'events' ? 'active' : ''}`}
-          onClick={() => switchMode('events')}
-        >
-          <span>📅</span> Events
-        </button>
-        <button
-          className={`vtoggle-btn ${mapMode === 'venues' ? 'active' : ''}`}
-          onClick={() => switchMode('venues')}
-        >
-          <span>🏠</span> Venues
-        </button>
-      </div>
+      <ViewToggle mode={mapMode} onChange={switchMode} />
 
       {mapMode === 'events' && (
         <>

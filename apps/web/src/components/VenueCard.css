@@ -1,0 +1,63 @@
+/* Matches .event-card so a list of venues and a list of events sit together
+   without either looking like the odd one out.
+
+   Named vlist- rather than venue-card because EventDetailPage.css already owns
+   .venue-card for the venue strip on an event page, and this is plain global
+   CSS — the two silently fought over align-items until they were told apart. */
+.vlist-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vlist-card:active {
+  transform: scale(0.985);
+}
+
+.vlist-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.vlist-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.vlist-card-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.vlist-card-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.vlist-card-addr {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.vlist-card-events {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}

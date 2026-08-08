@@ -19,14 +19,3 @@ export default function SearchBar({ value, onChange, placeholder = 'Search event
     </div>
   )
 }
-
-// Match an event against a free-text query (name, venue, category label)
-export function matchesQuery(event, query) {
-  const q = query.trim().toLowerCase()
-  if (!q) return true
-  return (
-    event.name?.toLowerCase().includes(q) ||
-    event.venue?.toLowerCase().includes(q) ||
-    event.category?.toLowerCase().includes(q)
-  )
-}
