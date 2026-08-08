@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { MapContainer, TileLayer, Marker, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import { divIcon } from 'leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import 'leaflet/dist/leaflet.css'
@@ -15,6 +15,7 @@ import { matchesDay, todayKey } from '../data/dateFilter.js'
 import { getVenueTypeColor, resolveVenueType, VENUE_TYPES, VENUE_TYPE_COLORS } from '../data/venueTypes.js'
 import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
 import { useView, useSwitchView } from '../data/appMode.js'
+import { getMapView, setMapView, hasCentredOnUser, markCentredOnUser } from '../data/mapView.js'
 import Header from '../components/Header.jsx'
 import ViewToggle from '../components/ViewToggle.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
@@ -178,15 +179,25 @@ function useResolvedTheme() {
   return theme
 }
 
-// Only re-centers when coords genuinely change, not on every render
-function FlyToOnce({ lat, lng }) {
+// Centre on the user once, when the first fix of the session arrives. A later
+// fix leaves the view alone — by then the user is reading the map, and moving
+// it under them is the bug they reported.
+function CentreOnFirstFix({ coords }) {
   const map = useMap()
-  const prevRef = useRef(null)
   useEffect(() => {
-    if (prevRef.current?.lat === lat && prevRef.current?.lng === lng) return
-    map.setView([lat, lng], map.getZoom())
-    prevRef.current = { lat, lng }
-  }, [lat, lng, map])
+    if (!coords || hasCentredOnUser()) return
+    markCentredOnUser()
+    map.setView([coords.lat, coords.lng], map.getZoom())
+    setMapView({ center: map.getCenter(), zoom: map.getZoom() })
+  }, [coords, map])
+  return null
+}
+
+// So the map reopens where it was left rather than snapping back.
+function RememberView() {
+  const map = useMapEvents({
+    moveend: () => setMapView({ center: map.getCenter(), zoom: map.getZoom() }),
+  })
   return null
 }
 
@@ -315,8 +326,10 @@ export default function DiscoverPage() {
 
       <div className="map-wrapper">
         <MapContainer
-          center={center}
-          zoom={14}
+          // Initial values only — react-leaflet does not track these after
+          // mount, which is why the two helpers below drive the view instead.
+          center={getMapView()?.center ?? center}
+          zoom={getMapView()?.zoom ?? 14}
           zoomControl={false}
           attributionControl={false}
           style={{ width: '100%', height: '100%' }}
@@ -326,7 +339,8 @@ export default function DiscoverPage() {
             url={TILE_URLS[theme]}
             attribution=""
           />
-          <FlyToOnce lat={center[0]} lng={center[1]} />
+          <CentreOnFirstFix coords={coords} />
+          <RememberView />
 
           {/* User location pin */}
           <Marker position={center} icon={userPinIcon} />
