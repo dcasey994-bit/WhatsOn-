@@ -102,11 +102,14 @@ export default function AddressPicker({ address, onAddressChange, value, onChang
       <label>
         Address
         <div className="address-row">
+          {/* Invented street, and no full postcode: a placeholder that reads
+              as a real address invites someone to submit it, and this one is
+              also the first thing a Play reviewer sees on the form. */}
           <input
             required
             value={address}
             onChange={handleAddressChange}
-            placeholder="e.g. 77 Bedford Hill, Balham, SW12 9HD"
+            placeholder="e.g. 12 Bramblewick Road, Balham, SW12"
           />
           <button
             type="button"

@@ -58,7 +58,7 @@ export default function VenueRegisterPage() {
         <form onSubmit={handleRegisterVenue}>
           <label>
             Venue name
-            <input required value={venueForm.name} onChange={setV('name')} placeholder="e.g. The Bedford" />
+            <input required value={venueForm.name} onChange={setV('name')} placeholder="e.g. The Crooked Lantern" />
           </label>
           <AddressPicker
             address={venueForm.address}
@@ -75,7 +75,7 @@ export default function VenueRegisterPage() {
           <div className="form-row">
             <label>
               Phone (optional)
-              <input value={venueForm.phone} onChange={setV('phone')} placeholder="020 ..." />
+              <input value={venueForm.phone} onChange={setV('phone')} placeholder="e.g. 020 7946 0000" />
             </label>
             <label>
               Capacity (optional)
@@ -84,7 +84,7 @@ export default function VenueRegisterPage() {
           </div>
           <label>
             Website (optional)
-            <input value={venueForm.website} onChange={setV('website')} placeholder="e.g. thebedford.co.uk" />
+            <input value={venueForm.website} onChange={setV('website')} placeholder="e.g. example.com" />
           </label>
           <button type="submit" className="post-btn" disabled={saving || !geocoded}>
             {saving ? 'Registering…' : 'Register venue'}

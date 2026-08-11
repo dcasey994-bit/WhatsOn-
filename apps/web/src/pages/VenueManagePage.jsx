@@ -387,7 +387,7 @@ export default function VenueManagePage() {
           <form onSubmit={handleSaveVenue}>
             <label>
               Venue name
-              <input required value={venueForm.name} onChange={setVF('name')} placeholder="e.g. The Bedford" />
+              <input required value={venueForm.name} onChange={setVF('name')} placeholder="e.g. The Crooked Lantern" />
             </label>
             <AddressPicker
               address={venueForm.address}
@@ -404,7 +404,7 @@ export default function VenueManagePage() {
             <div className="form-row">
               <label>
                 Phone (optional)
-                <input value={venueForm.phone} onChange={setVF('phone')} placeholder="020 ..." />
+                <input value={venueForm.phone} onChange={setVF('phone')} placeholder="e.g. 020 7946 0000" />
               </label>
               <label>
                 Capacity (optional)
@@ -413,7 +413,7 @@ export default function VenueManagePage() {
             </div>
             <label>
               Website (optional)
-              <input value={venueForm.website} onChange={setVF('website')} placeholder="e.g. thebedford.co.uk" />
+              <input value={venueForm.website} onChange={setVF('website')} placeholder="e.g. example.com" />
             </label>
             <button type="submit" className="post-btn" disabled={savingVenue || !geocoded}>
               {savingVenue ? 'Saving…' : 'Save changes'}
