@@ -53,6 +53,12 @@ export default function VenueListPage() {
           </div>
         ) : (
           <>
+            {/* Above the list, not below it: with a few venues the button was
+                off the bottom of the screen, and adding one is the reason to
+                come to this page. */}
+            <button className="vl-add-btn vl-add-top" onClick={() => navigate(NEW_VENUE_PATH)}>
+              + Add another venue
+            </button>
             {venues.map(venue => {
               const sub = subBadge(venue)
               const role = roleBadge(venue)
@@ -77,9 +83,6 @@ export default function VenueListPage() {
                 </button>
               )
             })}
-            <button className="vl-add-btn" onClick={() => navigate(NEW_VENUE_PATH)}>
-              + Add another venue
-            </button>
           </>
         )}
       </div>
