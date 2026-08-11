@@ -577,3 +577,13 @@
   color: var(--text-muted);
   margin: -8px 0 0;
 }
+
+/* Sits beside the end time when the night runs past midnight. Reassurance
+   rather than a warning — the app understood what was typed. */
+.form-note {
+  align-self: center;
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { publicPath } from '../data/appMode.js'
 import { getCategory } from '../data/events.js'
+import { formatTimeRange } from '../data/eventTime.js'
 import { useEvent } from '../data/EventsContext.jsx'
 import { fetchEventById } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
@@ -128,7 +129,7 @@ export default function EventDetailPage() {
         <div className="detail-meta-row">
           <div className="meta-box">
             <span className="meta-box-label">Time</span>
-            <span className="meta-box-value">{event.time}</span>
+            <span className="meta-box-value">{formatTimeRange(event.time, event.endTime)}</span>
           </div>
           <div className="meta-box">
             <span className="meta-box-label">Price</span>

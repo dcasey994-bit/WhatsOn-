@@ -10,6 +10,7 @@ import {
   updateVenue, normalizeWebsite,
 } from '../data/eventsStore.js'
 import { VENUE_TYPES, venueTypeOptions, resolveVenueType } from '../data/venueTypes.js'
+import { endsNextDay, formatTimeRange } from '../data/eventTime.js'
 import { getUser } from '../data/authStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
@@ -18,7 +19,7 @@ import './VenuePage.css'
 import './VenueManagePage.css'
 
 const BLANK_EVENT = {
-  name: '', category: 'music', date: '', time: '',
+  name: '', category: 'music', date: '', time: '', end_time: '',
   price: '', capacity: '', ticket_url: '', description: '', image_url: '',
   special_offer: '',
 }
@@ -110,6 +111,7 @@ export default function VenueManagePage() {
       category: form.category,
       date: form.date,
       time: form.time,
+      end_time: form.end_time || null,
       price: form.price === '' ? 0 : Number(form.price),
       capacity: form.capacity ? Number(form.capacity) : null,
       ticket_url: form.ticket_url || null,
@@ -150,6 +152,7 @@ export default function VenueManagePage() {
       category: ev.category,
       date: ev.date,
       time: ev.time?.slice(0, 5) || '',
+      end_time: ev.end_time?.slice(0, 5) || '',
       price: ev.price ?? '',
       capacity: ev.capacity ?? '',
       ticket_url: ev.ticket_url ?? '',
@@ -328,9 +331,20 @@ export default function VenueManagePage() {
                 <input type="date" required value={form.date} onChange={set('date')} />
               </label>
               <label>
-                Time
+                Start time
                 <input type="time" required value={form.time} onChange={set('time')} />
               </label>
+            </div>
+            <div className="form-row">
+              <label>
+                End time (optional)
+                <input type="time" value={form.end_time} onChange={set('end_time')} />
+              </label>
+              {/* An end before the start is a night running past midnight, not
+                  a mistake — say so, rather than rejecting it. */}
+              {endsNextDay(form.time, form.end_time) && (
+                <p className="form-note">Ends {form.end_time} the next day.</p>
+              )}
             </div>
             <div className="form-row">
               <label>
@@ -591,7 +605,7 @@ export default function VenueManagePage() {
                       <span className="vc-meta">
                         <span className="vc-cat" style={{ color: cat.color }}>{cat.label}</span>
                         &nbsp;·&nbsp;{dateLabel}
-                        &nbsp;·&nbsp;{event.time?.slice(0, 5)}
+                        &nbsp;·&nbsp;{formatTimeRange(event.time?.slice(0, 5), event.end_time?.slice(0, 5))}
                         &nbsp;·&nbsp;{Number(event.price) === 0 ? 'Free' : `£${event.price}`}
                       </span>
                     </span>

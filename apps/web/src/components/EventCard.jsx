@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { publicPath } from '../data/appMode.js'
 import { getCategory } from '../data/events.js'
+import { formatTimeRange } from '../data/eventTime.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
 import './EventCard.css'
@@ -47,7 +48,7 @@ export default function EventCard({ event }) {
       )}
 
       <div className="card-meta">
-        <span className="meta-item">🕐 {event.time}</span>
+        <span className="meta-item">🕐 {formatTimeRange(event.time, event.endTime)}</span>
         {event.distance && <span className="meta-item">📍 {event.distance}</span>}
         <span
           className="meta-price"

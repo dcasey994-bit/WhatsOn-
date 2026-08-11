@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { getCategory } from '../data/events.js'
+import { formatTimeRange } from '../data/eventTime.js'
 import './map-sheet.css'
 import './MapVenueEventsSheet.css'
 
@@ -45,7 +46,7 @@ export default function MapVenueEventsSheet({ group, onClose }) {
                   <span className="mve-dot" style={{ background: cat.color }} />
                   <span className="mve-row-main">
                     <span className="mve-row-name">{event.name}</span>
-                    <span className="mve-row-meta">{cat.label} · {event.time}</span>
+                    <span className="mve-row-meta">{cat.label} · {formatTimeRange(event.time, event.endTime)}</span>
                   </span>
                   <span className="mve-row-price">
                     {event.price === 0 ? 'Free' : `£${event.price}`}

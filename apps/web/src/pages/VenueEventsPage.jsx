@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { venuePath } from '../data/appMode.js'
 import { getCategory } from '../data/events.js'
+import { formatTimeRange } from '../data/eventTime.js'
 import { fetchMyVenueEvents } from '../data/eventsStore.js'
 import Header from '../components/Header.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
@@ -60,7 +61,7 @@ export default function VenueEventsPage({ period }) {
                   <p className="ve-meta">
                     <span style={{ color: cat.color }}>{cat.label}</span>
                     &nbsp;·&nbsp;{dateLabel}
-                    &nbsp;·&nbsp;{ev.time}
+                    &nbsp;·&nbsp;{formatTimeRange(ev.time, ev.endTime)}
                     &nbsp;·&nbsp;{ev.price === 0 ? 'Free' : `£${ev.price}`}
                   </p>
                 </div>

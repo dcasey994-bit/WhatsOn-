@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getCategory } from '../data/events.js'
 import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
+import { formatTimeRange } from '../data/eventTime.js'
 import './map-sheet.css'
 import './MapEventSheet.css'
 
@@ -57,7 +58,7 @@ export default function MapEventSheet({ event, onClose }) {
         )}
 
         <div className="sheet-row">
-          <span className="sheet-meta-item">🕐 {event.time}</span>
+          <span className="sheet-meta-item">🕐 {formatTimeRange(event.time, event.endTime)}</span>
           {event.distance && <span className="sheet-meta-item">🚶 {event.distance}</span>}
           <span
             className="sheet-price"

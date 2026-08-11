@@ -59,6 +59,7 @@ export function dbEventToLocal(row) {
     lat: row.venues?.lat ?? 51.4435,
     lng: row.venues?.lng ?? -0.1527,
     time: row.time?.slice(0, 5) || '',
+    endTime: row.end_time?.slice(0, 5) || null,
     date: formatDate(row.date),
     dateKey: row.date,
     startsAt: `${row.date}T${row.time || '00:00'}`,
