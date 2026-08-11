@@ -3,7 +3,7 @@
   padding-bottom: var(--nav-height);
 }
 
-.verified-badge {
+.venue-stat-badge {
   font-size: 11px;
   font-weight: 700;
   color: var(--accent);
@@ -11,6 +11,15 @@
   padding: 4px 10px;
   border-radius: 20px;
   border: 1px solid var(--accent-border);
+  white-space: nowrap;
+}
+
+/* Nothing listed is a prompt, not an achievement — it should not wear the
+   accent the way a venue with a full week does. */
+.venue-stat-badge.is-empty {
+  color: var(--text-muted);
+  background: var(--card);
+  border-color: var(--border);
 }
 
 /* Tabs */

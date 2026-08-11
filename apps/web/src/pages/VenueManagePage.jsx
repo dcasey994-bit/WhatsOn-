@@ -453,7 +453,14 @@ export default function VenueManagePage() {
   return (
     <div className="venue-page">
       <Header title={venue.name}>
-        <span className="verified-badge">✓ Verified</span>
+        {/* "Verified" was true of every venue you can open here, so it told
+            you nothing. What you actually want at a glance is whether there
+            is anything listed. */}
+        <span className={`venue-stat-badge ${upcomingEvents.length === 0 ? 'is-empty' : ''}`}>
+          {upcomingEvents.length === 0
+            ? 'No events yet'
+            : `${upcomingEvents.length} upcoming`}
+        </span>
       </Header>
 
       <button className="vp-back-link vp-back-pad" onClick={() => navigate(VENUE_HOME)}>← My Venues</button>
