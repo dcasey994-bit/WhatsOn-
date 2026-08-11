@@ -39,6 +39,16 @@ export default function VenueListPage() {
     <div className="venue-list-page">
       <Header title="My Venues" />
 
+      {/* Outside the scrolling area, so it stays put however far down the
+          list you are. Adding a venue is the reason to be on this page. */}
+      {!loading && !error && venues.length > 0 && (
+        <div className="vl-add-bar">
+          <button className="vl-add-btn" onClick={() => navigate(NEW_VENUE_PATH)}>
+            + Add another venue
+          </button>
+        </div>
+      )}
+
       <div className="vl-body">
         {loading ? (
           <p className="vl-loading">Loading…</p>
@@ -53,12 +63,6 @@ export default function VenueListPage() {
           </div>
         ) : (
           <>
-            {/* Above the list, not below it: with a few venues the button was
-                off the bottom of the screen, and adding one is the reason to
-                come to this page. */}
-            <button className="vl-add-btn vl-add-top" onClick={() => navigate(NEW_VENUE_PATH)}>
-              + Add another venue
-            </button>
             {venues.map(venue => {
               const sub = subBadge(venue)
               const role = roleBadge(venue)
