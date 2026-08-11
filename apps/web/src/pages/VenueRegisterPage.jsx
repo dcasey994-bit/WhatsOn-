@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { venuePath, VENUE_HOME } from '../data/appMode.js'
-import { registerVenue, geocodeAddress, normalizeWebsite } from '../data/eventsStore.js'
+import { registerVenue, normalizeWebsite } from '../data/eventsStore.js'
+import AddressPicker from '../components/AddressPicker.jsx'
 import { VENUE_TYPES } from '../data/venueTypes.js'
 import Header from '../components/Header.jsx'
 import './VenuePage.css'
@@ -15,7 +16,6 @@ export default function VenueRegisterPage() {
   const navigate = useNavigate()
   const [venueForm, setVenueForm] = useState(BLANK_VENUE)
   const [geocoded, setGeocoded] = useState(null)
-  const [geocoding, setGeocoding] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
@@ -23,23 +23,9 @@ export default function VenueRegisterPage() {
     return e => setVenueForm(f => ({ ...f, [field]: e.target.value }))
   }
 
-  async function handleLookupAddress() {
-    if (!venueForm.address.trim()) return
-    setGeocoding(true)
-    setError(null)
-    setGeocoded(null)
-    try {
-      const result = await geocodeAddress(venueForm.address)
-      setGeocoded(result)
-    } catch {
-      setError('Address not found. Try a more specific address including postcode.')
-    }
-    setGeocoding(false)
-  }
-
   async function handleRegisterVenue(e) {
     e.preventDefault()
-    if (!geocoded) { setError('Please verify your address first.'); return }
+    if (!geocoded) { setError('Find your address and confirm the pin first.'); return }
     setSaving(true)
     setError(null)
     try {
@@ -74,23 +60,12 @@ export default function VenueRegisterPage() {
             Venue name
             <input required value={venueForm.name} onChange={setV('name')} placeholder="e.g. The Bedford" />
           </label>
-          <label>
-            Address
-            <div className="address-row">
-              <input
-                required
-                value={venueForm.address}
-                onChange={e => { setV('address')(e); setGeocoded(null) }}
-                placeholder="e.g. 77 Bedford Hill, Balham, SW12 9HD"
-              />
-              <button type="button" className="lookup-btn" onClick={handleLookupAddress} disabled={geocoding || !venueForm.address.trim()}>
-                {geocoding ? '…' : 'Verify'}
-              </button>
-            </div>
-          </label>
-          {geocoded && (
-            <p className="geocode-confirm">📍 {geocoded.display}</p>
-          )}
+          <AddressPicker
+            address={venueForm.address}
+            onAddressChange={next => setVenueForm(f => ({ ...f, address: next }))}
+            value={geocoded}
+            onChange={setGeocoded}
+          />
           <label>
             Venue type
             <select value={venueForm.type} onChange={setV('type')}>

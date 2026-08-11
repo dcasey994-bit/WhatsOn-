@@ -7,12 +7,13 @@ import {
   createEvent, updateEvent, deleteEvent, uploadEventImage,
   getSubscriptionState, trialDaysLeft, startCheckout,
   fetchVenueMembers, addVenueMember, removeVenueMember, updateMemberRole,
-  updateVenue, geocodeAddress, normalizeWebsite,
+  updateVenue, normalizeWebsite,
 } from '../data/eventsStore.js'
 import { VENUE_TYPES, venueTypeOptions, resolveVenueType } from '../data/venueTypes.js'
 import { getUser } from '../data/authStore.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
+import AddressPicker from '../components/AddressPicker.jsx'
 import './VenuePage.css'
 import './VenueManagePage.css'
 
@@ -49,7 +50,6 @@ export default function VenueManagePage() {
   const [inviteError, setInviteError] = useState(null)
   const [venueForm, setVenueForm] = useState(null)
   const [geocoded, setGeocoded] = useState(null)
-  const [geocoding, setGeocoding] = useState(false)
   const [savingVenue, setSavingVenue] = useState(false)
   const [venueError, setVenueError] = useState(null)
   const reloadEvents = useReloadEvents()
@@ -202,23 +202,9 @@ export default function VenueManagePage() {
     return e => setVenueForm(f => ({ ...f, [field]: e.target.value }))
   }
 
-  async function handleLookupVenueAddress() {
-    if (!venueForm.address.trim()) return
-    setGeocoding(true)
-    setVenueError(null)
-    setGeocoded(null)
-    try {
-      const result = await geocodeAddress(venueForm.address)
-      setGeocoded(result)
-    } catch {
-      setVenueError('Address not found. Try a more specific address including postcode.')
-    }
-    setGeocoding(false)
-  }
-
   async function handleSaveVenue(e) {
     e.preventDefault()
-    if (!geocoded) { setVenueError('Please verify your address first.'); return }
+    if (!geocoded) { setVenueError('Find your address and confirm the pin first.'); return }
     setSavingVenue(true)
     setVenueError(null)
     try {
@@ -403,23 +389,12 @@ export default function VenueManagePage() {
               Venue name
               <input required value={venueForm.name} onChange={setVF('name')} placeholder="e.g. The Bedford" />
             </label>
-            <label>
-              Address
-              <div className="address-row">
-                <input
-                  required
-                  value={venueForm.address}
-                  onChange={e => { setVF('address')(e); setGeocoded(null) }}
-                  placeholder="e.g. 77 Bedford Hill, Balham, SW12 9HD"
-                />
-                <button type="button" className="lookup-btn" onClick={handleLookupVenueAddress} disabled={geocoding || !venueForm.address.trim()}>
-                  {geocoding ? '…' : 'Verify'}
-                </button>
-              </div>
-            </label>
-            {geocoded && (
-              <p className="geocode-confirm">📍 {geocoded.display}</p>
-            )}
+            <AddressPicker
+              address={venueForm.address}
+              onAddressChange={next => setVenueForm(f => ({ ...f, address: next }))}
+              value={geocoded}
+              onChange={setGeocoded}
+            />
             <label>
               Venue type
               <select value={venueForm.type} onChange={setVF('type')}>

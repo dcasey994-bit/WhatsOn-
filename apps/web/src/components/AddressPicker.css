@@ -1,0 +1,74 @@
+.address-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ap-error {
+  font-size: 13px;
+  color: #ff6b6b;
+}
+
+.ap-candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Left-aligned and full width: these are long addresses being compared with
+   each other, so they need to line up rather than sit centred. */
+.ap-candidate {
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.ap-candidate:active {
+  border-color: var(--accent);
+}
+
+.ap-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ap-found {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.ap-map {
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.ap-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* The draggable pin. Deliberately not the category green — this is not a
+   listing on the map, it is a control. */
+.ap-pin {
+  width: 18px;
+  height: 18px;
+  margin: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--bg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+}
+
+.ap-pin:active {
+  cursor: grabbing;
+}

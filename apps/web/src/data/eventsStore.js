@@ -1,17 +1,43 @@
 import { supabase } from '../lib/supabase.js'
 import { getUser } from './authStore.js'
 
-// Geocode a UK address using Nominatim (OpenStreetMap) — no API key needed
-export async function geocodeAddress(address) {
+// Roughly Wandsworth to Streatham, west to east and river to Tooting Broadway,
+// as left,top,right,bottom. Used to bias results rather than restrict them:
+// with `bounded=1` Nominatim discards everything outside the box, which would
+// reject a venue a street beyond it and quietly break the day the area grows.
+const SEARCH_BIAS_VIEWBOX = '-0.24,51.50,-0.06,51.38'
+
+// Geocode a UK address using Nominatim (OpenStreetMap) — no API key needed.
+//
+// Returns several candidates rather than one. Taking the top hit meant a wrong
+// but plausible match was accepted in silence, and the venue had nothing to
+// check it against but a line of text.
+//
+// No User-Agent header: browsers refuse to set one, so the header this used to
+// send was dropped before the request left. Nominatim sees the Referer, which
+// identifies the app well enough at one lookup per button press.
+export async function geocodeCandidates(address) {
   const url = `https://nominatim.openstreetmap.org/search?` +
-    new URLSearchParams({ q: address, format: 'json', limit: '1', countrycodes: 'gb' })
-  const res = await fetch(url, {
-    headers: { 'Accept-Language': 'en', 'User-Agent': 'WhatsOn-App/1.0' },
-  })
+    new URLSearchParams({
+      q: address,
+      format: 'json',
+      limit: '5',
+      countrycodes: 'gb',
+      viewbox: SEARCH_BIAS_VIEWBOX,
+    })
+  const res = await fetch(url, { headers: { 'Accept-Language': 'en' } })
   if (!res.ok) throw new Error('Geocoding request failed')
   const data = await res.json()
-  if (!data.length) throw new Error('Address not found')
-  return { lat: Number(data[0].lat), lng: Number(data[0].lon), display: data[0].display_name }
+
+  // Nominatim can return the same point under two names (the pub and its
+  // building, say), which reads as a choice that isn't one.
+  const seen = new Set()
+  return data.reduce((out, row) => {
+    const lat = Number(row.lat), lng = Number(row.lon)
+    const key = `${lat.toFixed(5)},${lng.toFixed(5)}`
+    if (!seen.has(key)) { seen.add(key); out.push({ lat, lng, display: row.display_name }) }
+    return out
+  }, [])
 }
 
 // Ensures a bare "example.com" is stored as a valid absolute URL
