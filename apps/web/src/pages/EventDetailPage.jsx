@@ -6,6 +6,7 @@ import { formatTimeRange } from '../data/eventTime.js'
 import { useEvent } from '../data/EventsContext.jsx'
 import { fetchEventById } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
+import { useUserLocation, distanceKm, formatDistance } from '../data/location.js'
 import { ensureSignedIn } from '../data/authGate.js'
 import './detail-shared.css'
 import './EventDetailPage.css'
@@ -21,6 +22,7 @@ export default function EventDetailPage() {
   const [saved, setSaved] = useState(() => isSaved(id))
   const [going, setGoing] = useState(() => isGoing(id))
   const [shared, setShared] = useState(false)
+  const { coords } = useUserLocation()
 
   const event = contextEvent || fetched
 
@@ -59,6 +61,10 @@ export default function EventDetailPage() {
   }
 
   const cat = getCategory(event.category)
+
+  const distance = coords
+    ? formatDistance(distanceKm(coords.lat, coords.lng, event.lat, event.lng))
+    : null
 
   function handleGoing() {
     if (!ensureSignedIn(navigate)) return
@@ -140,10 +146,16 @@ export default function EventDetailPage() {
               {event.price === 0 ? 'Free' : `£${event.price}`}
             </span>
           </div>
-          <div className="meta-box">
-            <span className="meta-box-label">Distance</span>
-            <span className="meta-box-value">{event.distance}</span>
-          </div>
+          {/* Only with a location fix. dbEventToLocal leaves event.distance
+              null and nothing ever fills it, so reading that field rendered an
+              empty box on every event; and with location declined there is
+              genuinely nothing to show. */}
+          {distance && (
+            <div className="meta-box">
+              <span className="meta-box-label">Distance</span>
+              <span className="meta-box-value">{distance}</span>
+            </div>
+          )}
         </div>
 
         {/* Tickets */}
@@ -190,11 +202,15 @@ export default function EventDetailPage() {
           </section>
         )}
 
-        {/* Artist bio */}
-        <section className="detail-section">
-          <h2>Artist / Act</h2>
-          <p>{event.artist_bio}</p>
-        </section>
+        {/* Artist bio. Nothing sets artist_bio yet — dbEventToLocal hardcodes
+            it to '' and there is no column behind it — so without this guard
+            every event page ends on an empty titled card. */}
+        {event.artist_bio && (
+          <section className="detail-section">
+            <h2>Artist / Act</h2>
+            <p>{event.artist_bio}</p>
+          </section>
+        )}
 
       </div>
 
