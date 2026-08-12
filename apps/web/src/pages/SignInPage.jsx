@@ -1,12 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signIn, signInWithPassword, signUpWithEmail } from '../data/authStore.js'
+import { signIn, signInWithPassword, signUpWithEmail, wasAccountDeleted, clearDeletedNotice } from '../data/authStore.js'
 import { authErrorMessage } from '../data/authErrors.js'
 import { homePathFor } from '../data/appMode.js'
 import './SignInPage.css'
 
 export default function SignInPage() {
   const navigate = useNavigate()
+  // Set when arriving here straight from deleting an account. Without it the
+  // sign-in screen is the only feedback an irreversible action gives you, which
+  // reads as "something went wrong" rather than "it worked". Cleared on the way
+  // out so it does not reappear the next time this page is opened.
+  const [justDeleted] = useState(wasAccountDeleted)
+  useEffect(() => clearDeletedNotice, [])
   const [loading, setLoading] = useState(null)
   const [error, setError] = useState(null)
   const [showEmail, setShowEmail] = useState(false)
@@ -75,6 +81,12 @@ export default function SignInPage() {
 
       <div className="signin-buttons">
         {error && <p className="signin-error">{error}</p>}
+        {justDeleted && (
+          <p className="signin-sent">
+            Your account has been deleted.<br />
+            Thanks for trying WhatsOn?
+          </p>
+        )}
 
         {sent ? (
           <p className="signin-sent">

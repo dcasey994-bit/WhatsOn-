@@ -100,3 +100,14 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* An in-page route link. A <button> rather than an <a> so it goes through the
+   router, styled to match the real links around it. */
+.legal-inline-link {
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

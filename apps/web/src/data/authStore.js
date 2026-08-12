@@ -85,6 +85,36 @@ export async function signOut() {
   notify()
 }
 
+// Permanently delete the signed-in user.
+//
+// The database half is delete_own_account() (migration 012), because removing a
+// row from auth.users needs privileges the anon key does not have. It is keyed
+// on auth.uid(), so there is nothing to pass and no way to aim it at anyone
+// else.
+//
+// Local saved/going sets are not cleared here — savedStore owns those keys, and
+// importing it would close an import cycle with this module. The caller clears
+// them; see AccountSettingsPage.
+// Whether the session just ended because the account was deleted, rather than
+// by signing out. Module state rather than router state because clearing the
+// user unmounts the settings page mid-call — the authed() wrapper redirects to
+// /signin before navigate() gets a chance, so anything passed through the
+// router is dropped. Navigation is client-side, so this survives the trip.
+let accountDeleted = false
+export const wasAccountDeleted = () => accountDeleted
+export const clearDeletedNotice = () => { accountDeleted = false }
+
+export async function deleteAccount() {
+  const { error } = await supabase.rpc('delete_own_account')
+  if (error) throw error
+  accountDeleted = true
+  // The user this session belongs to no longer exists, so the server side of
+  // signOut can legitimately fail. Clearing the local session is what matters.
+  await supabase.auth.signOut().catch(() => {})
+  localStorage.removeItem('whatson_user')
+  notify()
+}
+
 // Which of the two apps to open on next sign-in. It is a preference, NOT the
 // current mode — that is derived from the URL by useAppMode(). Keeping the two
 // apart is what stops the nav claiming you are managing a venue while you are

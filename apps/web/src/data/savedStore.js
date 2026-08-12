@@ -127,6 +127,20 @@ export async function toggleGoing(id) {
   notify()
 }
 
+// ── Local wipe ─────────────────────────────────────────────────────────────
+
+// Everything this module keeps on the device. Sign-out deliberately leaves it
+// alone — saves work signed out too, and wiping them would punish anyone who
+// signs out on a shared phone. Account deletion is the case where it must go:
+// the rows are gone from the database, so leaving the local copies would show
+// a deleted account's saved events to whoever signs in next.
+export function clearLocalSaves() {
+  localStorage.removeItem(LS_SAVED)
+  localStorage.removeItem(LS_GOING)
+  localStorage.removeItem(LS_SAVED_VENUES)
+  notify()
+}
+
 // ── Subscribe ──────────────────────────────────────────────────────────────
 
 export function subscribe(fn) {

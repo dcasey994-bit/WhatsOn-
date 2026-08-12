@@ -90,6 +90,13 @@ export default function PrivacyPage() {
             will respond within 30 days. Deleting your account removes your saved
             events, and any venues you solely manage along with their listings.
           </p>
+          <p>
+            You can delete your account yourself in Account Settings —{' '}
+            <button className="legal-inline-link" onClick={() => navigate('/delete-account')}>
+              how to delete your account
+            </button>{' '}
+            explains what happens to your venues.
+          </p>
         </section>
 
         <section>

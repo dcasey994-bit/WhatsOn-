@@ -18,6 +18,7 @@ import EventDetailPage from './pages/EventDetailPage.jsx'
 import AccountSettingsPage from './pages/AccountSettingsPage.jsx'
 import PrivacyPage from './pages/PrivacyPage.jsx'
 import TermsPage from './pages/TermsPage.jsx'
+import DeleteAccountPage from './pages/DeleteAccountPage.jsx'
 import BottomNav from './components/BottomNav.jsx'
 
 const CUSTOMER_HOME = goingOutPath('events', 'discover')
@@ -86,6 +87,9 @@ export default function App() {
         <Route path="/venue/:id" element={<VenueProfilePage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
+        {/* Public on purpose — this is the deletion URL given to Google Play,
+            and someone locked out of their account still has to reach it. */}
+        <Route path="/delete-account" element={<DeleteAccountPage />} />
 
         {/* Account required */}
         <Route path="/settings" element={authed(<AccountSettingsPage />)} />
