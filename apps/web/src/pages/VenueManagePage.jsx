@@ -12,6 +12,7 @@ import {
 import { VENUE_TYPES, venueTypeOptions, resolveVenueType } from '../data/venueTypes.js'
 import { endsNextDay, formatTimeRange } from '../data/eventTime.js'
 import { getUser } from '../data/authStore.js'
+import { isNative } from '../lib/platform.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
 import AddressPicker from '../components/AddressPicker.jsx'
@@ -463,12 +464,22 @@ export default function VenueManagePage() {
               {subState === 'trialing' && `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
               {subState === 'archived' && '⚠ Venue archived — events hidden'}
             </span>
-            {subState !== 'active' && (
+            {subState !== 'active' && !isNative() && (
               <button className="vm-sub-btn" onClick={() => startCheckout(venue)}>
                 {subState === 'archived' ? 'Reactivate' : 'Subscribe'} — £20/mo
               </button>
             )}
           </div>
+          {/* Natively there is no button, no price and no link. Both stores
+              require in-app purchases of digital services to use their own
+              billing, and a link out to Stripe is the specific thing Apple's
+              3.1.1 prohibits — so the app reports the state and says where the
+              controls are without steering anyone to a payment page. */}
+          {subState !== 'active' && isNative() && (
+            <p className="vm-sub-note">
+              Subscriptions are managed from a web browser.
+            </p>
+          )}
         </div>
       )}
 

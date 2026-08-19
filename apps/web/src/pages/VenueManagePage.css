@@ -53,6 +53,16 @@
   white-space: nowrap;
 }
 
+/* Native-only line where the Subscribe button sits on the web. Muted rather
+   than styled as an action — it is a statement of where the controls are, not
+   a route to a payment page. */
+.vm-sub-note {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
 .vm-section {
   margin: 16px 16px 0;
   background: var(--card);

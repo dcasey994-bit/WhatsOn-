@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.js'
 import { getUser } from './authStore.js'
+import { isNative } from '../lib/platform.js'
 
 // Roughly Wandsworth to Streatham, west to east and river to Tooting Broadway,
 // as left,top,right,bottom. Used to bias results rather than restrict them:
@@ -269,7 +270,15 @@ export function trialDaysLeft(venue) {
 
 // Redirect to the Stripe Payment Link, tagging the venue so the webhook can
 // activate the right subscription after checkout.
+//
+// Web only. Both stores require a subscription that unlocks in-app
+// functionality to go through their own billing, and Stripe Checkout opened in
+// the app's WebView is exactly what that rule prohibits — Apple's 3.1.1 is
+// enforced hardest and would reject outright. The UI hides the button natively;
+// this guard is here so a future caller cannot reintroduce the problem by
+// accident.
 export function startCheckout(venue) {
+  if (isNative()) return
   const link = import.meta.env.VITE_STRIPE_PAYMENT_LINK
   if (!link || !venue) return
   const user = getUser()

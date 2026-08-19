@@ -164,10 +164,16 @@ because no real venues are listed does not.
 
 **Guideline 3.1.1, In-App Purchase.** Apple's rule is stricter than Google's and
 enforced harder: a subscription unlocking functionality inside the app must go
-through Apple's IAP at 15–30%, not Stripe. The venue subscription as it stands
-would be rejected. The usual answer is that venues subscribe on the web and the
-iOS app shows status only, with no button and no link — `apps/web/src/lib/platform.js`
-already has `isNative()` for exactly that kind of gate.
+through Apple's IAP at 15–30%, not Stripe.
+
+This is handled. The subscription card in `VenueManagePage` shows the Subscribe
+button only on the web; natively it reports the state and says subscriptions are
+managed from a browser, with no button, no price and no link. `startCheckout()`
+also returns early on native, so a future caller cannot reopen the hole.
+
+What that leaves: the price and Stripe are still named in the Terms of Service.
+That is a legal document rather than a call to action, which is normally fine —
+but it is the remaining place a reviewer could point at.
 
 Both of these are worth settling before the Android production submission, since
 they are the same two questions in different clothing.

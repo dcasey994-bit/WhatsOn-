@@ -32,6 +32,7 @@
 - Venue mode is free for 3 months, then £20/month
 - `subscription_status` on venues: `trialing` | `active` | `lapsed`
 - Checkout: Stripe Payment Link — set `VITE_STRIPE_PAYMENT_LINK` in env. URL gets `?client_reference_id={venue_id}` appended.
+- **Web only.** The Subscribe button is hidden and `startCheckout()` no-ops when `isNative()`, because both stores require in-app purchases of digital services to use their own billing (Apple 3.1.1 rejects outright). Venues subscribe at whatsonapp.uk; the app shows status.
 - Webhook: `apps/web/netlify/functions/stripe-webhook.js` handles `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed`
 - Webhook env vars: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`
 - Setup steps: (1) Create £20/mo product + Payment Link in Stripe dashboard, (2) Add webhook endpoint `https://[site]/.netlify/functions/stripe-webhook` in Stripe, (3) Set all env vars in Netlify.
