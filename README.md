@@ -10,9 +10,10 @@ Live at **[whatsonapp.uk](https://whatsonapp.uk)**.
 
 ```
 apps/
-  web/                  React 19 + Vite web app (also the PWA / TWA source)
+  web/                  React 19 + Vite web app, and the source of both native apps
     src/
     public/
+    android/            Capacitor Android project (committed)
     netlify/functions/  Stripe webhook
 supabase/
   migrations/           Numbered SQL migrations — run in order
@@ -20,8 +21,16 @@ supabase/
 netlify.toml            Root config; builds from apps/web
 ```
 
-A native Android app, if one is built, goes in `apps/android/` alongside the web
-app so both share one set of Supabase migrations.
+The native apps are Capacitor shells around the same web build, so `apps/web`
+is the only source of app code and all three share one set of Supabase
+migrations. The Android project is committed under `apps/web/android`; the iOS
+project is generated in CI rather than committed, because there is no Mac in
+this toolchain — see `docs/ios-release.md`.
+
+Both are built by manual workflows: `.github/workflows/android-release.yml`
+produces a signed `.aab`, `ios-release.yml` a signed `.ipa`. A web change does
+not reach an installed native app until one of those is run and the result
+uploaded.
 
 ## Running the web app
 

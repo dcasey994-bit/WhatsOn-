@@ -1,0 +1,270 @@
+name: iOS release build
+
+# Produces a signed .ipa for App Store Connect, on a GitHub-hosted macOS
+# runner. There is deliberately no Mac in this project's toolchain — the whole
+# point of this file is that one is not needed.
+#
+# Manual only, like the Android release workflow, and for the same reason: a
+# release build is a deliberate act and every run burns a build number that
+# App Store Connect will never accept twice.
+#
+# macOS runners bill at 10x the Linux rate. A free account's 2,000 minutes a
+# month is roughly 200 macOS minutes, and a run here takes 15-20, so budget for
+# about ten builds a month.
+#
+# UNTESTED. Written without access to macOS, so treat the first run as the
+# first draft. The steps most likely to need adjusting are signing and export,
+# which are noted individually below.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Version shown on the App Store (e.g. 1.0.2)'
+        required: true
+        default: '1.0.2'
+      build_number:
+        description: 'Build number override — leave blank to use the run number'
+        required: false
+      upload:
+        description: 'Upload to App Store Connect (otherwise just build the .ipa)'
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    defaults:
+      run:
+        working-directory: apps/web
+
+    env:
+      BUNDLE_ID: uk.whatsonapp.app
+      # Keep in step with the Android workflow, which resolves the same way.
+      BUILD_NUMBER: ${{ inputs.build_number || github.run_number }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      # Xcode 16 is what macos-15 ships; pin it so a runner image update cannot
+      # silently change the SDK the app is built against.
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app
+
+      - name: Check required secrets
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          CERT_B64: ${{ secrets.IOS_CERTIFICATE_P12_B64 }}
+          CERT_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          PROFILE_B64: ${{ secrets.IOS_PROVISIONING_PROFILE_B64 }}
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          missing=""
+          [ -z "$VITE_SUPABASE_URL" ]      && missing="$missing VITE_SUPABASE_URL"
+          [ -z "$VITE_SUPABASE_ANON_KEY" ] && missing="$missing VITE_SUPABASE_ANON_KEY"
+          [ -z "$CERT_B64" ]               && missing="$missing IOS_CERTIFICATE_P12_B64"
+          [ -z "$CERT_PASSWORD" ]          && missing="$missing IOS_CERTIFICATE_PASSWORD"
+          [ -z "$PROFILE_B64" ]            && missing="$missing IOS_PROVISIONING_PROFILE_B64"
+          [ -z "$TEAM_ID" ]                && missing="$missing IOS_TEAM_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing"
+            echo "See docs/ios-release.md for how to produce each one without a Mac."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Not in package.json on purpose. Until iOS actually ships, keeping it out
+      # means the Android pipeline's lockfile is untouched by this experiment.
+      # Promote it to a real dependency once a build has been accepted.
+      - name: Add the iOS platform packages
+        run: npm install --no-save @capacitor/ios@^8.5.0
+
+      - name: Build web app
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PAYMENT_LINK: ${{ secrets.VITE_STRIPE_PAYMENT_LINK }}
+          VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
+        run: npm run build
+
+      # Generated fresh every run rather than committed. There is no Mac here to
+      # create or maintain an Xcode project by hand, so the project is treated
+      # as a build artefact and every deviation from the template lives in the
+      # patch step below, where it is visible and reviewable.
+      - name: Generate the iOS project
+        run: |
+          npx cap add ios
+          npx cap sync ios
+
+      # Everything the template does not set. Each of these has a failure mode
+      # that is silent or confusing if it is missing.
+      - name: Configure Info.plist
+        working-directory: apps/web/ios/App/App
+        run: |
+          PLIST=Info.plist
+          set_key() { /usr/libexec/PlistBuddy -c "Delete :$1" "$PLIST" 2>/dev/null || true
+                      /usr/libexec/PlistBuddy -c "Add :$1 $2 $3" "$PLIST"; }
+
+          # Without a usage description iOS does not prompt and does not error —
+          # navigator.geolocation just never calls back, so the map silently
+          # stops centring on the user. Same class of failure as the missing
+          # ACCESS_FINE_LOCATION on Android.
+          set_key NSLocationWhenInUseUsageDescription string \
+            "WhatsOn? uses your location to centre the map on you and show how far away each event is."
+
+          # Version the store shows, and the build number it dedupes on.
+          set_key CFBundleShortVersionString string "${{ inputs.version_name }}"
+          set_key CFBundleVersion            string "$BUILD_NUMBER"
+
+          # The app uses only HTTPS and the platform's own TLS, which is exempt.
+          # Declaring it here avoids being asked on every single upload.
+          set_key ITSAppUsesNonExemptEncryption bool false
+
+          /usr/libexec/PlistBuddy -c "Print" "$PLIST"
+
+      # A throwaway keychain, so nothing is left behind on a runner that is
+      # itself thrown away — belt and braces, and it keeps the default keychain
+      # out of the search path where it could pick the wrong identity.
+      - name: Import signing certificate
+        env:
+          CERT_B64: ${{ secrets.IOS_CERTIFICATE_P12_B64 }}
+          CERT_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          echo "$CERT_B64" | base64 -d > "$RUNNER_TEMP/cert.p12"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" \
+            -P "$CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          # Lets codesign use the key without an interactive prompt, which on a
+          # runner would simply hang until the job times out.
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
+
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security find-identity -v -p codesigning "$KEYCHAIN"
+
+      - name: Install provisioning profile
+        env:
+          PROFILE_B64: ${{ secrets.IOS_PROVISIONING_PROFILE_B64 }}
+        run: |
+          PROFILE="$RUNNER_TEMP/profile.mobileprovision"
+          echo "$PROFILE_B64" | base64 -d > "$PROFILE"
+
+          # Xcode finds profiles by UUID in this directory and nowhere else.
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          PLIST="$RUNNER_TEMP/profile.plist"
+          security cms -D -i "$PROFILE" > "$PLIST"
+          UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$PLIST")
+          NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$PLIST")
+          cp "$PROFILE" ~/Library/MobileDevice/Provisioning\ Profiles/"$UUID".mobileprovision
+
+          # Read back rather than passed in as a secret: the name must match the
+          # profile exactly or export fails with a signing error that does not
+          # name the mismatch.
+          echo "PROFILE_NAME=$NAME" >> "$GITHUB_ENV"
+          echo "Installed profile '$NAME' ($UUID)"
+
+      - name: Archive
+        working-directory: apps/web/ios/App
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          xcodebuild archive \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            -allowProvisioningUpdates
+
+      - name: Export .ipa
+        working-directory: apps/web/ios/App
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <!-- Xcode 15.4 renamed this from "app-store". On an older Xcode
+                 than the pinned one, change it back. -->
+            <key>method</key><string>app-store-connect</string>
+            <key>teamID</key><string>${TEAM_ID}</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>uploadSymbols</key><true/>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>${BUNDLE_ID}</key><string>${PROFILE_NAME}</string>
+            </dict>
+          </dict>
+          </plist>
+          PLIST
+
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export"
+
+          ls -l "$RUNNER_TEMP/export"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: whatson-ios-${{ inputs.version_name }}-${{ github.run_number }}
+          path: ${{ runner.temp }}/export/*.ipa
+          if-no-files-found: error
+          retention-days: 90
+
+      # Off by default. Look at the first few builds before letting them reach
+      # App Store Connect, where every accepted build number is spent for good.
+      - name: Upload to App Store Connect
+        if: ${{ inputs.upload }}
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_PRIVATE_KEY" ]; then
+            echo "::error::Upload requested but the App Store Connect API key secrets are not set."
+            exit 1
+          fi
+          # altool looks for the key in this exact location and filename.
+          mkdir -p ~/private_keys
+          echo "$ASC_PRIVATE_KEY" > ~/private_keys/AuthKey_"$ASC_KEY_ID".p8
+
+          xcrun altool --upload-app -t ios \
+            -f "$RUNNER_TEMP"/export/*.ipa \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+          rm -f ~/private_keys/AuthKey_"$ASC_KEY_ID".p8
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### iOS build" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- version: \`${{ inputs.version_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- build number: \`$BUILD_NUMBER\`" >> $GITHUB_STEP_SUMMARY
+          echo "- uploaded: \`${{ inputs.upload }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Setup and troubleshooting: \`docs/ios-release.md\`" >> $GITHUB_STEP_SUMMARY
