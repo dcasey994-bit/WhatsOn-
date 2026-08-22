@@ -53,10 +53,24 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
 
-      # Xcode 16 is what macos-15 ships; pin it so a runner image update cannot
-      # silently change the SDK the app is built against.
+      # Pin to a major version rather than a path. Runner images name the
+      # bundles with the point release — Xcode_16.2.app, Xcode_16.4.app — and
+      # rename them as the image updates, so a hardcoded path breaks silently
+      # the first time GitHub bumps it. xcode-select exits 66 (EX_NOINPUT) on a
+      # directory that is not there, which is not an obvious error message.
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app
+        run: |
+          echo "Installed:"
+          ls -d /Applications/Xcode*.app 2>/dev/null || true
+
+          XC=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
+          # Fall back to whatever the image treats as current.
+          [ -n "$XC" ] || XC=/Applications/Xcode.app
+          [ -d "$XC" ] || { echo "::error::No usable Xcode found"; exit 1; }
+
+          echo "Using $XC"
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
 
       - name: Check required secrets
         env:

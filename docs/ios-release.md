@@ -164,6 +164,12 @@ than App Store. It must also reference the same certificate that was imported.
 Xcode 15.4 renamed `app-store` to `app-store-connect`. The workflow pins
 Xcode 16 and uses the new name; on an older Xcode, change it back.
 
+**`Select Xcode` → exit code 66**
+`xcode-select` returns EX_NOINPUT for a developer directory that is not there.
+The step now discovers the newest installed Xcode 16 rather than hardcoding a
+path, because the runner images name the bundles with the point release and
+rename them as the image updates.
+
 **`npx cap add ios` fails on CocoaPods**
 `cap sync ios` runs `pod install`. If the runner image ships a Ruby that fights
 with CocoaPods, add a `gem install cocoapods` step before it.
