@@ -150,6 +150,31 @@ jobs:
           # from this log alone.
           xcodebuild -list -project ios/App/App.xcodeproj
 
+      # The generated project ships Capacitor's placeholder icon and a white
+      # launch screen. Both are committed under apps/web/assets/ios and copied
+      # over the template's files, which keeps the asset catalogue's own
+      # Contents.json — it already declares a single 1024 icon slot, which is
+      # all Xcode 14 and later needs.
+      #
+      # The icon is deliberately flattened: iOS rejects an app icon that has an
+      # alpha channel, and the source artwork has transparent rounded corners.
+      - name: Apply the app icon and launch screen
+        run: |
+          ASSETS=ios/App/App/Assets.xcassets
+          cp assets/ios/AppIcon-1024.png "$ASSETS/AppIcon.appiconset/AppIcon-512@2x.png"
+
+          # Three entries, one per scale, all the same square.
+          for f in "$ASSETS"/Splash.imageset/splash-*.png; do
+            cp assets/ios/Splash-2732.png "$f"
+          done
+
+          # An alpha channel here is a rejection at upload, so prove it is gone.
+          if sips -g hasAlpha "$ASSETS/AppIcon.appiconset/AppIcon-512@2x.png" | grep -q "hasAlpha: yes"; then
+            echo "::error::App icon has an alpha channel; iOS will reject it"
+            exit 1
+          fi
+          sips -g pixelWidth -g pixelHeight -g hasAlpha "$ASSETS/AppIcon.appiconset/AppIcon-512@2x.png"
+
       # Everything the template does not set. Each of these has a failure mode
       # that is silent or confusing if it is missing.
       - name: Configure Info.plist
