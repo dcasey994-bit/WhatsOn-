@@ -66,7 +66,35 @@ openssl pkcs12 -export -legacy \
 
 **`-legacy` matters.** OpenSSL 3 defaults to AES-256 for PKCS#12, which macOS's
 `security import` cannot read — the workflow fails with an unhelpful
-`MAC verification failed`. If your openssl is 1.x, drop the flag.
+`MAC verification failed`. If your openssl is 1.x or LibreSSL (what macOS
+ships), it does not know the flag at all; drop it.
+
+Check the result before trusting it:
+
+```bash
+openssl x509 -in distribution.pem -noout -subject -dates
+openssl pkcs12 -legacy -in ios_distribution.p12 -passin pass:YOURPASSWORD -info -noout
+```
+
+The subject must read `Apple Distribution: ...` — a *Development* certificate
+here is the most common reason the build fails at signing 15 minutes in. The
+second command must list a certificate bag and a shrouded key bag.
+
+`-legacy` on that second command is not a typo. Having written the file with the
+old 3DES/RC2 encryption, OpenSSL 3 will not read it back without the flag either,
+and fails with `error:...:RC2-40-CBC:unsupported`. That looks like a corrupt
+file and is not one — it is the same format macOS imports natively, which is the
+whole reason for using it.
+
+To prove the certificate and key are actually a pair, rather than a certificate
+issued against some other CSR:
+
+```bash
+openssl x509 -noout -pubkey -in distribution.pem | openssl md5
+openssl pkey -pubout -in ios_distribution.key    | openssl md5
+```
+
+Two identical hashes, or the `.p12` is unusable no matter what else is right.
 
 Guard `ios_distribution.key` and the `.p12` like passwords. Losing them means
 revoking the certificate and starting over; leaking them lets someone else sign
