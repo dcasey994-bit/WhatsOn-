@@ -35,7 +35,11 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    # macos-26, not macos-15: App Store Connect rejects anything built with an
+    # SDK older than iOS 26, and Xcode 26 is where that SDK lives. The older
+    # image tops out at Xcode 16 / iOS 18.5, which builds and signs perfectly
+    # and is then refused at validation.
+    runs-on: macos-26
 
     defaults:
       run:
@@ -55,24 +59,33 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
 
-      # Pin to a major version rather than a path. Runner images name the
-      # bundles with the point release — Xcode_16.2.app, Xcode_16.4.app — and
-      # rename them as the image updates, so a hardcoded path breaks silently
-      # the first time GitHub bumps it. xcode-select exits 66 (EX_NOINPUT) on a
-      # directory that is not there, which is not an obvious error message.
+      # Newest installed, discovered rather than hardcoded: the images name the
+      # bundles with the point release and rename them as they update, and
+      # xcode-select exits 66 (EX_NOINPUT) on a path that is not there, which is
+      # not an obvious error message.
+      #
+      # The minimum is a moving target set by Apple, not by us — uploads are
+      # refused below the iOS 26 SDK — so check it here rather than discovering
+      # it after a full build and a 40-second upload.
       - name: Select Xcode
+        env:
+          MIN_XCODE_MAJOR: '26'
         run: |
           echo "Installed:"
           ls -d /Applications/Xcode*.app 2>/dev/null || true
 
-          XC=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
-          # Fall back to whatever the image treats as current.
-          [ -n "$XC" ] || XC=/Applications/Xcode.app
-          [ -d "$XC" ] || { echo "::error::No usable Xcode found"; exit 1; }
+          XC=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          [ -n "$XC" ] && [ -d "$XC" ] || { echo "::error::No Xcode found"; exit 1; }
 
           echo "Using $XC"
           sudo xcode-select -s "$XC"
           xcodebuild -version
+
+          MAJOR=$(xcodebuild -version | head -1 | sed -E 's/Xcode ([0-9]+).*/\1/')
+          if [ "$MAJOR" -lt "$MIN_XCODE_MAJOR" ]; then
+            echo "::error::Xcode $MAJOR is installed but App Store Connect requires $MIN_XCODE_MAJOR or later. Check the runs-on image."
+            exit 1
+          fi
 
       - name: Check required secrets
         env:

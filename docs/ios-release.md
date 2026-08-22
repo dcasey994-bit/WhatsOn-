@@ -164,6 +164,16 @@ than App Store. It must also reference the same certificate that was imported.
 Xcode 15.4 renamed `app-store` to `app-store-connect`. The workflow pins
 Xcode 16 and uses the new name; on an older Xcode, change it back.
 
+**`Validation failed (409) SDK version issue`**
+The upload authenticated and the binary was rejected: App Store Connect refuses
+anything built with an SDK older than iOS 26. Xcode 16 builds and signs it
+perfectly and Apple then turns it away, so the failure arrives at the very last
+step. The job runs on `macos-26` for that reason, and the Select Xcode step
+asserts the major version before building rather than after uploading.
+
+Apple raises this minimum roughly once a year. When it moves again the symptom
+is identical — bump `MIN_XCODE_MAJOR` and the `runs-on` image together.
+
 **`Select Xcode` → exit code 66**
 `xcode-select` returns EX_NOINPUT for a developer directory that is not there.
 The step now discovers the newest installed Xcode 16 rather than hardcoding a
