@@ -277,15 +277,40 @@ jobs:
             echo "::error::Upload requested but the App Store Connect API key secrets are not set."
             exit 1
           fi
+
+          # Copy-pasting into a secret box picks up trailing newlines and stray
+          # spaces, and altool reports the result only as "Failure to
+          # authenticate" (-26000) — identical to a genuinely wrong key.
+          KEY_ID=$(printf '%s' "$ASC_KEY_ID"    | tr -d '[:space:]')
+          ISSUER=$(printf '%s' "$ASC_ISSUER_ID" | tr -d '[:space:]')
+
+          # Lengths only; the values themselves are masked in logs anyway. A key
+          # ID is 10 characters and an issuer ID is a 36-character UUID, so a
+          # different number here is the answer on its own.
+          echo "key id: ${#KEY_ID} chars (expect 10)"
+          echo "issuer: ${#ISSUER} chars (expect 36)"
+          [ ${#KEY_ID} -eq 10 ] || echo "::warning::ASC_KEY_ID is not 10 characters"
+          [ ${#ISSUER} -eq 36 ] || echo "::warning::ASC_ISSUER_ID is not a 36-character UUID"
+
           # altool looks for the key in this exact location and filename.
           mkdir -p ~/private_keys
-          echo "$ASC_PRIVATE_KEY" > ~/private_keys/AuthKey_"$ASC_KEY_ID".p8
+          printf '%s\n' "$ASC_PRIVATE_KEY" > ~/private_keys/AuthKey_"$KEY_ID".p8
+
+          # The key is an EC private key in PKCS#8. If the paste lost its real
+          # newlines this fails here, with a cause, rather than 30 seconds later
+          # as an indistinguishable authentication error.
+          if ! openssl pkey -in ~/private_keys/AuthKey_"$KEY_ID".p8 -noout 2>/dev/null; then
+            echo "::error::ASC_PRIVATE_KEY is not a readable private key. Paste the whole .p8 file, BEGIN and END lines included, with real line breaks."
+            rm -f ~/private_keys/AuthKey_"$KEY_ID".p8
+            exit 1
+          fi
+          echo "private key parses OK"
 
           xcrun altool --upload-app -t ios \
             -f "$RUNNER_TEMP"/export/*.ipa \
-            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER"
 
-          rm -f ~/private_keys/AuthKey_"$ASC_KEY_ID".p8
+          rm -f ~/private_keys/AuthKey_"$KEY_ID".p8
 
       - name: Summary
         if: always()

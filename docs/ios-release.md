@@ -170,6 +170,15 @@ The step now discovers the newest installed Xcode 16 rather than hardcoding a
 path, because the runner images name the bundles with the point release and
 rename them as the image updates.
 
+**`altool` → `Code=-26000 "Failure to authenticate"`**
+Nothing to do with signing — the build is already made by this point. It means
+App Store Connect rejected the API key, and it says the same thing for every
+cause: a wrong key ID or issuer, a key whose role is below App Manager, a key
+from the Individual rather than Team tab, or simply a trailing newline picked up
+when pasting into the secret box. The step now prints the length of the key ID
+(10) and issuer (36) and checks the `.p8` parses, which distinguishes a mangled
+paste from a genuinely wrong key.
+
 **`xcodebuild: error: 'App.xcworkspace' does not exist`**
 Capacitor 8 resolves its dependencies with Swift Package Manager, not
 CocoaPods. There is no Podfile and no workspace — only `ios/App/App.xcodeproj`
