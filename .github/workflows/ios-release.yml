@@ -12,9 +12,11 @@ name: iOS release build
 # month is roughly 200 macOS minutes, and a run here takes 15-20, so budget for
 # about ten builds a month.
 #
-# UNTESTED. Written without access to macOS, so treat the first run as the
-# first draft. The steps most likely to need adjusting are signing and export,
-# which are noted individually below.
+# Verified: produces a signed .ipa end to end. Written without access to macOS,
+# so the three things it got wrong first time are all now guarded rather than
+# assumed — the Xcode path is discovered, the generated project is asserted
+# before xcodebuild sees it, and the archive targets App.xcodeproj because
+# Capacitor 8 has no CocoaPods workspace.
 
 on:
   workflow_dispatch:

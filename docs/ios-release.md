@@ -4,9 +4,9 @@
 GitHub-hosted macOS runner. Nothing below needs a Mac — the certificate work
 that normally sends people to Keychain Access is done with `openssl` instead.
 
-**The workflow is untested.** It was written without access to macOS. Expect
-the first run to fail somewhere in signing or export, and see
-[When it fails](#when-it-fails).
+**Verified**: it produces a signed `.ipa` end to end. It took three attempts to
+get there, and each failure is recorded under [When it fails](#when-it-fails) —
+worth reading before assuming a new failure is novel.
 
 ## What it costs
 
