@@ -4,9 +4,11 @@
 GitHub-hosted macOS runner. Nothing below needs a Mac — the certificate work
 that normally sends people to Keychain Access is done with `openssl` instead.
 
-**Verified**: it produces a signed `.ipa` end to end. It took three attempts to
-get there, and each failure is recorded under [When it fails](#when-it-fails) —
-worth reading before assuming a new failure is novel.
+**Verified end to end**: build, sign, archive, export, and upload to App Store
+Connect, first landing in TestFlight on 22 August 2026. It took seven runs to
+get there and every failure is recorded under [When it fails](#when-it-fails) —
+worth reading before assuming a new one is novel. None of them were the same
+problem twice.
 
 ## What it costs
 
@@ -161,8 +163,8 @@ The profile is for a different bundle ID, or it is a Development profile rather
 than App Store. It must also reference the same certificate that was imported.
 
 **`method` rejected in ExportOptions**
-Xcode 15.4 renamed `app-store` to `app-store-connect`. The workflow pins
-Xcode 16 and uses the new name; on an older Xcode, change it back.
+Xcode 15.4 renamed `app-store` to `app-store-connect`. The workflow uses the new
+name; only an Xcode older than that needs it changed back.
 
 **`Validation failed (409) SDK version issue`**
 The upload authenticated and the binary was rejected: App Store Connect refuses
@@ -176,9 +178,9 @@ is identical — bump `MIN_XCODE_MAJOR` and the `runs-on` image together.
 
 **`Select Xcode` → exit code 66**
 `xcode-select` returns EX_NOINPUT for a developer directory that is not there.
-The step now discovers the newest installed Xcode 16 rather than hardcoding a
-path, because the runner images name the bundles with the point release and
-rename them as the image updates.
+The step now discovers the newest installed Xcode rather than hardcoding a path,
+because the runner images name the bundles with the point release and rename
+them as the image updates.
 
 **`altool` → `Code=-26000 "Failure to authenticate"`**
 Nothing to do with signing — the build is already made by this point. It means

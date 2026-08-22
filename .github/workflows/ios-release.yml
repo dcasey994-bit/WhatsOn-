@@ -12,11 +12,13 @@ name: iOS release build
 # month is roughly 200 macOS minutes, and a run here takes 15-20, so budget for
 # about ten builds a month.
 #
-# Verified: produces a signed .ipa end to end. Written without access to macOS,
-# so the three things it got wrong first time are all now guarded rather than
-# assumed — the Xcode path is discovered, the generated project is asserted
-# before xcodebuild sees it, and the archive targets App.xcodeproj because
-# Capacitor 8 has no CocoaPods workspace.
+# Verified end to end, through to a build processing in TestFlight. Written
+# without access to macOS, so everything it got wrong on the way is now guarded
+# rather than assumed: the Xcode path is discovered and its major version
+# checked against what App Store Connect will accept, the generated project is
+# asserted before xcodebuild sees it, the archive targets App.xcodeproj because
+# Capacitor 8 has no CocoaPods workspace, and the API credentials are validated
+# before an upload that would otherwise fail as an opaque -26000.
 
 on:
   workflow_dispatch:
