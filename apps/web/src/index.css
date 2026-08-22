@@ -46,9 +46,20 @@
   --cat-quiz: #2979ff;
   --cat-sports: #ff4081;
 
-  /* Layout */
-  --header-height: 58px;
-  --nav-height: 64px;
+  /* Safe areas — 0 everywhere except a notched phone, where the app runs
+     full-bleed under the status bar and home indicator. Needs
+     viewport-fit=cover on the viewport meta or these are always 0. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* Layout. The insets are folded in here rather than applied at each call
+     site: every page already pads itself by these, and the sticky venue
+     header and the avatar menu already position against them, so they all
+     come out right without touching a single page. */
+  --header-height: calc(58px + var(--safe-top));
+  --nav-height: calc(64px + var(--safe-bottom));
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 
   /* Typography */

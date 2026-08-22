@@ -8,7 +8,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  /* Top inset as padding, not margin: the bar's background needs to reach up
+     behind the status bar, while its contents start below the notch. Left and
+     right only bite in landscape, where the ears eat into the edges. */
+  padding: var(--safe-top) calc(16px + var(--safe-right)) 0 calc(16px + var(--safe-left));
   flex-shrink: 0;
 }
 

@@ -11,7 +11,11 @@
   display: flex;
   align-items: stretch;
   z-index: 1000;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Height already includes the inset, so this pads the tab row up clear of
+     the home indicator rather than adding to the bar. */
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 .nav-tab {

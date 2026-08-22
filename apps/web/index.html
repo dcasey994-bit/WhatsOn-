@@ -7,7 +7,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="WhatsOn?" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover lets the page extend under the notch and home
+         indicator, and is what makes env(safe-area-inset-*) report real
+         values. Without it every inset is 0 and the safe-area rules below
+         silently do nothing. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>WhatsOn?</title>
     <meta name="description" content="Discover live music, comedy, quizzes, karaoke and sports nights happening tonight in Clapham, Balham and Tooting." />
     <meta property="og:type" content="website" />
