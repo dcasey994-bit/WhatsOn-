@@ -170,9 +170,13 @@ The step now discovers the newest installed Xcode 16 rather than hardcoding a
 path, because the runner images name the bundles with the point release and
 rename them as the image updates.
 
-**`npx cap add ios` fails on CocoaPods**
-`cap sync ios` runs `pod install`. If the runner image ships a Ruby that fights
-with CocoaPods, add a `gem install cocoapods` step before it.
+**`xcodebuild: error: 'App.xcworkspace' does not exist`**
+Capacitor 8 resolves its dependencies with Swift Package Manager, not
+CocoaPods. There is no Podfile and no workspace — only `ios/App/App.xcodeproj`
+beside a `CapApp-SPM` package — so the archive uses `-project`, not
+`-workspace`. `cap add ios` finishing in about a second is normal for the same
+reason: there is no `pod install` to wait for. Any guide that tells you to
+build a Capacitor iOS app from `App.xcworkspace` predates version 6.
 
 ## What still has to be done by hand
 

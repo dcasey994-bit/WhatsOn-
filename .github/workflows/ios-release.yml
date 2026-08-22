@@ -120,6 +120,19 @@ jobs:
           npx cap add ios
           npx cap sync ios
 
+          # Capacitor 8 pulls its dependencies with Swift Package Manager, so
+          # there is no Podfile and no App.xcworkspace — only App.xcodeproj
+          # alongside a CapApp-SPM package. `cap add ios` finishes in about a
+          # second for the same reason, which looks like it did nothing.
+          # Assert the shape here rather than discovering it from xcodebuild.
+          ls -la ios/App
+          test -d ios/App/App.xcodeproj || { echo "::error::App.xcodeproj missing"; exit 1; }
+
+          # Template ships no shared scheme; xcodebuild autocreates one per
+          # target. Print what it sees, so a scheme error later is diagnosable
+          # from this log alone.
+          xcodebuild -list -project ios/App/App.xcodeproj
+
       # Everything the template does not set. Each of these has a failure mode
       # that is silent or confusing if it is missing.
       - name: Configure Info.plist
@@ -199,7 +212,7 @@ jobs:
           TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
           xcodebuild archive \
-            -workspace App.xcworkspace \
+            -project App.xcodeproj \
             -scheme App \
             -configuration Release \
             -destination 'generic/platform=iOS' \
