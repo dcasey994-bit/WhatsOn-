@@ -29,7 +29,9 @@
 - Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) in `.env` locally and Netlify env settings.
 
 ## Stripe (subscriptions)
-- Venue mode is free for 3 months, then £20/month
+- Venue mode is free for 12 months, then £20/month. The length lives in three
+  places that must agree: the `venues.trial_ends_at` default (migration 013),
+  `registerVenue()` in `eventsStore.js`, and the Terms page.
 - `subscription_status` on venues: `trialing` | `active` | `lapsed`
 - Checkout: Stripe Payment Link — set `VITE_STRIPE_PAYMENT_LINK` in env. URL gets `?client_reference_id={venue_id}` appended.
 - **Web only.** The Subscribe button is hidden and `startCheckout()` no-ops when `isNative()`, because both stores require in-app purchases of digital services to use their own billing (Apple 3.1.1 rejects outright). Venues subscribe at whatsonapp.uk; the app shows status.

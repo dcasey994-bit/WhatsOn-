@@ -218,8 +218,10 @@ export async function fetchMyVenues() {
 export async function registerVenue(fields) {
   const user = getUser()
   if (!user) throw new Error('Not logged in')
+  // Kept in step with the venues.trial_ends_at default in
+  // supabase/migrations/013_twelve_month_trial.sql — change both together.
   const trialEndsAt = new Date()
-  trialEndsAt.setMonth(trialEndsAt.getMonth() + 3)
+  trialEndsAt.setMonth(trialEndsAt.getMonth() + 12)
   const { data: venue, error } = await supabase
     .from('venues')
     .insert({

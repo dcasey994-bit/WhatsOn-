@@ -49,7 +49,7 @@ export default function TermsPage() {
         <section>
           <h2>Venue subscriptions</h2>
           <p>
-            Each venue gets three months free. After that it is £20 per month per
+            Each venue gets twelve months free. After that it is £20 per month per
             venue, billed through Stripe. Cancel any time and the venue stays
             active until the end of the paid period, after which it is archived
             and its events stop appearing publicly. Archived data is not deleted —

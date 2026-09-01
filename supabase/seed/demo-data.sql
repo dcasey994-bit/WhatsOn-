@@ -58,8 +58,11 @@ begin
                       user_id, is_demo, subscription_status, trial_ends_at)
   select v.name, v.address, v.lat, v.lng, null, v.website, v.capacity, v.type,
          demo_user, true, v.sub,
+         -- Trialing demo venues sit deliberately partway through a trial so the
+         -- countdown on the venue card has something to show; for an active
+         -- venue the date is moot, and just matches the current trial length.
          case when v.sub = 'trialing' then now() + interval '2 months'
-              else now() + interval '3 months' end
+              else now() + interval '12 months' end
   from (values
     -- Balham
     ('The Bedford',          '77 Bedford Hill, Balham, SW12 9HD',                 51.4434, -0.1527, 'https://thebedford.com',              350, 'Pub',                    'active'),
