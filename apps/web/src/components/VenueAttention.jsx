@@ -7,7 +7,7 @@ import './VenueAttention.css'
 // them, which is the part that makes someone act.
 function message(venue) {
   if (getSubscriptionState(venue) === 'archived') {
-    return 'Customers can no longer see this venue or any of its events. Reactivating puts them straight back on the map.'
+    return 'Customers can no longer see this venue or any of its events. Resubscribing puts them straight back on the map.'
   }
   const days = trialDaysLeft(venue)
   const when = days === 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`

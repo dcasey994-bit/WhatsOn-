@@ -487,7 +487,7 @@ export default function VenueManagePage() {
             </span>
             {subState !== 'active' && !isNative() && (
               <button className="vm-sub-btn" onClick={() => startCheckout(venue)}>
-                {subState === 'archived' ? 'Reactivate' : 'Subscribe'} — £20/mo
+                {subState === 'archived' ? 'Resubscribe' : 'Subscribe'} — £20/mo
               </button>
             )}
             {/* Cancelling, changing a card and downloading invoices all happen
