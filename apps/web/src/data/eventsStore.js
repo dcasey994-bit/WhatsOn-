@@ -270,6 +270,32 @@ export function trialDaysLeft(venue) {
   return Math.max(0, Math.ceil(diff / 86400000))
 }
 
+// "Trial · 340d" is a number nobody reads. Past a couple of months the useful
+// fact is that there is plenty of time left, not the exact day count — so it
+// only counts days once the end is near enough to act on.
+export function trialLabel(venue) {
+  const days = trialDaysLeft(venue)
+  if (days > TRIAL_WARNING_DAYS) return `${Math.round(days / 30)}mo`
+  return `${days}d`
+}
+
+// How close a trial has to be to expiring before it is worth flagging. With a
+// twelve-month trial, treating "not subscribed" as something needing attention
+// would light the warning for every venue for a year — and a light that is
+// always on is one people stop seeing.
+export const TRIAL_WARNING_DAYS = 30
+
+// Something the admin can actually do: the venue is archived and hidden from
+// the map, or its trial is close enough that subscribing is now a decision
+// rather than a distant one. Events managers cannot touch billing, so nothing
+// here is their problem.
+export function venueNeedsAttention(venue) {
+  if (!venue || (venue.memberRole && venue.memberRole !== 'admin')) return false
+  const state = getSubscriptionState(venue)
+  if (state === 'archived') return true
+  return state === 'trialing' && trialDaysLeft(venue) <= TRIAL_WARNING_DAYS
+}
+
 // Redirect to the Stripe Payment Link, tagging the venue so the webhook can
 // activate the right subscription after checkout.
 //

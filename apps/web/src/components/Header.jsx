@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { getUser, setPreferredMode, signOut, subscribe } from '../data/authStore.js'
 import { useAppMode, homePathFor } from '../data/appMode.js'
-import { fetchMyVenues, getSubscriptionState } from '../data/eventsStore.js'
+import { fetchMyVenues, venueNeedsAttention } from '../data/eventsStore.js'
 import './Header.css'
 
 export default function Header({ title, children }) {
@@ -25,7 +25,9 @@ export default function Header({ title, children }) {
     fetchMyVenues().then(setVenues).catch(() => setVenues([]))
   }, [user?.id])
 
-  const needsAttention = venues.some(v => getSubscriptionState(v) !== 'active')
+  // Not "isn't paying" — that is true of every venue for the whole twelve-month
+  // trial, which left this dot permanently lit and therefore meaningless.
+  const needsAttention = venues.some(venueNeedsAttention)
 
   function openMenu() {
     if (avatarRef.current) {

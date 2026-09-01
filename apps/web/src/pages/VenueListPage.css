@@ -27,6 +27,41 @@
   gap: 12px;
 }
 
+/* Sits above the venue cards, and is a button because the whole strip is the
+   tap target — a venue that is hidden from the map wants fixing in one tap,
+   not two. Amber for a trial running out, red once events are actually off
+   the map: the second is a thing that has already gone wrong. */
+.vl-attention {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 193, 7, 0.10);
+  border: 1px solid rgba(255, 193, 7, 0.30);
+}
+
+.vl-attention-urgent {
+  background: rgba(255, 107, 107, 0.10);
+  border-color: rgba(255, 107, 107, 0.35);
+}
+
+.vl-attention-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.vl-attention-cta {
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
 .vl-loading {
   text-align: center;
   color: var(--text-muted);
