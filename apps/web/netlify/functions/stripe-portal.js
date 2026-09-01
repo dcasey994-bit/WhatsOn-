@@ -115,7 +115,16 @@ export const handler = async (event) => {
       body: JSON.stringify({ url: session.url }),
     }
   } catch (err) {
-    log('ERROR:', err.message)
+    log('ERROR:', err.type || err.name, '-', err.message)
+
+    // Stripe's own errors are configuration messages — "your live mode default
+    // configuration has not been created", "No such customer" — with nothing
+    // sensitive in them, and they say exactly what is wrong. Passing one
+    // through saves a trip to the function log for the person who can fix it.
+    // Anything else could be a database or runtime error, so it stays generic.
+    if (err.type?.startsWith('Stripe')) {
+      return fail(502, `Stripe: ${err.message}`)
+    }
     return fail(500, 'Could not open the billing portal')
   }
 }

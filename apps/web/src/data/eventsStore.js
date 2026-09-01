@@ -315,9 +315,15 @@ export async function openBillingPortal(venue) {
     body: JSON.stringify({ venueId: venue.id }),
   })
 
+  // A 404 returns Netlify's HTML, not JSON, so `body` ends up empty and the
+  // message would be the same generic line as a real server error — which is
+  // how a function that failed to deploy came to look identical to a Stripe
+  // misconfiguration. The status is included so the two can be told apart.
   const body = await res.json().catch(() => ({}))
   if (!res.ok || !body.url) {
-    throw new Error(body.error || 'Could not open the billing portal.')
+    throw new Error(body.error
+      ? `${body.error} (${res.status})`
+      : `Could not open the billing portal — the server returned ${res.status}.`)
   }
   window.location.href = body.url
 }
