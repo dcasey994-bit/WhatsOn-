@@ -89,6 +89,38 @@ async function updateVenues(patch, column, value, what) {
   return data.length
 }
 
+// A subscription belongs to a venue; a Stripe customer belongs to a person, and
+// one person may pay for several venues. Matching a cancellation on the customer
+// would therefore archive every venue they run, not the one they cancelled — so
+// the subscription id, which is unique per venue, is always tried first.
+//
+// The customer is only a fallback, for a venue that was activated before its
+// subscription id was recorded, and only when that customer owns exactly one
+// venue. Beyond that there is no way to know which venue is meant, and picking
+// one would take a paying venue offline.
+async function updateBySubscription(sub, patch, what) {
+  if (sub.id && await updateVenues(patch, 'stripe_subscription_id', sub.id, what)) return
+
+  const { data, error } = await supabase
+    .from('venues')
+    .select('id')
+    .eq('stripe_customer_id', sub.customer)
+  if (error) throw error
+
+  if (!data.length) {
+    log('NO MATCH', what, '— no venue for subscription', sub.id, 'or customer', sub.customer)
+    return
+  }
+  if (data.length > 1) {
+    log('AMBIGUOUS', what, '— customer', sub.customer, 'has', data.length,
+      'venues and subscription', sub.id, 'is on none of them:',
+      data.map(v => v.id).join(', '), '— left alone')
+    return
+  }
+  log('falling back to customer', sub.customer, '— single venue')
+  await updateVenues(patch, 'id', data[0].id, what)
+}
+
 export const handler = async (event) => {
   let stripeEvent
   try {
@@ -140,13 +172,17 @@ export const handler = async (event) => {
     if (type === 'customer.subscription.updated') {
       const sub = data.object
       const live = sub.status === 'active' || sub.status === 'trialing'
-      await updateVenues(
-        {
-          subscription_status: live ? 'active' : 'archived',
-          stripe_subscription_id: live ? sub.id : null,
-        },
-        'stripe_customer_id', sub.customer, `subscription ${sub.status}`
-      )
+      // A cancellation scheduled for the end of the paid period leaves the
+      // subscription active until then, and the venue stays live: they have
+      // paid for the month.
+      if (sub.cancel_at_period_end) {
+        log('subscription', sub.id, 'set to cancel at period end —',
+          'venue stays active until customer.subscription.deleted')
+      }
+      await updateBySubscription(sub, {
+        subscription_status: live ? 'active' : 'archived',
+        stripe_subscription_id: live ? sub.id : null,
+      }, `subscription ${sub.status}`)
     }
 
     // Archive only when Stripe gives up on the subscription entirely.
@@ -155,10 +191,9 @@ export const handler = async (event) => {
     // fires once those retries are exhausted (or the venue cancels).
     if (type === 'customer.subscription.deleted') {
       const sub = data.object
-      await updateVenues(
+      await updateBySubscription(sub,
         { subscription_status: 'archived', stripe_subscription_id: null },
-        'stripe_customer_id', sub.customer, 'archive'
-      )
+        'archive')
     }
   } catch (err) {
     // A database error is worth retrying, unlike an unmatched venue, so this
