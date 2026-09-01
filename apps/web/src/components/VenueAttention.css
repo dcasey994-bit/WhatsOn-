@@ -1,0 +1,17 @@
+/* Sits directly above the subscription card, so the warning and the button
+   that resolves it read as one block rather than two separate things. */
+.va-banner {
+  margin: 16px 16px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+  background: rgba(255, 193, 7, 0.10);
+  border: 1px solid rgba(255, 193, 7, 0.30);
+}
+
+.va-banner-urgent {
+  background: rgba(255, 107, 107, 0.10);
+  border-color: rgba(255, 107, 107, 0.35);
+}

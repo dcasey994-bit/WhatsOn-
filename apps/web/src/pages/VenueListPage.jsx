@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { venuePath, NEW_VENUE_PATH } from '../data/appMode.js'
-import {
-  fetchMyVenues, getSubscriptionState, trialLabel, trialDaysLeft, venueNeedsAttention,
-} from '../data/eventsStore.js'
+import { fetchMyVenues, getSubscriptionState, trialLabel } from '../data/eventsStore.js'
 import { resolveVenueType } from '../data/venueTypes.js'
 import Header from '../components/Header.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
@@ -14,18 +12,6 @@ function subBadge(venue) {
   if (s === 'active') return { label: 'Active', cls: 'vl-badge-active' }
   if (s === 'trialing') return { label: `Trial · ${trialLabel(venue)}`, cls: 'vl-badge-trial' }
   return { label: 'Archived', cls: 'vl-badge-lapsed' }
-}
-
-// One line saying what has happened and what it costs them, because the badge
-// on the card says the state but not the consequence — "Archived" does not tell
-// anyone their events have stopped appearing on the map.
-function attentionMessage(venue) {
-  if (getSubscriptionState(venue) === 'archived') {
-    return `${venue.name} is archived — its events are hidden from the map.`
-  }
-  const days = trialDaysLeft(venue)
-  const when = days === 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`
-  return `${venue.name}'s free trial ends ${when}.`
 }
 
 function roleBadge(venue) {
@@ -77,20 +63,6 @@ export default function VenueListPage() {
           </div>
         ) : (
           <>
-            {/* Only ever shown when there is something to do about it, so it
-                never becomes wallpaper. Tapping goes straight to the venue,
-                where the Subscribe and Reactivate buttons live. */}
-            {venues.filter(venueNeedsAttention).map(venue => (
-              <button
-                key={`attn-${venue.id}`}
-                className={`vl-attention ${getSubscriptionState(venue) === 'archived' ? 'vl-attention-urgent' : ''}`}
-                onClick={() => navigate(venuePath(venue.id))}
-              >
-                <span className="vl-attention-text">{attentionMessage(venue)}</span>
-                <span className="vl-attention-cta">Fix ›</span>
-              </button>
-            ))}
-
             {venues.map(venue => {
               const sub = subBadge(venue)
               const role = roleBadge(venue)

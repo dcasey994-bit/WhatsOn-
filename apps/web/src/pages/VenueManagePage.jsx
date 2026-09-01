@@ -16,6 +16,7 @@ import { isNative } from '../lib/platform.js'
 import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
 import AddressPicker from '../components/AddressPicker.jsx'
+import VenueAttention from '../components/VenueAttention.jsx'
 import './VenuePage.css'
 import './VenueManagePage.css'
 
@@ -470,6 +471,10 @@ export default function VenueManagePage() {
       </Header>
 
       <button className="vp-back-link vp-back-pad" onClick={() => navigate(VENUE_HOME)}>← My Venues</button>
+
+      {/* Directly above the subscription card, so the warning and the button
+          that resolves it read as one block. */}
+      {isAdmin && <VenueAttention venue={venue} />}
 
       {/* Subscription card — admin only */}
       {isAdmin && (
