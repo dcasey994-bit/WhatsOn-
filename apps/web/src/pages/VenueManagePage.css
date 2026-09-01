@@ -53,6 +53,24 @@
   white-space: nowrap;
 }
 
+/* Manage subscription sits where Subscribe does, but it is a secondary action
+   on an already-paying venue — outlined rather than filled, so the card does
+   not read as if something still needs doing. */
+.vm-sub-btn-quiet {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.vm-sub-btn-quiet:disabled { opacity: 0.6; }
+
+.vm-sub-error {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #ff6b6b;
+}
+
 /* Native-only line where the Subscribe button sits on the web. Muted rather
    than styled as an action — it is a statement of where the controls are, not
    a route to a payment page. */

@@ -5,7 +5,7 @@ import { CATEGORIES, getCategory } from '../data/events.js'
 import {
   fetchVenueById, fetchVenueEvents, fetchPastVenueEvents,
   createEvent, updateEvent, deleteEvent, uploadEventImage,
-  getSubscriptionState, trialDaysLeft, startCheckout,
+  getSubscriptionState, trialDaysLeft, startCheckout, openBillingPortal,
   fetchVenueMembers, addVenueMember, removeVenueMember, updateMemberRole,
   updateVenue, normalizeWebsite,
 } from '../data/eventsStore.js'
@@ -54,7 +54,23 @@ export default function VenueManagePage() {
   const [geocoded, setGeocoded] = useState(null)
   const [savingVenue, setSavingVenue] = useState(false)
   const [venueError, setVenueError] = useState(null)
+  const [portalBusy, setPortalBusy] = useState(false)
+  const [portalError, setPortalError] = useState(null)
   const reloadEvents = useReloadEvents()
+
+  // On success this navigates away to Stripe, so `portalBusy` is deliberately
+  // left true — the button stays disabled for the moment before the page goes,
+  // rather than flicking back and inviting a second click.
+  async function openPortal() {
+    setPortalError(null)
+    setPortalBusy(true)
+    try {
+      await openBillingPortal(venue)
+    } catch (err) {
+      setPortalError(err.message || 'Could not open the billing portal.')
+      setPortalBusy(false)
+    }
+  }
 
   async function loadEvents(venueId) {
     const [upcoming, past] = await Promise.all([
@@ -469,15 +485,32 @@ export default function VenueManagePage() {
                 {subState === 'archived' ? 'Reactivate' : 'Subscribe'} — £20/mo
               </button>
             )}
+            {/* Cancelling, changing a card and downloading invoices all happen
+                in Stripe's portal rather than being rebuilt here. Only shown
+                once there is a subscription to manage — a venue still in its
+                free trial has no Stripe customer, so the portal would have
+                nothing to open. */}
+            {subState === 'active' && !isNative() && (
+              <button
+                className="vm-sub-btn vm-sub-btn-quiet"
+                disabled={portalBusy}
+                onClick={openPortal}
+              >
+                {portalBusy ? 'Opening…' : 'Manage subscription'}
+              </button>
+            )}
           </div>
+          {portalError && <p className="vm-sub-error">{portalError}</p>}
           {/* Natively there is no button, no price and no link. Both stores
               require in-app purchases of digital services to use their own
               billing, and a link out to Stripe is the specific thing Apple's
               3.1.1 prohibits — so the app reports the state and says where the
               controls are without steering anyone to a payment page. */}
-          {subState !== 'active' && isNative() && (
+          {isNative() && (
             <p className="vm-sub-note">
-              Subscriptions are managed from a web browser.
+              {subState === 'active'
+                ? 'Subscriptions, including cancellation, are managed from a web browser.'
+                : 'Subscriptions are managed from a web browser.'}
             </p>
           )}
         </div>

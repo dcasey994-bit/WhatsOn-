@@ -288,6 +288,38 @@ export function startCheckout(venue) {
   window.location.href = url
 }
 
+// Open Stripe's billing portal for a venue, where a subscription can be
+// cancelled, a card updated and invoices downloaded.
+//
+// Web only, for the same reason as startCheckout: sending someone from a native
+// app to a page that manages a paid subscription is what Apple's 3.1.1 and
+// Play's billing policy prohibit. Cancellation is not left without a route on
+// native — the card says where to go, and the venue can cancel at whatsonapp.uk
+// in a browser.
+//
+// Throws with a readable message; the caller shows it.
+export async function openBillingPortal(venue) {
+  if (isNative() || !venue) return
+
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('Please sign in again.')
+
+  const res = await fetch('/.netlify/functions/stripe-portal', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ venueId: venue.id }),
+  })
+
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok || !body.url) {
+    throw new Error(body.error || 'Could not open the billing portal.')
+  }
+  window.location.href = body.url
+}
+
 // ── Venue member management ───────────────────────────────────────────────
 
 // Returns [{user_id, email, role, created_at}] for a venue (admin only)

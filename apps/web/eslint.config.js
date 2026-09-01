@@ -20,4 +20,11 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  // Netlify functions run on Node, not in the browser, so `process` and
+  // `Buffer` are real there. Without this every function reports them as
+  // undefined and the genuine errors are lost in the noise.
+  {
+    files: ['netlify/functions/**/*.js'],
+    languageOptions: { globals: globals.node },
+  },
 ])
