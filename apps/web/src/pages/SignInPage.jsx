@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { signIn, signInWithPassword, signUpWithEmail, wasAccountDeleted, clearDeletedNotice } from '../data/authStore.js'
-import { authErrorMessage } from '../data/authErrors.js'
+import {
+  signIn, signInWithApple, signInWithPassword, signUpWithEmail,
+  wasAccountDeleted, clearDeletedNotice,
+} from '../data/authStore.js'
+import { authErrorMessage, isAppleCancellation } from '../data/authErrors.js'
+import { isIOS } from '../lib/platform.js'
 import { homePathFor } from '../data/appMode.js'
 import './SignInPage.css'
 
@@ -29,6 +33,20 @@ export default function SignInPage() {
       // Supabase redirects the browser — no navigate() needed
     } catch (err) {
       setError(authErrorMessage(err))
+      setLoading(null)
+    }
+  }
+
+  async function handleApple() {
+    setLoading('apple')
+    setError(null)
+    try {
+      await signInWithApple()
+      // The auth state change signs them in; no navigate() needed.
+    } catch (err) {
+      // Dismissing Apple's sheet rejects with a cancellation rather than
+      // resolving, and telling someone their own tap "failed" is noise.
+      if (!isAppleCancellation(err)) setError(authErrorMessage(err))
       setLoading(null)
     }
   }
@@ -142,6 +160,20 @@ export default function SignInPage() {
           </form>
         ) : (
           <>
+            {/* iOS only, and first. Apple requires Sign in with Apple wherever
+                another third-party sign-in is offered, and requires it to be
+                no less prominent than the others. */}
+            {isIOS() && (
+              <button
+                className={`signin-btn signin-apple ${loading === 'apple' ? 'loading' : ''}`}
+                onClick={handleApple}
+                disabled={!!loading}
+              >
+                {loading === 'apple' ? <span className="spinner" /> : <AppleIcon />}
+                Continue with Apple
+              </button>
+            )}
+
             <button
               className="signin-btn signin-email"
               onClick={() => setShowEmail(true)}
@@ -177,6 +209,16 @@ export default function SignInPage() {
         )}
       </div>
     </div>
+  )
+}
+
+// Apple's mark, drawn rather than fetched: the button must render offline and
+// Apple's guidelines require their glyph, not an approximation.
+function AppleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.05 12.54c-.02-2.2 1.8-3.26 1.88-3.31-1.02-1.5-2.62-1.7-3.19-1.72-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.87-.76-1.48.02-2.84.86-3.6 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.25 2.74 2.2 1.1-.04 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.08 2.65-2.14.84-1.23 1.18-2.42 1.2-2.48-.03-.01-2.3-.88-2.32-3.5zM14.9 5.1c.6-.74 1.01-1.76.9-2.78-.87.04-1.93.58-2.56 1.31-.56.65-1.05 1.69-.92 2.69.97.07 1.96-.49 2.58-1.22z"/>
+    </svg>
   )
 }
 

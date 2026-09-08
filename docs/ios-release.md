@@ -106,11 +106,25 @@ software as you.
 
 1. **Identifiers → +** → App IDs → App → Bundle ID **`uk.whatsonapp.app`**,
    matching `appId` in `apps/web/capacitor.config.json`
-2. No extra capabilities are needed. Location comes from the OS prompt, not an
-   entitlement, and there is no push, no sign-in-with-Apple, no associated
-   domains.
+2. Tick **Sign in with Apple** under Capabilities. Apple requires it in any app
+   offering another third-party sign-in (Guideline 4.8) and WhatsOn? offers
+   Google, so this is not optional. Nothing else is needed — location comes
+   from the OS prompt rather than an entitlement, and there is no push and no
+   associated domains.
 3. **Profiles → +** → *App Store Connect* → pick that App ID → pick the
    distribution certificate → name it, download the `.mobileprovision`
+
+**Changing a capability invalidates every existing profile for that App ID.**
+If Sign in with Apple was enabled after the profile was made, the old profile
+must be deleted and a new one generated, and `IOS_PROVISIONING_PROFILE_B64`
+updated with it. The build otherwise fails at export with a message about the
+entitlements not matching the profile.
+
+One more step outside Apple: in Supabase → Authentication → Providers → Apple,
+add **`uk.whatsonapp.app`** to *Authorized Client IDs*. The native sheet
+identifies the app by its bundle id, and a token whose audience is not on that
+list is rejected after a successful Apple sign-in — which looks like the app
+failing rather than a configuration gap.
 
 The workflow reads the profile's name out of the file itself, so the name you
 choose does not need to be recorded anywhere.
@@ -190,6 +204,18 @@ from the Individual rather than Team tab, or simply a trailing newline picked up
 when pasting into the secret box. The step now prints the length of the key ID
 (10) and issuer (36) and checks the `.p8` parses, which distinguishes a mangled
 paste from a genuinely wrong key.
+
+**`Provisioning profile ... doesn't match the entitlements`**
+The profile predates Sign in with Apple being enabled on the App ID. Enabling a
+capability invalidates existing profiles; generate a new one and update
+`IOS_PROVISIONING_PROFILE_B64`.
+
+**Sign in with Apple fails on device with an authorization error**
+If the button works but Supabase rejects the result, the bundle id is missing
+from *Authorized Client IDs* in Supabase's Apple provider. If Apple's own sheet
+never appears, the entitlement did not make it into the build — check the "Add
+the Sign in with Apple entitlement" step ran and that `CODE_SIGN_ENTITLEMENTS`
+is still passed to `xcodebuild archive`.
 
 **`xcodebuild: error: 'App.xcworkspace' does not exist`**
 Capacitor 8 resolves its dependencies with Swift Package Manager, not

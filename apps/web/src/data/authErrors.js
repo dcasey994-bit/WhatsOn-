@@ -5,6 +5,19 @@
 // API key, an unconfirmed email and a dropped connection all look identical to
 // a mistyped password. The distinctions below all come back from Supabase; we
 // were simply discarding them.
+// Someone closing Apple's sign-in sheet is not an error, but the plugin
+// rejects rather than resolving — so without this, tapping "Cancel" puts a red
+// failure message on screen for something the user did on purpose.
+//
+// ASAuthorizationError.canceled is 1001. The message wording has varied between
+// iOS releases, so the code is checked first and the text only as a fallback.
+export function isAppleCancellation(err) {
+  const code = String(err?.code ?? '')
+  if (code === '1001' || code === 'ASAuthorizationError.canceled') return true
+  const raw = (err?.message || '').toLowerCase()
+  return raw.includes('1001') || raw.includes('cancel')
+}
+
 export function authErrorMessage(err, { isSignUp = false } = {}) {
   const raw = (err?.message || '').toLowerCase()
 

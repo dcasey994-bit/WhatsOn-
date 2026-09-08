@@ -111,6 +111,15 @@
   opacity: 0.7;
 }
 
+/* Apple require their button to use one of their own styles — black, white, or
+   white-outlined — with their glyph and no other decoration. Black on this dark
+   screen would disappear, so this is the white variant. */
+.signin-apple {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+}
+
 .signin-google {
   background: #ffffff;
   color: #1a1a2e;

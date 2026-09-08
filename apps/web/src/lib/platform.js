@@ -7,6 +7,14 @@ export function isNative() {
   return Capacitor.isNativePlatform()
 }
 
+// Apple's Sign in with Apple is offered only in the iOS app. Apple requires it
+// there (Guideline 4.8, since Google sign-in is offered); on the web and on
+// Android it would be one more button for a service most users here do not
+// have, and neither store requires it.
+export function isIOS() {
+  return isNative() && Capacitor.getPlatform() === 'ios'
+}
+
 // Where Supabase should send the user back to after an OAuth round-trip.
 // The native app cannot use a normal https URL: the OAuth flow runs in a
 // Custom Tab outside the app, so the redirect has to be a deep link that

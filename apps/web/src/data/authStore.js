@@ -58,6 +58,59 @@ export async function signIn(provider) {
   }
 }
 
+// Sign in with Apple — the native iOS sheet, not an OAuth redirect.
+//
+// Apple requires this in any iOS app offering third-party sign-in (Guideline
+// 4.8), and requires it to use the system sheet rather than a web flow. So
+// unlike Google above there is no Custom Tab and no deep link: the plugin
+// returns an identity token directly and Supabase verifies it.
+//
+// The plugin is imported dynamically because it is iOS-only — a static import
+// would pull an unusable native plugin into the web and Android bundles.
+export async function signInWithApple() {
+  const { SignInWithApple } = await import('@capacitor-community/apple-sign-in')
+
+  // Apple binds the token to a nonce to stop a token issued for one sign-in
+  // being replayed into another. Apple is given the SHA-256 hash and embeds it
+  // in the token; Supabase is given the original and hashes it to compare. Send
+  // the same value to both and every sign-in fails with a nonce mismatch.
+  const rawNonce = crypto.randomUUID()
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawNonce))
+  const hashedNonce = [...new Uint8Array(digest)]
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+
+  const result = await SignInWithApple.authorize({
+    // The bundle id, not a Services ID — a native sign-in identifies itself as
+    // the app. It has to be listed in the Supabase Apple provider's
+    // "Authorized Client IDs" or the token is rejected as having a bad audience.
+    clientId: 'uk.whatsonapp.app',
+    redirectURI: '',   // unused by the native flow, but the plugin requires the key
+    scopes: 'email name',
+    nonce: hashedNonce,
+  })
+
+  const token = result?.response?.identityToken
+  if (!token) throw new Error('Apple did not return an identity token')
+
+  const { error } = await supabase.auth.signInWithIdToken({
+    provider: 'apple',
+    token,
+    nonce: rawNonce,
+  })
+  if (error) throw error
+
+  // Apple sends the name only on the very first authorisation, and never again
+  // — so if it is not saved now it is lost for good. Supabase does not map it
+  // into user_metadata for us the way it does for Google.
+  const given = result.response.givenName
+  const family = result.response.familyName
+  if (given || family) {
+    const full = [given, family].filter(Boolean).join(' ')
+    await supabase.auth.updateUser({ data: { full_name: full } }).catch(() => {})
+  }
+}
+
 // Sign in with an existing email + password
 export async function signInWithPassword(email, password) {
   const { error } = await supabase.auth.signInWithPassword({ email, password })
