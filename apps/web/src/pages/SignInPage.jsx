@@ -5,7 +5,7 @@ import {
   wasAccountDeleted, clearDeletedNotice,
 } from '../data/authStore.js'
 import { authErrorMessage, isAppleCancellation } from '../data/authErrors.js'
-import { isIOS } from '../lib/platform.js'
+import { hasAppleSignIn } from '../lib/platform.js'
 import { homePathFor } from '../data/appMode.js'
 import './SignInPage.css'
 
@@ -160,10 +160,21 @@ export default function SignInPage() {
           </form>
         ) : (
           <>
-            {/* iOS only, and first. Apple requires Sign in with Apple wherever
-                another third-party sign-in is offered, and requires it to be
-                no less prominent than the others. */}
-            {isIOS() && (
+            <button
+              className="signin-btn signin-email"
+              onClick={() => setShowEmail(true)}
+              disabled={!!loading}
+            >
+              <EmailIcon />
+              Continue with Email
+            </button>
+
+            {/* iOS and web, not Android — see hasAppleSignIn(). On iOS this is
+                required rather than optional: Apple demand it wherever another
+                third-party sign-in is offered, and demand it be no less
+                prominent than the others, which sitting alongside them
+                satisfies. */}
+            {hasAppleSignIn() && (
               <button
                 className={`signin-btn signin-apple ${loading === 'apple' ? 'loading' : ''}`}
                 onClick={handleApple}
@@ -173,15 +184,6 @@ export default function SignInPage() {
                 Continue with Apple
               </button>
             )}
-
-            <button
-              className="signin-btn signin-email"
-              onClick={() => setShowEmail(true)}
-              disabled={!!loading}
-            >
-              <EmailIcon />
-              Continue with Email
-            </button>
 
             <button
               className={`signin-btn signin-google ${loading === 'google' ? 'loading' : ''}`}

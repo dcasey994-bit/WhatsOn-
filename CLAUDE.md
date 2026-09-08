@@ -24,7 +24,13 @@
 - Project URL: `https://lqafmjidqbshssqrxmkr.supabase.co` — read from `VITE_SUPABASE_URL`;
   nothing in `src/` hardcodes it. Moving auth to `auth.whatsonapp.uk` so the Google
   sign-in screen stops naming supabase.co: `docs/google-sign-in-domain.md`
-- Auth providers enabled: Google OAuth, Email + password (`signInWithPassword` / `signUp`, not magic link)
+- Auth providers enabled: Google OAuth, Apple, Email + password (`signInWithPassword` / `signUp`, not magic link)
+- **Sign in with Apple runs two different flows.** On the web it is an OAuth
+  redirect authenticated against a **Services ID** + signed client secret; on
+  iOS it is the native sheet, which identifies the app by its **bundle id**
+  (`uk.whatsonapp.app`) and needs that in the provider's *Authorized Client IDs*.
+  Both must be configured or one platform works and the other does not. Not
+  offered on Android — see `hasAppleSignIn()` in `src/lib/platform.js`.
 - Tables: `saved_events`, `going_events`, `venues`, `events` (RLS enabled); schema in `supabase/migrations/001_schema.sql`
 - Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) in `.env` locally and Netlify env settings.
 

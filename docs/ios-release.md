@@ -126,6 +126,23 @@ identifies the app by its bundle id, and a token whose audience is not on that
 list is rejected after a successful Apple sign-in — which looks like the app
 failing rather than a configuration gap.
 
+### The web needs a second, different Apple credential
+
+Sign in with Apple is offered on whatsonapp.uk as well, and the browser cannot
+use the native sheet — it is an ordinary OAuth redirect, which Apple
+authenticates against a **Services ID**, not the bundle id. Configuring one does
+not configure the other; each platform fails independently.
+
+1. **Identifiers → +** → *Services IDs* → e.g. `uk.whatsonapp.web`
+2. Configure it: domain `whatsonapp.uk`, return URL
+   `https://lqafmjidqbshssqrxmkr.supabase.co/auth/v1/callback`
+3. **Keys → +** → *Sign in with Apple* → download the `.p8` (**once only**)
+4. Supabase → Providers → Apple: the Services ID as *Client ID*, and the key
+   details as the secret
+
+The Authorized Client IDs list from above still needs the bundle id alongside
+it — the two flows arrive with different audiences and both must be accepted.
+
 The workflow reads the profile's name out of the file itself, so the name you
 choose does not need to be recorded anywhere.
 

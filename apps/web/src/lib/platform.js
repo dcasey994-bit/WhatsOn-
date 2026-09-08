@@ -7,12 +7,21 @@ export function isNative() {
   return Capacitor.isNativePlatform()
 }
 
-// Apple's Sign in with Apple is offered only in the iOS app. Apple requires it
-// there (Guideline 4.8, since Google sign-in is offered); on the web and on
-// Android it would be one more button for a service most users here do not
-// have, and neither store requires it.
 export function isIOS() {
   return isNative() && Capacitor.getPlatform() === 'ios'
+}
+
+// Sign in with Apple is offered on iOS and on the web, but not on Android.
+//
+// On iOS Apple requires it, since Google sign-in is offered (Guideline 4.8).
+// The web gets it because plenty of people have an Apple ID and it is the one
+// option that hides their email address. Android is left out deliberately:
+// there is no native sheet there, so it would fall back to the same web
+// redirect while being the least likely option on the platform.
+//
+// The two are not the same flow — see signInWithApple().
+export function hasAppleSignIn() {
+  return !isNative() || isIOS()
 }
 
 // Where Supabase should send the user back to after an OAuth round-trip.

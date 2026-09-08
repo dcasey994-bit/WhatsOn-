@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase.js'
-import { isNative, authRedirectUrl, emailRedirectUrl } from '../lib/platform.js'
+import { isNative, isIOS, authRedirectUrl, emailRedirectUrl } from '../lib/platform.js'
 
 let listeners = []
 
@@ -58,16 +58,24 @@ export async function signIn(provider) {
   }
 }
 
-// Sign in with Apple — the native iOS sheet, not an OAuth redirect.
+// Sign in with Apple. Two different flows behind one function.
 //
-// Apple requires this in any iOS app offering third-party sign-in (Guideline
-// 4.8), and requires it to use the system sheet rather than a web flow. So
-// unlike Google above there is no Custom Tab and no deep link: the plugin
-// returns an identity token directly and Supabase verifies it.
+// On the web it is an ordinary OAuth redirect, the same as Google. Supabase
+// authenticates that against a *Services ID* and a signed client secret, which
+// are configured in the Apple provider settings.
 //
-// The plugin is imported dynamically because it is iOS-only — a static import
-// would pull an unusable native plugin into the web and Android bundles.
+// On iOS it cannot be: Apple requires the system sheet rather than a web view
+// (Guideline 4.8), so the plugin returns an identity token directly and
+// Supabase verifies it — no Custom Tab, no deep link. That path identifies the
+// app by its *bundle id* instead, which is why the Supabase provider needs both
+// the Services ID and the bundle id configured before either works.
+//
+// Android is not offered it at all; see hasAppleSignIn().
 export async function signInWithApple() {
+  if (!isIOS()) return signIn('apple')
+
+  // Imported dynamically because it is an iOS native plugin — a static import
+  // would pull it into the web and Android bundles, where it cannot run.
   const { SignInWithApple } = await import('@capacitor-community/apple-sign-in')
 
   // Apple binds the token to a nonce to stop a token issued for one sign-in
