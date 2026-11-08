@@ -20,10 +20,11 @@ export default function Header({ title, children }) {
   useEffect(() => subscribe(() => setUser(getUser())), [])
 
   // Load venues so the account menu can flag any needing a subscription
+  const userId = user?.id
   useEffect(() => {
-    if (!user) { setVenues([]); return }
+    if (!userId) { setVenues([]); return }
     fetchMyVenues().then(setVenues).catch(() => setVenues([]))
-  }, [user?.id])
+  }, [userId])
 
   // Not "isn't paying" — that is true of every venue for the whole twelve-month
   // trial, which left this dot permanently lit and therefore meaningless.

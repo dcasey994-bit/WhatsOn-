@@ -19,6 +19,20 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Flags every "set loading, fetch, set result" effect, which is how
+      // every page here loads its data. The alternative it points to is a
+      // data-fetching library; until there is one, the rule is only noise
+      // that hides the warnings that matter.
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
+  // A context file exports its provider and the hooks that read it together.
+  // That costs fast refresh in development for these files only, and keeps
+  // each context in one place.
+  {
+    files: ['src/data/*Context.jsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
   // Netlify functions run on Node, not in the browser, so `process` and
   // `Buffer` are real there. Without this every function reports them as

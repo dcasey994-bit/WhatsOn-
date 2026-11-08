@@ -37,7 +37,14 @@
 ## Stripe (subscriptions)
 - Venue mode is free for 12 months, then £20/month. The length lives in three
   places that must agree: the `venues.trial_ends_at` default (migration 013),
-  `registerVenue()` in `eventsStore.js`, and the Terms page.
+  `protect_venue_billing()` (migration 014), and the Terms page.
+- **Billing columns are server-only.** `subscription_status`, `trial_ends_at`,
+  `stripe_*`, `is_demo` and `user_id` ignore writes from the app (the
+  `anon`/`authenticated` roles) — a trigger resets them. Only the webhook
+  (service role) and the SQL editor can change them. The trigger also makes a
+  venue's creator its first admin.
+- `profiles` (emails) is readable only for your own row. Looking someone up by
+  email goes through the `add_venue_member()` RPC.
 - `subscription_status` on venues: `trialing` | `active` | `lapsed`
 - Checkout: Stripe Payment Link — set `VITE_STRIPE_PAYMENT_LINK` in env. URL gets `?client_reference_id={venue_id}` appended.
 - **Web only.** The Subscribe button is hidden and `startCheckout()` no-ops when `isNative()`, because both stores require in-app purchases of digital services to use their own billing (Apple 3.1.1 rejects outright). Venues subscribe at whatsonapp.uk; the app shows status.

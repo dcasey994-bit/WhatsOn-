@@ -19,9 +19,13 @@ export function isIOS() {
 // there is no native sheet there, so it would fall back to the same web
 // redirect while being the least likely option on the platform.
 //
-// The two are not the same flow — see signInWithApple().
+// The two are not the same flow — see signInWithApple() — and each needs its
+// own Apple setup. The web one is off until VITE_APPLE_WEB_SIGNIN is 'true',
+// so the button does not go live before the Services ID behind it exists;
+// docs/ios-release.md covers that setup.
 export function hasAppleSignIn() {
-  return !isNative() || isIOS()
+  if (isIOS()) return true
+  return !isNative() && import.meta.env.VITE_APPLE_WEB_SIGNIN === 'true'
 }
 
 // Where Supabase should send the user back to after an OAuth round-trip.

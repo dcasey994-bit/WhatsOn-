@@ -218,27 +218,15 @@ export async function fetchMyVenues() {
 export async function registerVenue(fields) {
   const user = getUser()
   if (!user) throw new Error('Not logged in')
-  // Kept in step with the venues.trial_ends_at default in
-  // supabase/migrations/013_twelve_month_trial.sql — change both together.
-  const trialEndsAt = new Date()
-  trialEndsAt.setMonth(trialEndsAt.getMonth() + 12)
+  // The database sets the trial and makes the creator an admin (migration
+  // 014). Neither can be done from here: billing columns ignore writes from
+  // the app, and adding the first admin is refused by RLS.
   const { data: venue, error } = await supabase
     .from('venues')
-    .insert({
-      ...fields,
-      user_id: user.id,
-      subscription_status: 'trialing',
-      trial_ends_at: trialEndsAt.toISOString(),
-    })
+    .insert({ ...fields, user_id: user.id })
     .select()
     .single()
   if (error) throw error
-  // Make the creator an admin in venue_members
-  await supabase.from('venue_members').insert({
-    venue_id: venue.id,
-    user_id: user.id,
-    role: 'admin',
-  })
   return venue
 }
 
@@ -363,22 +351,18 @@ export async function fetchVenueMembers(venueId) {
   return data || []
 }
 
-// Add a member by email address (person must already have a WhatsOn account)
+// Add a member by email address (person must already have a WhatsOn account).
+// The lookup runs in the database: other people's emails are not readable
+// from the app.
 export async function addVenueMember(venueId, email, role) {
-  const { data: profile, error: pErr } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('email', email.trim().toLowerCase())
-    .maybeSingle()
-  if (pErr) throw pErr
-  if (!profile) throw new Error('No account found with that email. They need to sign in to WhatsOn first.')
-  const { error } = await supabase
-    .from('venue_members')
-    .insert({ venue_id: venueId, user_id: profile.id, role })
-  if (error) {
-    if (error.code === '23505') throw new Error('This person already has access to this venue.')
-    throw error
-  }
+  const { error } = await supabase.rpc('add_venue_member', {
+    vid: venueId, member_email: email, member_role: role,
+  })
+  if (!error) return
+  if (error.code === 'P0002') throw new Error('No account found with that email. They need to sign in to WhatsOn first.')
+  if (error.code === '23505') throw new Error('This person already has access to this venue.')
+  if (error.code === '42501') throw new Error('Only venue admins can add people.')
+  throw error
 }
 
 export async function removeVenueMember(venueId, userId) {

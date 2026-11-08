@@ -53,7 +53,7 @@ export default function TermsPage() {
             venue, billed through Stripe. Cancel any time and the venue stays
             active until the end of the paid period, after which it is archived
             and its events stop appearing publicly. Archived data is not deleted —
-            resubscribing restores it.
+            reactivating restores it.
           </p>
         </section>
 

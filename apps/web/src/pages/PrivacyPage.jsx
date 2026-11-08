@@ -36,6 +36,7 @@ export default function PrivacyPage() {
           <h3>If you create an account</h3>
           <ul>
             <li>Your email address, and your name and profile picture if you sign in with Google</li>
+            <li>Your name, if you sign in with Apple and choose to share it. Apple may give us a private relay address instead of your real email</li>
             <li>Events you save or mark yourself as going to</li>
             <li>Your appearance and mode preferences, stored on your device</li>
           </ul>
@@ -68,7 +69,7 @@ export default function PrivacyPage() {
             <li><strong>Nominatim</strong> — converts a venue address into map coordinates when a venue is added</li>
           </ul>
           <p>
-            Google is also involved if you choose to sign in with a Google account.
+            Google or Apple is also involved if you choose to sign in with that account.
           </p>
         </section>
 
