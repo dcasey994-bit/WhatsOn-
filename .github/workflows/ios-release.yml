@@ -126,6 +126,8 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_STRIPE_PAYMENT_LINK: ${{ secrets.VITE_STRIPE_PAYMENT_LINK }}
           VITE_SITE_URL: ${{ secrets.VITE_SITE_URL }}
+          # A variable, not a secret: the key is public in every map tile URL.
+          VITE_CARTO_KEY: ${{ vars.VITE_CARTO_KEY }}
         run: npm run build
 
       # Generated fresh every run rather than committed. There is no Mac here to
