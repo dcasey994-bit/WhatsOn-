@@ -28,10 +28,6 @@
   letter-spacing: -0.5px;
 }
 
-.brand-q {
-  color: var(--text);
-}
-
 .header-title {
   font-size: 14px;
   color: var(--text-muted);

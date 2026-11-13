@@ -5,6 +5,7 @@ import { getUser, setPreferredMode, signOut, subscribe } from '../data/authStore
 import { useAppMode, homePathFor } from '../data/appMode.js'
 import { fetchMyVenues, venueNeedsAttention } from '../data/eventsStore.js'
 import './Header.css'
+import Wordmark from './Wordmark.jsx'
 
 export default function Header({ title, children }) {
   const [user, setUser] = useState(() => getUser())
@@ -52,7 +53,7 @@ export default function Header({ title, children }) {
   return (
     <header className="app-header">
       <div className="header-brand">
-        <span className="brand-name">WhatsOn<span className="brand-q">?</span></span>
+        <span className="brand-name"><Wordmark /></span>
         {title && <span className="header-title">{title}</span>}
       </div>
 

@@ -9,6 +9,7 @@ import { hasAppleSignIn } from '../lib/platform.js'
 import { hasGoogleIdentityButton, renderGoogleButton } from '../lib/googleIdentity.js'
 import { homePathFor } from '../data/appMode.js'
 import './SignInPage.css'
+import Wordmark from '../components/Wordmark.jsx'
 
 export default function SignInPage() {
   const navigate = useNavigate()
@@ -98,7 +99,7 @@ export default function SignInPage() {
       <div className="signin-glow" />
 
       <div className="signin-hero">
-        <div className="signin-logo">WhatsOn<span className="logo-q">?</span></div>
+        <div className="signin-logo"><Wordmark /></div>
         <p className="signin-tagline">
           Everything happening tonight,<br />right where you are.
         </p>

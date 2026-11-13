@@ -27,6 +27,10 @@
   in the apps — nothing changes: check phone screenshots are identical after
   touching layout.
 - Supabase for auth + database
+- **Logo:** "Whats" and "?" in the brand green, "On" in black — always use
+  `<Wordmark />` (`src/components/Wordmark.jsx`), never type it out. On dark
+  backgrounds (dark theme, the Play feature graphic) "On" is white, since black
+  would disappear.
 
 ## Supabase
 - Project URL: `https://lqafmjidqbshssqrxmkr.supabase.co` — read from `VITE_SUPABASE_URL`;

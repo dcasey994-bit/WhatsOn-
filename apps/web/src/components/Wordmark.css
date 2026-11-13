@@ -1,0 +1,10 @@
+.wordmark-whats,
+.wordmark-q {
+  color: var(--accent);
+}
+
+/* Black on the light theme. On the dark theme black would vanish into the
+   background, so it follows the text colour there and reads white. */
+.wordmark-on {
+  color: var(--text);
+}
