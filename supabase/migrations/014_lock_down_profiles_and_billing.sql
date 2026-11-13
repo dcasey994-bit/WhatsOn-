@@ -117,6 +117,8 @@ revoke execute on function roll_forward_demo_events() from public, anon, authent
 revoke execute on function handle_auth_user_upsert()  from public, anon, authenticated;
 revoke execute on function set_venue_demo_flag()      from public, anon, authenticated;
 revoke execute on function get_venue_members(uuid)    from public, anon;
+revoke execute on function add_venue_creator_as_admin() from public, anon, authenticated;
+revoke execute on function protect_venue_billing()      from public, anon, authenticated;
 
 -- ── 5. Event images: images only, size-capped, own folder ───────────────────
 -- HEIC is allowed because it is what iPhones hand over; refusing it would
