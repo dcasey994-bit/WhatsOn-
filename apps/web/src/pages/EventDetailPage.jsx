@@ -4,7 +4,7 @@ import { publicPath } from '../data/appMode.js'
 import { getCategory } from '../data/events.js'
 import { formatTimeRange } from '../data/eventTime.js'
 import { useEvent } from '../data/EventsContext.jsx'
-import { fetchEventById } from '../data/eventsStore.js'
+import { fetchEventById, recordEventView } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
 import { useUserLocation, distanceKm, formatDistance } from '../data/location.js'
 import { ensureSignedIn } from '../data/authGate.js'
@@ -43,6 +43,12 @@ export default function EventDetailPage() {
       })
     return () => { active = false }
   }, [id, contextEvent])
+
+  // A customer opening the page, not the venue checking its preview.
+  const isPreview = pathname.startsWith('/manage/preview')
+  useEffect(() => {
+    if (!isPreview) recordEventView(id)
+  }, [id, isPreview])
 
   useEffect(() => {
     return subscribe(() => {

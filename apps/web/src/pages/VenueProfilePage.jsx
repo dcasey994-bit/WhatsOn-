@@ -69,7 +69,12 @@ export default function VenueProfilePage() {
   return (
     <div className="venue-profile detail-shell">
       {/* Hero */}
-      <div className="vp-hero detail-hero-base">
+      <div
+        className={`vp-hero detail-hero-base ${venue.cover_image_url ? 'has-image on-image' : ''}`}
+        style={venue.cover_image_url
+          ? { backgroundImage: `linear-gradient(to top, rgba(15,15,20,0.98) 12%, rgba(15,15,20,0.55) 60%, rgba(15,15,20,0.35)), url(${venue.cover_image_url})` }
+          : undefined}
+      >
         <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <div className="hero-content">
           <div className="vp-hero-row">
@@ -82,6 +87,12 @@ export default function VenueProfilePage() {
 
       {/* Body */}
       <div className="detail-body-base">
+        {venue.about && (
+          <section className="detail-section">
+            <h2>About</h2>
+            <p className="vp-about">{venue.about}</p>
+          </section>
+        )}
         <section className="detail-section">
           <h2>Venue Info</h2>
           <div className="detail-row">
@@ -95,6 +106,12 @@ export default function VenueProfilePage() {
               {venue.address}
             </a>
           </div>
+          {venue.opening_hours && (
+            <div className="detail-row">
+              <span className="detail-row-label">Hours</span>
+              <span className="detail-row-value">{venue.opening_hours}</span>
+            </div>
+          )}
           {venue.phone && (
             <div className="detail-row">
               <span className="detail-row-label">Phone</span>
@@ -111,6 +128,19 @@ export default function VenueProfilePage() {
                 rel="noopener noreferrer"
               >
                 {venue.website.replace(/^https?:\/\//i, '').replace(/\/$/, '')}
+              </a>
+            </div>
+          )}
+          {venue.instagram && (
+            <div className="detail-row">
+              <span className="detail-row-label">Instagram</span>
+              <a
+                className="detail-row-value"
+                href={`https://instagram.com/${venue.instagram}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                @{venue.instagram}
               </a>
             </div>
           )}
@@ -131,7 +161,7 @@ export default function VenueProfilePage() {
             <p className="vp-empty">No upcoming events listed yet.</p>
           ) : (
             <div className="vp-events">
-              {events.map(event => <EventCard key={event.id} event={event} />)}
+              {events.map(event => <EventCard key={event.id} event={event} showDate />)}
             </div>
           )}
         </section>

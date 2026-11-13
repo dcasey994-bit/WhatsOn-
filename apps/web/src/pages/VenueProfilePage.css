@@ -10,6 +10,19 @@
   border-bottom: 1px solid var(--border);
 }
 
+.vp-hero.has-image {
+  padding-top: 160px;
+  background-size: cover;
+  background-position: center;
+}
+
+.vp-about {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-line;
+}
+
 .vp-type-badge {
   background: var(--accent-dim);
   color: var(--accent);
@@ -58,6 +71,8 @@
 
 /* Desktop: a centred column */
 @media (min-width: 1024px) {
+  .vp-hero.has-image { padding-top: 260px; }
+
   .venue-profile {
     width: 100%;
     max-width: 860px;

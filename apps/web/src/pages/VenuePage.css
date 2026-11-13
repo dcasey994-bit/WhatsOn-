@@ -288,6 +288,15 @@
 
 .form-row label {
   flex: 1;
+  /* Without these a number or date input keeps its intrinsic width and pushes
+     the second field off the edge of a phone screen. */
+  min-width: 0;
+}
+
+.form-row input,
+.form-row select {
+  width: 100%;
+  min-width: 0;
 }
 
 .post-btn {

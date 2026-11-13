@@ -452,3 +452,91 @@ export async function uploadEventImage(file) {
   const { data } = supabase.storage.from('event-images').getPublicUrl(path)
   return data.publicUrl
 }
+
+// ── Repeating events ───────────────────────────────────────────────────────
+
+// randomUUID needs a secure context, which a phone testing the dev server over
+// the LAN is not.
+function newUuid() {
+  if (crypto.randomUUID) return crypto.randomUUID()
+  const b = crypto.getRandomValues(new Uint8Array(16))
+  b[6] = (b[6] & 0x0f) | 0x40
+  b[8] = (b[8] & 0x3f) | 0x80
+  const h = [...b].map(x => x.toString(16).padStart(2, '0')).join('')
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
+}
+
+// Post one event per date, tied together by a series id so the rest of the
+// run can be edited or deleted in one go later.
+export async function createEventSeries(venueId, fields, dates) {
+  const seriesId = newUuid()
+  const rows = dates.map(date => ({ ...fields, date, venue_id: venueId, series_id: seriesId }))
+  const { data, error } = await supabase.from('events').insert(rows).select()
+  if (error) throw error
+  return data || []
+}
+
+// Apply the same change to this date and every later one in its series. The
+// date itself is left alone — each row keeps its own.
+export async function updateEventSeriesFrom(seriesId, fromDate, fields) {
+  const rest = { ...fields }
+  delete rest.date
+  const { data, error } = await supabase
+    .from('events')
+    .update(rest)
+    .eq('series_id', seriesId)
+    .gte('date', fromDate)
+    .select()
+  if (error) throw error
+  return data || []
+}
+
+export async function deleteEventSeriesFrom(seriesId, fromDate) {
+  const { error } = await supabase
+    .from('events')
+    .delete()
+    .eq('series_id', seriesId)
+    .gte('date', fromDate)
+  if (error) throw error
+}
+
+// ── Numbers for venues ──────────────────────────────────────────────────────
+
+// { [eventId]: { views, saves, going } } for every event at the venue.
+// Members only; the database refuses anyone else.
+export async function fetchVenueEventStats(venueId) {
+  const { data, error } = await supabase.rpc('get_venue_event_stats', { vid: venueId })
+  if (error) throw error
+  const out = {}
+  for (const r of data || []) out[r.event_id] = { views: r.views, saves: r.saves, going: r.going }
+  return out
+}
+
+// Count an opening of an event's page. Once per browser per event per day, so
+// refreshing does not inflate it; the database skips the venue's own team.
+// Never throws: a missed view is not worth an error on the page.
+export function recordEventView(eventId) {
+  if (!UUID.test(String(eventId))) return
+  const today = new Date().toISOString().slice(0, 10)
+  const key = `whatson:viewed:${eventId}`
+  try {
+    if (localStorage.getItem(key) === today) return
+    localStorage.setItem(key, today)
+  } catch { /* private mode: count it anyway */ }
+  supabase.rpc('record_event_view', { eid: eventId }).then(() => {}, () => {})
+}
+
+// ── Venue profile ───────────────────────────────────────────────────────────
+
+// "@the.eagle", "instagram.com/the.eagle/" and "the.eagle" all mean the same
+// account. Returns the bare handle, null for blank, or false if unusable.
+export function normalizeInstagram(input) {
+  const s = (input || '').trim()
+  if (!s) return null
+  const handle = s
+    .replace(/^https?:\/\//i, '')
+    .replace(/^(www\.)?instagram\.com\//i, '')
+    .replace(/^@/, '')
+    .split(/[/?#]/)[0]
+  return /^[A-Za-z0-9._]{1,30}$/.test(handle) ? handle : false
+}

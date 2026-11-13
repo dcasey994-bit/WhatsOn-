@@ -7,8 +7,10 @@ import {
   createEvent, updateEvent, deleteEvent, uploadEventImage,
   getSubscriptionState, trialDaysLeft, startCheckout, openBillingPortal,
   fetchVenueMembers, addVenueMember, removeVenueMember, updateMemberRole,
-  updateVenue, normalizeWebsite,
+  updateVenue, normalizeWebsite, normalizeInstagram,
+  createEventSeries, updateEventSeriesFrom, deleteEventSeriesFrom, fetchVenueEventStats,
 } from '../data/eventsStore.js'
+import { REPEAT_OPTIONS, describeRepeat, repeatDates, defaultUntil, maxUntil } from '../data/recurrence.js'
 import { VENUE_TYPES, venueTypeOptions, resolveVenueType } from '../data/venueTypes.js'
 import { endsNextDay, formatTimeRange } from '../data/eventTime.js'
 import { getUser } from '../data/authStore.js'
@@ -17,6 +19,7 @@ import { useReloadEvents } from '../data/EventsContext.jsx'
 import Header from '../components/Header.jsx'
 import AddressPicker from '../components/AddressPicker.jsx'
 import VenueAttention from '../components/VenueAttention.jsx'
+import VenueChecklist from '../components/VenueChecklist.jsx'
 import './VenuePage.css'
 import './VenueManagePage.css'
 
@@ -57,6 +60,15 @@ export default function VenueManagePage() {
   const [venueError, setVenueError] = useState(null)
   const [portalBusy, setPortalBusy] = useState(false)
   const [portalError, setPortalError] = useState(null)
+  // Repeating events (new events only) and editing a run of them.
+  const [repeat, setRepeat] = useState('none')
+  const [repeatUntil, setRepeatUntil] = useState('')
+  const [editingEvent, setEditingEvent] = useState(null)
+  const [applyToSeries, setApplyToSeries] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState(null)
+  const [stats, setStats] = useState({})
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const teamRef = useRef(null)
   const reloadEvents = useReloadEvents()
 
   // On success this navigates away to Stripe, so `portalBusy` is deliberately
@@ -94,7 +106,7 @@ export default function VenueManagePage() {
         return
       }
       setVenue(v)
-      const loads = [loadEvents(v.id)]
+      const loads = [loadEvents(v.id), fetchVenueEventStats(v.id).then(setStats).catch(() => {})]
       if (v.memberRole === 'admin') {
         loads.push(fetchVenueMembers(v.id).then(setMembers).catch(() => {}))
       }
@@ -137,18 +149,28 @@ export default function VenueManagePage() {
       image_url: form.image_url || null,
       special_offer: form.special_offer?.trim() || null,
     }
+    const dates = editingId ? [form.date] : repeatDates(repeat, form.date, repeatUntil)
     try {
       if (editingId) {
-        const row = await updateEvent(editingId, fields)
-        setUpcomingEvents(prev => prev.map(ev => (ev.id === editingId ? row : ev)))
-        setSuccess('Event updated!')
+        await updateEvent(editingId, fields)
+        const later = applyToSeries ? laterInSeries(editingEvent) : []
+        if (later.length) {
+          await updateEventSeriesFrom(editingEvent.series_id, editingEvent.date, fields)
+          setSuccess(`Updated this and ${later.length} later date${later.length === 1 ? '' : 's'}!`)
+        } else {
+          setSuccess('Event updated!')
+        }
+      } else if (dates.length > 1) {
+        await createEventSeries(venue.id, fields, dates)
+        setSuccess(`Posted ${dates.length} dates!`)
       } else {
-        const row = await createEvent(venue.id, fields)
-        setUpcomingEvents(prev => [...prev, row])
+        await createEvent(venue.id, fields)
         setSuccess('Event posted!')
       }
+      await loadEvents(venue.id)
       setForm(BLANK_EVENT)
       setEditingId(null)
+      setEditingEvent(null)
       reloadEvents()
       setTimeout(() => { setSuccess(null); setView('main') }, 1500)
     } catch {
@@ -157,11 +179,39 @@ export default function VenueManagePage() {
     setSaving(false)
   }
 
-  function startAddEvent() {
-    setForm(BLANK_EVENT)
-    setEditingId(null)
+  function resetEventExtras() {
+    setRepeat('none')
+    setRepeatUntil('')
+    setApplyToSeries(false)
+    setEditingEvent(null)
+    setSuccess(null)
     setError(null)
+  }
+
+  function startAddEvent() {
+    // A new venue's events are mostly one kind; start from the last one used.
+    const lastCategory = [...upcomingEvents, ...pastEvents]
+      .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))[0]?.category
+    setForm({ ...BLANK_EVENT, category: lastCategory || BLANK_EVENT.category })
+    setEditingId(null)
+    resetEventExtras()
     setView('add')
+  }
+
+  // Everything about the event except its date, as a new event. The usual
+  // "same again next month" for anything that isn't a regular series.
+  function duplicateEvent() {
+    setForm(f => ({ ...f, date: '' }))
+    setEditingId(null)
+    resetEventExtras()
+    setSuccess('Copied — pick a date and post.')
+    window.scrollTo(0, 0)
+  }
+
+  // Dates in the same series after this one, from what the page has loaded.
+  function laterInSeries(ev) {
+    if (!ev?.series_id) return []
+    return upcomingEvents.filter(e => e.series_id === ev.series_id && e.date > ev.date)
   }
 
   function handleEdit(ev) {
@@ -179,15 +229,30 @@ export default function VenueManagePage() {
       special_offer: ev.special_offer ?? '',
     })
     setEditingId(ev.id)
-    setError(null)
+    resetEventExtras()
+    setEditingEvent(ev)
     setView('add')
   }
 
-  async function handleDelete(eventId) {
+  async function handleDelete(ev) {
+    // Part of a run with dates still to come: ask which, in the row itself.
+    if (laterInSeries(ev).length) { setPendingDelete(ev.id); return }
     if (!confirm('Delete this event?')) return
+    await deleteOne(ev.id)
+  }
+
+  async function deleteOne(eventId) {
+    setPendingDelete(null)
     await deleteEvent(eventId)
     setUpcomingEvents(prev => prev.filter(e => e.id !== eventId))
     setPastEvents(prev => prev.filter(e => e.id !== eventId))
+    reloadEvents()
+  }
+
+  async function deleteFrom(ev) {
+    setPendingDelete(null)
+    await deleteEventSeriesFrom(ev.series_id, ev.date)
+    await loadEvents(venue.id)
     reloadEvents()
   }
 
@@ -213,10 +278,33 @@ export default function VenueManagePage() {
       website: venue.website ?? '',
       capacity: venue.capacity ?? '',
       type: resolveVenueType(venue.type) || VENUE_TYPES[0],
+      about: venue.about ?? '',
+      instagram: venue.instagram ? `@${venue.instagram}` : '',
+      opening_hours: venue.opening_hours ?? '',
+      cover_image_url: venue.cover_image_url ?? '',
     })
     setGeocoded({ lat: venue.lat, lng: venue.lng, display: venue.address })
     setVenueError(null)
     setView('edit-venue')
+  }
+
+  async function handleCoverUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingCover(true)
+    setVenueError(null)
+    try {
+      const url = await uploadEventImage(file)
+      setVenueForm(f => ({ ...f, cover_image_url: url }))
+    } catch {
+      setVenueError('Could not upload the photo. Please try a smaller JPG or PNG.')
+    }
+    setUploadingCover(false)
+  }
+
+  function showTeam() {
+    teamRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    teamRef.current?.querySelector('input')?.focus({ preventScroll: true })
   }
 
   function setVF(field) {
@@ -226,6 +314,8 @@ export default function VenueManagePage() {
   async function handleSaveVenue(e) {
     e.preventDefault()
     if (!geocoded) { setVenueError('Find your address and confirm the pin first.'); return }
+    const instagram = normalizeInstagram(venueForm.instagram)
+    if (instagram === false) { setVenueError("That Instagram name doesn't look right — just the handle, like @thecrookedlantern."); return }
     setSavingVenue(true)
     setVenueError(null)
     try {
@@ -238,6 +328,10 @@ export default function VenueManagePage() {
         website: normalizeWebsite(venueForm.website),
         capacity: venueForm.capacity ? Number(venueForm.capacity) : null,
         type: venueForm.type,
+        about: venueForm.about.trim() || null,
+        instagram,
+        opening_hours: venueForm.opening_hours.trim() || null,
+        cover_image_url: venueForm.cover_image_url || null,
       })
       setVenue(v => ({ ...v, ...updated }))
       setView('main')
@@ -315,21 +409,29 @@ export default function VenueManagePage() {
       <div className="venue-page">
         <Header title={venue.name} />
         <div className="add-event-form">
-          <button className="vp-back-link" onClick={() => { setView('main'); setEditingId(null) }}>← Back</button>
+          <button className="vp-back-link" onClick={() => { setView('main'); setEditingId(null); resetEventExtras() }}>← Back</button>
           {success && <div className="success-banner">🎉 {success}</div>}
           {error && <p className="form-error">{error}</p>}
           <div className="form-heading-row">
             <h3 className="section-heading">{editingId ? 'Edit Event' : 'New Event'}</h3>
             {editingId && (
-              <button
-                type="button"
-                className="view-public-link"
-                onClick={() => navigate(`/manage/preview/event/${editingId}`)}
-              >
-                Preview public page ↗
-              </button>
+              <div className="form-heading-actions">
+                <button type="button" className="view-public-link" onClick={duplicateEvent}>
+                  Duplicate
+                </button>
+                <button
+                  type="button"
+                  className="view-public-link"
+                  onClick={() => navigate(`/manage/preview/event/${editingId}`)}
+                >
+                  Preview ↗
+                </button>
+              </div>
             )}
           </div>
+          {editingId && stats[editingId] && (
+            <EventStats stats={stats[editingId]} className="form-stats" />
+          )}
           <form onSubmit={handleAddEvent}>
             <label>
               Event name
@@ -353,6 +455,51 @@ export default function VenueManagePage() {
                 <input type="time" required value={form.time} onChange={set('time')} />
               </label>
             </div>
+            {!editingId && (
+              <div className="repeat-box">
+                <div className="form-row">
+                  <label>
+                    Repeats
+                    <select
+                      value={repeat}
+                      onChange={e => {
+                        setRepeat(e.target.value)
+                        if (!repeatUntil) setRepeatUntil(defaultUntil(form.date))
+                      }}
+                    >
+                      {REPEAT_OPTIONS.map(r => (
+                        <option key={r} value={r}>
+                          {{ none: "Doesn't repeat", weekly: 'Weekly', fortnightly: 'Fortnightly', monthly: 'Monthly' }[r]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {repeat !== 'none' && (
+                    <label>
+                      Until
+                      <input
+                        type="date"
+                        required
+                        value={repeatUntil}
+                        min={form.date || undefined}
+                        max={maxUntil(form.date) || undefined}
+                        onChange={e => setRepeatUntil(e.target.value)}
+                      />
+                    </label>
+                  )}
+                </div>
+                {repeat !== 'none' && (
+                  form.date ? (
+                    <p className="form-note">
+                      {describeRepeat(repeat, form.date)} · {repeatDates(repeat, form.date, repeatUntil).length} dates.
+                      Each one is listed separately, and you can change or cancel any of them later.
+                    </p>
+                  ) : (
+                    <p className="form-note">Pick the first date above.</p>
+                  )
+                )}
+              </div>
+            )}
             <div className="form-row">
               <label>
                 End time (optional)
@@ -398,8 +545,20 @@ export default function VenueManagePage() {
               Special offer (optional)
               <input value={form.special_offer} onChange={set('special_offer')} placeholder="e.g. 2-for-1 drinks before 9pm" />
             </label>
+            {editingId && laterInSeries(editingEvent).length > 0 && (
+              <label className="check-row">
+                <input type="checkbox" checked={applyToSeries} onChange={e => setApplyToSeries(e.target.checked)} />
+                <span>
+                  Also change the {laterInSeries(editingEvent).length} later date{laterInSeries(editingEvent).length === 1 ? '' : 's'} in this series
+                  <small>Everything except the date is copied to them.</small>
+                </span>
+              </label>
+            )}
             <button type="submit" className="post-btn" disabled={saving || uploading}>
-              {saving ? 'Saving…' : editingId ? 'Save Changes' : 'Post Event'}
+              {saving ? 'Saving…'
+                : editingId ? 'Save Changes'
+                : repeat !== 'none' && form.date ? `Post ${repeatDates(repeat, form.date, repeatUntil).length} dates`
+                : 'Post Event'}
             </button>
           </form>
         </div>
@@ -447,7 +606,41 @@ export default function VenueManagePage() {
               Website (optional)
               <input value={venueForm.website} onChange={setVF('website')} placeholder="e.g. example.com" />
             </label>
-            <button type="submit" className="post-btn" disabled={savingVenue || !geocoded}>
+            <h4 className="form-subheading">Your public page</h4>
+            <p className="form-note">What customers see when they tap your venue. All optional, but a photo and a line about you make a big difference.</p>
+            <label>
+              Cover photo
+              {venueForm.cover_image_url && (
+                <div className="image-preview" style={{ backgroundImage: `url(${venueForm.cover_image_url})` }}>
+                  <button type="button" className="image-remove" onClick={() => setVenueForm(f => ({ ...f, cover_image_url: '' }))}>
+                    Remove
+                  </button>
+                </div>
+              )}
+              <input type="file" accept="image/*" onChange={handleCoverUpload} disabled={uploadingCover} />
+              {uploadingCover && <span className="upload-hint">Uploading…</span>}
+            </label>
+            <label>
+              About
+              <textarea
+                value={venueForm.about}
+                onChange={setVF('about')}
+                rows={3}
+                maxLength={500}
+                placeholder="e.g. Proper local with a beer garden, Sky Sports on three screens and a quiz every Tuesday."
+              />
+            </label>
+            <div className="form-row">
+              <label>
+                Instagram
+                <input value={venueForm.instagram} onChange={setVF('instagram')} placeholder="@yourvenue" autoCapitalize="none" autoCorrect="off" />
+              </label>
+              <label>
+                Opening hours
+                <input value={venueForm.opening_hours} onChange={setVF('opening_hours')} maxLength={200} placeholder="e.g. Mon–Sun 12–11pm" />
+              </label>
+            </div>
+            <button type="submit" className="post-btn" disabled={savingVenue || !geocoded || uploadingCover}>
               {savingVenue ? 'Saving…' : 'Save changes'}
             </button>
           </form>
@@ -475,6 +668,17 @@ export default function VenueManagePage() {
       {/* Directly above the subscription card, so the warning and the button
           that resolves it read as one block. */}
       {isAdmin && <VenueAttention venue={venue} />}
+
+      {isAdmin && (
+        <VenueChecklist
+          venue={venue}
+          hasEvents={upcomingEvents.length + pastEvents.length > 0}
+          hasTeam={members.length > 1}
+          onAddEvent={startAddEvent}
+          onEditProfile={startEditVenue}
+          onAddTeam={showTeam}
+        />
+      )}
 
       {/* Subscription card — admin only */}
       {isAdmin && (
@@ -561,11 +765,32 @@ export default function VenueManagePage() {
             <span className="vm-detail-value">{venue.capacity.toLocaleString()}</span>
           </div>
         )}
+        {venue.instagram && (
+          <div className="vm-detail-row">
+            <span className="vm-detail-label">Instagram</span>
+            <a className="vm-detail-value vm-detail-link" href={`https://instagram.com/${venue.instagram}`} target="_blank" rel="noopener noreferrer">
+              @{venue.instagram}
+            </a>
+          </div>
+        )}
+        {venue.opening_hours && (
+          <div className="vm-detail-row">
+            <span className="vm-detail-label">Hours</span>
+            <span className="vm-detail-value">{venue.opening_hours}</span>
+          </div>
+        )}
+        {venue.about && <p className="vm-about">{venue.about}</p>}
+        {venue.cover_image_url && (
+          <div className="vm-cover" style={{ backgroundImage: `url(${venue.cover_image_url})` }} role="img" aria-label="Cover photo" />
+        )}
+        <button className="vm-public-link" onClick={() => navigate(`/manage/preview/venue/${venue.id}`)}>
+          See your public page ↗
+        </button>
       </div>
 
       {/* Team — admin only */}
       {isAdmin && (
-        <div className="vm-section">
+        <div className="vm-section" ref={teamRef}>
           <h2 className="vm-section-title">Team</h2>
           {members.map(m => (
             <div key={m.user_id} className="vm-member-row">
@@ -612,6 +837,11 @@ export default function VenueManagePage() {
         </div>
       )}
 
+      {/* Totals across every event, past and upcoming */}
+      {upcomingEvents.length + pastEvents.length > 0 && (
+        <AudienceTotals stats={stats} />
+      )}
+
       {/* Events */}
       <div className="venue-tabs">
         <button className={`vtab ${eventTab === 'upcoming' ? 'active' : ''}`} onClick={() => setEventTab('upcoming')}>
@@ -641,6 +871,18 @@ export default function VenueManagePage() {
               const dateLabel = new Date(event.date + 'T00:00:00').toLocaleDateString('en-GB', {
                 weekday: 'short', day: 'numeric', month: 'short',
               })
+              if (pendingDelete === event.id) {
+                return (
+                  <div key={event.id} className="venue-event-row vc-confirm">
+                    <span className="vc-confirm-text">Delete {event.name} on {dateLabel}…</span>
+                    <div className="vc-confirm-actions">
+                      <button onClick={() => deleteOne(event.id)}>Just this date</button>
+                      <button onClick={() => deleteFrom(event)}>This and {laterInSeries(event).length} later</button>
+                      <button className="is-quiet" onClick={() => setPendingDelete(null)}>Cancel</button>
+                    </div>
+                  </div>
+                )
+              }
               return (
                 <div key={event.id} className="venue-event-row">
                   <button
@@ -656,10 +898,12 @@ export default function VenueManagePage() {
                         &nbsp;·&nbsp;{dateLabel}
                         &nbsp;·&nbsp;{formatTimeRange(event.time?.slice(0, 5), event.end_time?.slice(0, 5))}
                         &nbsp;·&nbsp;{Number(event.price) === 0 ? 'Free' : `£${event.price}`}
+                        {event.series_id && <>&nbsp;·&nbsp;<span className="vc-repeat" title="Part of a repeating series">↻</span></>}
                       </span>
+                      {stats[event.id] && <EventStats stats={stats[event.id]} />}
                     </span>
                   </button>
-                  <button className="delete-event-btn" onClick={() => handleDelete(event.id)} aria-label="Delete event">✕</button>
+                  <button className="delete-event-btn" onClick={() => handleDelete(event)} aria-label="Delete event">✕</button>
                 </div>
               )
             })}
@@ -670,6 +914,40 @@ export default function VenueManagePage() {
           <button className="add-event-fab" onClick={startAddEvent}>+ Add Event</button>
         )}
       </div>
+    </div>
+  )
+}
+
+function plural(n, one, many = `${one}s`) {
+  return `${n.toLocaleString()} ${n === 1 ? one : many}`
+}
+
+// "23 views · 14 saved · 6 going" under an event.
+function EventStats({ stats, className = '' }) {
+  return (
+    <span className={`vc-stats ${className}`}>
+      {plural(stats.views, 'view')} · {stats.saves.toLocaleString()} saved · {stats.going.toLocaleString()} going
+    </span>
+  )
+}
+
+function AudienceTotals({ stats }) {
+  const rows = Object.values(stats)
+  const sum = key => rows.reduce((n, r) => n + (r[key] || 0), 0)
+  const items = [
+    { label: 'Views', value: sum('views'), hint: 'times your events were opened' },
+    { label: 'Saved', value: sum('saves'), hint: 'people saved an event' },
+    { label: 'Going', value: sum('going'), hint: 'said they are going' },
+  ]
+  return (
+    <div className="vm-totals" aria-label="Your audience, all events">
+      {items.map(i => (
+        <div key={i.label} className="vm-total">
+          <span className="vm-total-value">{i.value.toLocaleString()}</span>
+          <span className="vm-total-label">{i.label}</span>
+        </div>
+      ))}
+      <p className="vm-totals-note">Across all your events so far. Views by your own team aren't counted.</p>
     </div>
   )
 }

@@ -7,7 +7,10 @@ import { isSaved, toggleSaved, subscribe } from '../data/savedStore.js'
 import { ensureSignedIn } from '../data/authGate.js'
 import './EventCard.css'
 
-export default function EventCard({ event }) {
+// showDate: for lists that are not already grouped under day headings, such as
+// a venue's page, where a weekly quiz would otherwise read as one event listed
+// several times.
+export default function EventCard({ event, showDate = false }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const cat = getCategory(event.category)
@@ -48,7 +51,7 @@ export default function EventCard({ event }) {
       )}
 
       <div className="card-meta">
-        <span className="meta-item">🕐 {formatTimeRange(event.time, event.endTime)}</span>
+        <span className="meta-item">🕐 {showDate && event.date ? `${event.date} · ` : ''}{formatTimeRange(event.time, event.endTime)}</span>
         {event.distance && <span className="meta-item">📍 {event.distance}</span>}
         <span
           className="meta-price"

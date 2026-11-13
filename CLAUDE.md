@@ -44,6 +44,16 @@
   supabase.co. Needs `VITE_GOOGLE_CLIENT_ID`; without it, and in the native apps,
   it is the redirect flow. Setup: `docs/google-sign-in-domain.md` step 0.
 - Tables: `saved_events`, `going_events`, `venues`, `events` (RLS enabled); schema in `supabase/migrations/001_schema.sql`
+- **Repeating events** are ordinary event rows sharing a `series_id` (migration 015),
+  one per date, so nothing that lists events needs to know about them. Dates come
+  from `src/data/recurrence.js`; "this and later dates" edits and deletes filter
+  on `series_id` + `date >=`.
+- **Venue numbers:** views are a counter (`event_view_counts`, bumped by the
+  `record_event_view` RPC from the event page — once per browser per day, never
+  for the venue's own team or the preview route). Views, saves and going per event
+  come from `get_venue_event_stats`, which only answers members of that venue.
+- Venue public profile fields: `cover_image_url`, `about` (≤500), `instagram` (bare
+  handle), `opening_hours` (free text ≤200).
 - Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) in `.env` locally and Netlify env settings.
 
 ## Stripe (subscriptions)

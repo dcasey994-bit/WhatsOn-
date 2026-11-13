@@ -1,0 +1,126 @@
+.vcl {
+  margin: 16px 16px 0;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+}
+
+.vcl-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vcl-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.vcl-progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.vcl-bar {
+  height: 4px;
+  margin: 10px 0 6px;
+  border-radius: 2px;
+  background: var(--surface-tint);
+  overflow: hidden;
+}
+
+.vcl-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.vcl-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vcl-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--surface-tint);
+}
+
+.vcl-step:last-child { border-bottom: none; }
+
+.vcl-tick {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  border: 2px solid var(--text-dim);
+}
+
+.vcl-step.is-done .vcl-tick {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.vcl-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.vcl-step.is-done .vcl-label {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.vcl-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.vcl-btn.is-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.vcl-dismiss {
+  margin-top: 8px;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: none;
+  text-decoration: underline;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
