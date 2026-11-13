@@ -16,7 +16,8 @@
 
 ## Stack
 - React 19 + Vite 8, React Router v7
-- Leaflet + react-leaflet (dark map, CartoDB tiles)
+- Leaflet + react-leaflet (dark map, CartoDB tiles). CARTO needs a free key since
+  Sept 2026 or tiles say "API KEY REQUIRED": `VITE_CARTO_KEY`, see `src/lib/mapTiles.js`
 - Plain CSS, dark theme (`--bg: #0f0f14`, `--accent: #00ff88`), mobile-first (max-width 430px)
 - **Desktop layout from 1024px wide**, same pages and URLs. The bottom tabs become
   a rail down the left, `#root` fills the window, and each page widens itself in

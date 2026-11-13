@@ -232,3 +232,16 @@ input, select, textarea { color-scheme: inherit; }
   min-height: 100dvh;
   background: var(--bg);
 }
+
+/* Map credits (OpenStreetMap, CARTO) — required, but kept small and in the
+   app's colours rather than Leaflet's white box. */
+.leaflet-container .leaflet-control-attribution {
+  background: var(--overlay-bg);
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+  padding: 1px 6px;
+  border-top-left-radius: 6px;
+}
+
+.leaflet-container .leaflet-control-attribution a { color: inherit; }

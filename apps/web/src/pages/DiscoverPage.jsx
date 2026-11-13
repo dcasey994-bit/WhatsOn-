@@ -17,6 +17,7 @@ import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
 import { useView, useSwitchView } from '../data/appMode.js'
 import { getMapView, setMapView, hasCentredOnUser, markCentredOnUser } from '../data/mapView.js'
 import { formatTimeRange } from '../data/eventTime.js'
+import { TILE_URLS, TILE_ATTRIBUTION } from '../lib/mapTiles.js'
 import { useIsDesktop } from '../lib/useIsDesktop.js'
 import Header from '../components/Header.jsx'
 import ViewToggle from '../components/ViewToggle.jsx'
@@ -30,11 +31,6 @@ import ErrorBanner from '../components/ErrorBanner.jsx'
 import './DiscoverPage.css'
 
 const BALHAM = [51.4435, -0.1527]
-
-const TILE_URLS = {
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-}
 
 const PIN_COLORS = {
   dark:  { accent: '#00ff88', venue: '#ffffff', center: '#0f0f14' },
@@ -386,13 +382,12 @@ export default function DiscoverPage() {
           center={getMapView()?.center ?? center}
           zoom={getMapView()?.zoom ?? 14}
           zoomControl={false}
-          attributionControl={false}
           style={{ width: '100%', height: '100%' }}
         >
           <TileLayer
             key={theme}
             url={TILE_URLS[theme]}
-            attribution=""
+            attribution={TILE_ATTRIBUTION}
           />
           <CentreOnFirstFix coords={coords} />
           <RememberView />

@@ -4,12 +4,8 @@ import { divIcon } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { geocodeCandidates } from '../data/eventsStore.js'
 import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
+import { TILE_URLS, TILE_ATTRIBUTION } from '../lib/mapTiles.js'
 import './AddressPicker.css'
-
-const TILE_URLS = {
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-}
 
 const PIN = divIcon({
   className: '',
@@ -148,10 +144,9 @@ export default function AddressPicker({ address, onAddressChange, value, onChang
               center={[value.lat, value.lng]}
               zoom={PIN_ZOOM}
               zoomControl={false}
-              attributionControl={false}
               style={{ width: '100%', height: '100%' }}
             >
-              <TileLayer key={theme} url={TILE_URLS[theme]} attribution="" />
+              <TileLayer key={theme} url={TILE_URLS[theme]} attribution={TILE_ATTRIBUTION} />
               <Recentre target={centre} />
               <Marker
                 position={[value.lat, value.lng]}
