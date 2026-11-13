@@ -198,3 +198,12 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* Desktop: header across the top, settings in a centred column */
+@media (min-width: 1024px) {
+  .settings-page > :not(.app-header) {
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

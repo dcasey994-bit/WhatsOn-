@@ -587,3 +587,20 @@
   color: var(--text-muted);
   line-height: 1.35;
 }
+
+/* Desktop: header across the top, the rest in a centred column. Covers the
+   venue dashboard, its event and team views, and registering a venue. */
+@media (min-width: 1024px) {
+  .venue-page > :not(.app-header) {
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* An inline button ignores auto margins, so line it up with the column's
+     left edge by hand. */
+  .venue-page > .vp-back-pad {
+    display: block;
+    margin-left: max(16px, calc((100% - 860px) / 2 + 16px));
+  }
+}

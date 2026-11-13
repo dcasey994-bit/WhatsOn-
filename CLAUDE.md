@@ -18,6 +18,13 @@
 - React 19 + Vite 8, React Router v7
 - Leaflet + react-leaflet (dark map, CartoDB tiles)
 - Plain CSS, dark theme (`--bg: #0f0f14`, `--accent: #00ff88`), mobile-first (max-width 430px)
+- **Desktop layout from 1024px wide**, same pages and URLs. The bottom tabs become
+  a rail down the left, `#root` fills the window, and each page widens itself in
+  an `@media (min-width: 1024px)` block in its own stylesheet. `.page-column`
+  and `.card-grid` (index.css) are the shared pieces; `useIsDesktop()` is for the
+  rare JS difference (the list beside the Discover map). Below 1024px — and so
+  in the apps — nothing changes: check phone screenshots are identical after
+  touching layout.
 - Supabase for auth + database
 
 ## Supabase

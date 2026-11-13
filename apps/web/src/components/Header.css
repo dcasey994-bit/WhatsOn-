@@ -178,3 +178,10 @@
   inset: 0;
   z-index: 1999;
 }
+
+/* Desktop: the brand sits at the top of the nav rail instead */
+@media (min-width: 1024px) {
+  .app-header { padding: 0 28px; }
+  .header-brand .brand-name { display: none; }
+  .header-title { font-size: 18px; font-weight: 800; color: var(--text); }
+}

@@ -88,6 +88,9 @@ export default function BottomNav() {
 
   return (
     <nav className="bottom-nav">
+      {/* Desktop only: the nav is a rail down the left there, and the brand
+          moves out of the page header to the top of it. */}
+      <div className="nav-brand">WhatsOn<span className="brand-q">?</span></div>
       {tabs.map(({ to, label, Icon }) => (
         <NavLink
           key={to}

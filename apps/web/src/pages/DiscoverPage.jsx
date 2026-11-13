@@ -16,6 +16,8 @@ import { getVenueTypeColor, resolveVenueType, VENUE_TYPES, VENUE_TYPE_COLORS } f
 import { getResolvedTheme, subscribeTheme } from '../data/themeStore.js'
 import { useView, useSwitchView } from '../data/appMode.js'
 import { getMapView, setMapView, hasCentredOnUser, markCentredOnUser } from '../data/mapView.js'
+import { formatTimeRange } from '../data/eventTime.js'
+import { useIsDesktop } from '../lib/useIsDesktop.js'
 import Header from '../components/Header.jsx'
 import ViewToggle from '../components/ViewToggle.jsx'
 import CategoryFilter from '../components/CategoryFilter.jsx'
@@ -219,6 +221,7 @@ export default function DiscoverPage() {
   const { coords, status: locationStatus, request: requestLocation } = useUserLocation()
   const mapRef = useRef(null)
   const theme = useResolvedTheme()
+  const isDesktop = useIsDesktop()
   const userPinIcon = useMemo(() => makeUserPinIcon(theme), [theme])
 
   const loadVenues = useCallback(() => {
@@ -286,6 +289,25 @@ export default function DiscoverPage() {
     mapRef.current.setView([fix.lat, fix.lng], mapRef.current.getZoom())
   }
 
+  // Desktop list: picking a row opens the same sheet a pin would, and brings
+  // the pin into view.
+  function focusOnMap(lat, lng) {
+    const map = mapRef.current
+    if (!map || lat == null || lng == null) return
+    map.flyTo([lat, lng], Math.max(map.getZoom(), 15), { duration: 0.5 })
+  }
+
+  function pickEvent(event) {
+    setSelectedGroup(null)
+    setSelected(event)
+    focusOnMap(event.lat, event.lng)
+  }
+
+  function pickVenue(venue) {
+    setSelectedVenue(venue)
+    focusOnMap(venue.lat, venue.lng)
+  }
+
   function handleCategoryChange(cat) {
     setCategory(cat)
     setSelected(null)
@@ -307,6 +329,11 @@ export default function DiscoverPage() {
         <span className="tonight-badge">Tonight</span>
       </Header>
 
+      {/* On a phone the panel is display: contents, so its children stack
+          above the map exactly as they always have. On desktop it becomes a
+          column beside the map, with the list under the filters. */}
+      <div className="discover-body">
+      <aside className="discover-panel">
       <ViewToggle mode={mapMode} onChange={switchMode} />
 
       {mapMode === 'events' && (
@@ -333,6 +360,23 @@ export default function DiscoverPage() {
       {mapMode === 'venues' && venuesError && (
         <ErrorBanner message="Couldn't load venues. Check your connection." onRetry={loadVenues} />
       )}
+
+      {isDesktop && mapMode === 'events' && (
+        <DiscoverEventList
+          events={filtered}
+          loading={eventsLoading}
+          selectedId={selected?.id}
+          onPick={pickEvent}
+        />
+      )}
+      {isDesktop && mapMode === 'venues' && (
+        <DiscoverVenueList
+          venues={filteredVenues}
+          selectedId={selectedVenue?.id}
+          onPick={pickVenue}
+        />
+      )}
+      </aside>
 
       <div className="map-wrapper">
         <MapContainer
@@ -485,6 +529,68 @@ export default function DiscoverPage() {
           </div>
         )}
       </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Desktop: the list beside the map ────────────────────────────────────────
+
+function DiscoverEventList({ events, loading, selectedId, onPick }) {
+  const sorted = useMemo(
+    () => [...events].sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
+    [events]
+  )
+  if (loading) return <div className="discover-side-list" />
+  return (
+    <div className="discover-side-list">
+      <p className="discover-side-count">
+        {sorted.length === 0 ? 'No events on this day' : `${sorted.length} event${sorted.length === 1 ? '' : 's'}`}
+      </p>
+      {sorted.map(event => {
+        const cat = getCategory(event.category)
+        return (
+          <button
+            key={event.id}
+            className={`discover-side-item ${event.id === selectedId ? 'is-selected' : ''}`}
+            onClick={() => onPick(event)}
+          >
+            <span className="discover-side-dot" style={{ background: cat.color }} />
+            <span className="discover-side-text">
+              <span className="discover-side-name">{event.name}</span>
+              <span className="discover-side-meta">{event.venue} · {formatTimeRange(event.time, event.endTime)}</span>
+            </span>
+            <span className="discover-side-price">{event.price > 0 ? `£${event.price}` : 'Free'}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function DiscoverVenueList({ venues, selectedId, onPick }) {
+  const sorted = useMemo(
+    () => [...venues].sort((a, b) => a.name.localeCompare(b.name)),
+    [venues]
+  )
+  return (
+    <div className="discover-side-list">
+      <p className="discover-side-count">
+        {sorted.length === 0 ? 'No venues' : `${sorted.length} venue${sorted.length === 1 ? '' : 's'}`}
+      </p>
+      {sorted.map(venue => (
+        <button
+          key={venue.id}
+          className={`discover-side-item ${venue.id === selectedId ? 'is-selected' : ''}`}
+          onClick={() => onPick(venue)}
+        >
+          <span className="discover-side-dot" style={{ background: getVenueTypeColor(venue.type) }} />
+          <span className="discover-side-text">
+            <span className="discover-side-name">{venue.name}</span>
+            <span className="discover-side-meta">{venue.address}</span>
+          </span>
+        </button>
+      ))}
     </div>
   )
 }

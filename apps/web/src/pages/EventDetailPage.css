@@ -285,3 +285,19 @@
   text-align: center;
   color: var(--text-muted);
 }
+
+/* Desktop: a centred column, with the action bar kept under it */
+@media (min-width: 1024px) {
+  .detail-page {
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .detail-hero.has-image { padding-top: 260px; }
+
+  .detail-actions {
+    left: calc(var(--rail-width) + (100% - var(--rail-width)) / 2);
+    max-width: 860px;
+  }
+}

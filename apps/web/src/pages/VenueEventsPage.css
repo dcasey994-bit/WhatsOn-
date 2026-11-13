@@ -73,3 +73,11 @@
   line-height: 1;
   flex-shrink: 0;
 }
+
+/* Desktop: a centred list */
+@media (min-width: 1024px) {
+  .ve-body {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+}

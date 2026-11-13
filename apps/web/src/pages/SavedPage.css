@@ -97,3 +97,9 @@
 .saved-past {
   opacity: 0.55;
 }
+
+/* Desktop: the past events join the grid, still dimmed */
+@media (min-width: 1024px) {
+  .saved-past { display: contents; }
+  .saved-past > * { opacity: 0.55; margin-bottom: 0; height: 100%; }
+}

@@ -83,6 +83,7 @@ export default function BrowsePage() {
       <Header>
         <span className="event-count">{count} {noun}</span>
       </Header>
+      <div className="page-column">
       <ViewToggle mode={mode} onChange={switchView} />
       <SearchBar
         value={query}
@@ -106,7 +107,7 @@ export default function BrowsePage() {
         <ErrorBanner message="Couldn't load venues. Check your connection." onRetry={loadVenues} />
       )}
 
-      <div className="browse-list">
+      <div className="browse-list card-grid">
         {showingVenues ? (
           venuesLoading ? (
             <p className="browse-status">Loading venues…</p>
@@ -138,6 +139,7 @@ export default function BrowsePage() {
             <EventCard key={event.id} event={event} />
           ))
         )}
+      </div>
       </div>
     </div>
   )

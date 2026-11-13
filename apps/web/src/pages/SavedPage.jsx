@@ -87,6 +87,7 @@ export default function SavedPage() {
     return (
       <div className="saved-page">
         <Header />
+        <div className="page-column">
         <ViewToggle mode={view} onChange={switchView} />
         <div className="saved-list">
           <div className="empty-state">
@@ -105,6 +106,7 @@ export default function SavedPage() {
             </button>
           </div>
         </div>
+        </div>
       </div>
     )
   }
@@ -114,6 +116,7 @@ export default function SavedPage() {
       <Header>
         <span className="saved-count-badge">{count} saved</span>
       </Header>
+      <div className="page-column">
       <ViewToggle mode={view} onChange={switchView} />
 
       {showingVenues && venuesError && (
@@ -126,7 +129,7 @@ export default function SavedPage() {
         />
       )}
 
-      <div className="saved-list">
+      <div className="saved-list card-grid">
         {showingVenues ? (
           venuesLoading && !venuesError ? (
             <p className="saved-status">Loading venues…</p>
@@ -182,6 +185,7 @@ export default function SavedPage() {
             )}
           </>
         )}
+      </div>
       </div>
     </div>
   )

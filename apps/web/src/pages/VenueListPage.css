@@ -131,3 +131,28 @@
 .vl-add-bar .vl-add-btn {
   margin-top: 0;
 }
+
+/* Desktop: venues as a grid of cards under a centred add bar */
+@media (min-width: 1024px) {
+  .vl-add-bar { border-bottom: none; }
+
+  .vl-add-bar,
+  .vl-body {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .vl-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    align-content: start;
+    gap: 14px;
+  }
+
+  .vl-body > :not(.vl-card) { grid-column: 1 / -1; }
+
+  .vl-add-bar .vl-add-btn { width: auto; padding-left: 24px; padding-right: 24px; }
+}

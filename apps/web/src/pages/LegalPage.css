@@ -111,3 +111,12 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* Desktop: a reading column */
+@media (min-width: 1024px) {
+  .legal-page {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+}

@@ -45,3 +45,55 @@
 .nav-label {
   letter-spacing: 0.3px;
 }
+
+.nav-brand { display: none; }
+
+/* Desktop: a rail down the left instead of tabs along the bottom */
+@media (min-width: 1024px) {
+  .bottom-nav {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    transform: none;
+    width: var(--rail-width);
+    max-width: none;
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 18px 14px;
+    border-top: none;
+    border-right: 1px solid var(--nav-border, #1e1e2e);
+  }
+
+  .nav-brand {
+    display: block;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    padding: 4px 12px 22px;
+  }
+
+  .nav-tab {
+    flex: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    font-size: 15px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-muted);
+  }
+
+  .nav-tab:hover { background: var(--surface-tint-2); color: var(--text); }
+
+  .nav-tab.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  .nav-tab svg { width: 20px; height: 20px; }
+}

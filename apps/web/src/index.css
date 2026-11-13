@@ -169,6 +169,65 @@ input, select, textarea { color-scheme: inherit; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
 
+/* ===== DESKTOP =====
+   One site, two layouts. Below 1024px everything is the phone layout, exactly
+   as in the apps. From 1024px the bottom tabs become a rail down the left (see
+   BottomNav.css), #root fills the rest of the window, and each page widens
+   itself in its own stylesheet under the same breakpoint. useIsDesktop() in
+   src/lib holds the same number for the few places that need it in JS. */
+@media (min-width: 1024px) {
+  :root {
+    --nav-height: 0px;          /* nothing at the bottom to clear */
+    --rail-width: 232px;
+  }
+
+  body { display: block; }
+
+  /* auto, not 100%: with the rail's margin, 100% would run off the right */
+  #root { max-width: none; width: auto; }
+
+  /* A page's content under its header. On a phone it is display: contents
+     (below), so nothing changes there. -narrow is for reading and forms. */
+  .page-column {
+    display: block;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8px 12px 40px;
+  }
+
+  .page-column.page-column-narrow { max-width: 760px; }
+
+  .page-column .view-toggle-bar,
+  .page-column .search-bar { max-width: 480px; }
+
+  /* Lists of cards become a grid. Status lines and section labels span it. */
+  /* Scoped to .page-column so it outranks each page's own list styles,
+     which load after this file. */
+  .page-column .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
+    align-items: start;
+  }
+
+  .page-column .card-grid > .event-card,
+  .page-column .card-grid > .vlist-card { margin-bottom: 0; height: 100%; }
+
+  .page-column .card-grid > :not(.event-card, .vlist-card) { grid-column: 1 / -1; }
+
+  .event-card:hover,
+  .vlist-card:hover { border-color: var(--accent-border); }
+
+  /* :has() so the sign-in page, which shows no nav, is not left with a gap */
+  #root:has(> .bottom-nav) { margin-left: var(--rail-width); }
+}
+
+/* Phone layout: the column is invisible to layout */
+@media (max-width: 1023px) {
+  .page-column { display: contents; }
+}
+
 .app-loading {
   min-height: 100dvh;
   background: var(--bg);
