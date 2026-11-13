@@ -9,8 +9,8 @@
 
 ## Deployment
 - **Netlify auto-deploys from GitHub.** Pushing to the `claude/live-events-map-vRHxH` branch automatically triggers a Netlify build and deploy.
-- **Netlify credits, not a deploy count.** The free (Personal) plan gives
-  **1000 credits per billing period**; the period runs from the **29th** to the
+- **Netlify credits, not a deploy count.** The **Personal plan ($9/month,
+  since Oct 29)** gives **1000 credits per billing period**; the period runs from the **29th** to the
   28th (e.g. Oct 29 – Nov 28) and resets to 1000. Every production deploy costs
   credits (roughly 15 each), and bandwidth, requests and function runs use some
   too — see Netlify → Usage & billing for the live balance. Push meaningful
