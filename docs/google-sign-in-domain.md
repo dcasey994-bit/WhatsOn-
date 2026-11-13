@@ -9,7 +9,42 @@ registered against the OAuth client. Supabase runs the handshake on our behalf,
 so its host is the one Google names. No setting in this repo changes it — you
 either change where Google redirects, or stop redirecting.
 
-Do step 1 regardless. Step 2 is the fix.
+Do step 1 regardless. On the **website**, step 0 fixes it for free. Step 2
+fixes every platform at once but needs a paid Supabase plan.
+
+---
+
+## 0. Website: Google's own button (free, in the code)
+
+The sign-in page can use Google's "Sign in with Google" button instead of the
+redirect. It opens a Google popup over our own page and hands back an ID token,
+which goes to Supabase with `signInWithIdToken()`. Nothing is redirected through
+supabase.co, so Google names **whatsonapp.uk** instead. Code:
+`src/lib/googleIdentity.js`.
+
+It is off until the client ID is set, and falls back to the redirect button if
+Google's script cannot load, so deploying the code changes nothing on its own.
+
+1. Google Cloud Console → **APIs & Services → Credentials →** the **Web**
+   OAuth client (the one whose ID and secret are in Supabase → Authentication →
+   Sign In / Providers → Google)
+2. Under **Authorized JavaScript origins**, add:
+   - `https://whatsonapp.uk`
+   - `https://monumental-hamster-c09097.netlify.app` (the fallback URL)
+   - `http://localhost:5173` (local dev, optional)
+3. Copy the **Client ID** (ends `.apps.googleusercontent.com`; it is public, not
+   a secret)
+4. **Netlify** → Site configuration → Environment variables → add
+   `VITE_GOOGLE_CLIENT_ID` with that value → **Trigger deploy**
+5. In Supabase's Google provider, leave **Skip nonce checks** off. If the client
+   from step 1 is *not* the one in Supabase's Client ID field, add it to
+   **Authorized Client IDs** there.
+6. Sign in with Google in a private window and check the popup.
+
+**Not covered:** the Android and iOS apps still use the redirect, because
+Google's script does not run inside the app's WebView. Fixing those means
+native Google sign-in (a Capacitor plugin plus an Android OAuth client tied to
+the Play signing key), or step 2.
 
 ---
 

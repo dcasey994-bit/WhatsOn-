@@ -126,6 +126,32 @@
   border: none;
 }
 
+/* Google's own button (iframe). The fixed height stops the buttons below
+   jumping when it finishes drawing. */
+.signin-google-gis {
+  position: relative;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+}
+
+.signin-google-gis > div:first-child {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.signin-google-gis.disabled > div:first-child {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.signin-google-gis-spinner {
+  position: absolute;
+  right: 16px;
+  top: 12px;
+}
+
 .signin-btn.signin-email {
   background: #1a1a1a;
   color: #ffffff;

@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.js'
 import { isNative, isIOS, authRedirectUrl, emailRedirectUrl } from '../lib/platform.js'
+import { makeNonce } from '../lib/nonce.js'
 
 let listeners = []
 
@@ -78,15 +79,8 @@ export async function signInWithApple() {
   // would pull it into the web and Android bundles, where it cannot run.
   const { SignInWithApple } = await import('@capacitor-community/apple-sign-in')
 
-  // Apple binds the token to a nonce to stop a token issued for one sign-in
-  // being replayed into another. Apple is given the SHA-256 hash and embeds it
-  // in the token; Supabase is given the original and hashes it to compare. Send
-  // the same value to both and every sign-in fails with a nonce mismatch.
-  const rawNonce = crypto.randomUUID()
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawNonce))
-  const hashedNonce = [...new Uint8Array(digest)]
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+  // See makeNonce() for why the two halves go to different places.
+  const nonce = await makeNonce()
 
   const result = await SignInWithApple.authorize({
     // The bundle id, not a Services ID — a native sign-in identifies itself as
@@ -95,7 +89,7 @@ export async function signInWithApple() {
     clientId: 'uk.whatsonapp.app',
     redirectURI: '',   // unused by the native flow, but the plugin requires the key
     scopes: 'email name',
-    nonce: hashedNonce,
+    nonce: nonce.hashed,
   })
 
   const token = result?.response?.identityToken
@@ -104,7 +98,7 @@ export async function signInWithApple() {
   const { error } = await supabase.auth.signInWithIdToken({
     provider: 'apple',
     token,
-    nonce: rawNonce,
+    nonce: nonce.raw,
   })
   if (error) throw error
 
@@ -117,6 +111,16 @@ export async function signInWithApple() {
     const full = [given, family].filter(Boolean).join(' ')
     await supabase.auth.updateUser({ data: { full_name: full } }).catch(() => {})
   }
+}
+
+// The ID token from Google's own button (lib/googleIdentity.js), on the web.
+export async function signInWithGoogleCredential(token, rawNonce) {
+  const { error } = await supabase.auth.signInWithIdToken({
+    provider: 'google',
+    token,
+    nonce: rawNonce,
+  })
+  if (error) throw error
 }
 
 // Sign in with an existing email + password

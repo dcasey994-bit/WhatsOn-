@@ -31,6 +31,10 @@
   (`uk.whatsonapp.app`) and needs that in the provider's *Authorized Client IDs*.
   Both must be configured or one platform works and the other does not. Not
   offered on Android — see `hasAppleSignIn()` in `src/lib/platform.js`.
+- **Google on the website** uses Google's own button (`src/lib/googleIdentity.js`)
+  and `signInWithIdToken`, so Google's screen names whatsonapp.uk, not
+  supabase.co. Needs `VITE_GOOGLE_CLIENT_ID`; without it, and in the native apps,
+  it is the redirect flow. Setup: `docs/google-sign-in-domain.md` step 0.
 - Tables: `saved_events`, `going_events`, `venues`, `events` (RLS enabled); schema in `supabase/migrations/001_schema.sql`
 - Env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) in `.env` locally and Netlify env settings.
 

@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  signIn, signInWithApple, signInWithPassword, signUpWithEmail,
+  signIn, signInWithApple, signInWithGoogleCredential, signInWithPassword, signUpWithEmail,
   wasAccountDeleted, clearDeletedNotice,
 } from '../data/authStore.js'
 import { authErrorMessage, isAppleCancellation } from '../data/authErrors.js'
 import { hasAppleSignIn } from '../lib/platform.js'
+import { hasGoogleIdentityButton, renderGoogleButton } from '../lib/googleIdentity.js'
 import { homePathFor } from '../data/appMode.js'
 import './SignInPage.css'
 
@@ -24,6 +25,8 @@ export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [sent, setSent] = useState(false)
+  // Falls back to the redirect button if Google's script will not load
+  const [useGoogleButton, setUseGoogleButton] = useState(hasGoogleIdentityButton)
 
   async function handleSignIn(provider) {
     setLoading(provider)
@@ -47,6 +50,18 @@ export default function SignInPage() {
       // Dismissing Apple's sheet rejects with a cancellation rather than
       // resolving, and telling someone their own tap "failed" is noise.
       if (!isAppleCancellation(err)) setError(authErrorMessage(err))
+      setLoading(null)
+    }
+  }
+
+  async function handleGoogleCredential(token, rawNonce) {
+    setLoading('google')
+    setError(null)
+    try {
+      await signInWithGoogleCredential(token, rawNonce)
+      // The auth state change signs them in; no navigate() needed.
+    } catch (err) {
+      setError(authErrorMessage(err))
       setLoading(null)
     }
   }
@@ -185,14 +200,23 @@ export default function SignInPage() {
               </button>
             )}
 
-            <button
-              className={`signin-btn signin-google ${loading === 'google' ? 'loading' : ''}`}
-              onClick={() => handleSignIn('google')}
-              disabled={!!loading}
-            >
-              {loading === 'google' ? <span className="spinner" /> : <GoogleIcon />}
-              Continue with Google
-            </button>
+            {useGoogleButton ? (
+              <GoogleIdentityButton
+                busy={loading === 'google'}
+                disabled={!!loading}
+                onCredential={handleGoogleCredential}
+                onUnavailable={() => setUseGoogleButton(false)}
+              />
+            ) : (
+              <button
+                className={`signin-btn signin-google ${loading === 'google' ? 'loading' : ''}`}
+                onClick={() => handleSignIn('google')}
+                disabled={!!loading}
+              >
+                {loading === 'google' ? <span className="spinner" /> : <GoogleIcon />}
+                Continue with Google
+              </button>
+            )}
 
             <p className="signin-terms">
               By continuing you agree to our{' '}
@@ -210,6 +234,30 @@ export default function SignInPage() {
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+// Google's own button, drawn by Google in an iframe — see lib/googleIdentity.js.
+// It renders once; the callbacks are read through a ref so a re-render of the
+// page does not have to tear it down and draw it again.
+function GoogleIdentityButton({ busy, disabled, onCredential, onUnavailable }) {
+  const el = useRef(null)
+  const callbacks = useRef({ onCredential, onUnavailable })
+  useEffect(() => { callbacks.current = { onCredential, onUnavailable } })
+
+  useEffect(() => {
+    let active = true
+    renderGoogleButton(el.current, {
+      onCredential: (token, nonce) => callbacks.current.onCredential(token, nonce),
+    }).catch(() => { if (active) callbacks.current.onUnavailable() })
+    return () => { active = false }
+  }, [])
+
+  return (
+    <div className={`signin-google-gis ${disabled ? 'disabled' : ''}`}>
+      <div ref={el} />
+      {busy && <span className="spinner signin-google-gis-spinner" />}
     </div>
   )
 }
