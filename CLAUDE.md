@@ -9,7 +9,13 @@
 
 ## Deployment
 - **Netlify auto-deploys from GitHub.** Pushing to the `claude/live-events-map-vRHxH` branch automatically triggers a Netlify build and deploy.
-- **30 deploys/month limit** — resets on the 17th. Only push for meaningful batches of changes, not single fixes.
+- **Netlify credits, not a deploy count.** The free (Personal) plan gives
+  **1000 credits per billing period**; the period runs from the **29th** to the
+  28th (e.g. Oct 29 – Nov 28) and resets to 1000. Every production deploy costs
+  credits (roughly 15 each), and bandwidth, requests and function runs use some
+  too — see Netlify → Usage & billing for the live balance. Push meaningful
+  batches of changes, not single fixes; put `[skip netlify]` in a commit
+  message to push without building.
 - Live URL: https://whatsonapp.uk
 - Netlify fallback URL: https://monumental-hamster-c09097.netlify.app
 - Base directory: `apps/web` · Build command: `npm run build` · Publish directory: `dist`
