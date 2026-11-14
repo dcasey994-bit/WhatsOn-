@@ -47,7 +47,12 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # Its default package list includes the old "tools" package, which Google
+      # has withdrawn; asking for it fails the step (Nov 2026). The SDK
+      # platform and build tools are installed explicitly below.
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
 
       # compileSdk 36 is newer than the runner image ships with, so ask for it
       # explicitly rather than relying on Gradle to fetch it.
