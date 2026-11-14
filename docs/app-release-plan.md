@@ -47,7 +47,10 @@ into testers' hands.
         (it is public, not a secret)
   - [ ] **[Me]** Update `docs/play-listing.md` Data safety and the Privacy
         page for crash data
-- [ ] **[You]** Set up the support email address (e.g. hello@whatsonapp.uk)
+- [ ] **[You]** *(Deferred — late Nov/early Dec)* Make hello@whatsonapp.uk a
+      real inbox. Until then, mail to it bounces: the in-app "Send feedback",
+      Privacy, Terms and delete-account pages all use it. Must exist before
+      testers outside your own circle are invited.
       and tell me what it is
 
 **Done when:** all of the above is merged, the web deploy is checked on a
