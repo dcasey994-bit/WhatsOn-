@@ -97,6 +97,7 @@ jobs:
           CERT_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           PROFILE_B64: ${{ secrets.IOS_PROVISIONING_PROFILE_B64 }}
           TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          VITE_CARTO_KEY: ${{ vars.VITE_CARTO_KEY }}
         run: |
           missing=""
           [ -z "$VITE_SUPABASE_URL" ]      && missing="$missing VITE_SUPABASE_URL"
@@ -105,8 +106,11 @@ jobs:
           [ -z "$CERT_PASSWORD" ]          && missing="$missing IOS_CERTIFICATE_PASSWORD"
           [ -z "$PROFILE_B64" ]            && missing="$missing IOS_PROVISIONING_PROFILE_B64"
           [ -z "$TEAM_ID" ]                && missing="$missing IOS_TEAM_ID"
+          # A variable, not a secret (it is public in every map tile URL).
+          # Without it the map in the app says "API KEY REQUIRED".
+          [ -z "$VITE_CARTO_KEY" ]         && missing="$missing VITE_CARTO_KEY(variable)"
           if [ -n "$missing" ]; then
-            echo "::error::Missing repository secrets:$missing"
+            echo "::error::Missing repository secrets/variables:$missing"
             echo "See docs/ios-release.md for how to produce each one without a Mac."
             exit 1
           fi
@@ -266,6 +270,14 @@ jobs:
           # name the mismatch.
           echo "PROFILE_NAME=$NAME" >> "$GITHUB_ENV"
           echo "Installed profile '$NAME' ($UUID)"
+
+          # The app asks for Sign in with Apple, so the profile must grant it.
+          # A profile made before the capability was ticked signs and uploads
+          # fine and then fails at the first Apple sign-in, on a tester's phone.
+          if ! /usr/libexec/PlistBuddy -c "Print :Entitlements:com.apple.developer.applesignin" "$PLIST" >/dev/null 2>&1; then
+            echo "::error::The provisioning profile does not include Sign in with Apple. Tick it on the App ID (developer.apple.com → Identifiers → uk.whatsonapp.app), regenerate the App Store profile, and replace IOS_PROVISIONING_PROFILE_B64. See docs/ios-release.md."
+            exit 1
+          fi
 
       - name: Archive
         working-directory: apps/web/ios/App
