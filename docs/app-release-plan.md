@@ -26,13 +26,13 @@ into testers' hands.
 
 ## Stage 2 — App fixes, one batch (1–2 days)
 
-- [ ] **[Me]** Native share sheet (Capacitor Share) — Android currently only
+- [x] **[Me]** Native share sheet (Capacitor Share) — Android currently only
       copies the link
-- [ ] **[Me]** Shrink and convert photos before upload (HEIC → JPEG, ~1600px),
+- [x] **[Me]** Shrink and convert photos before upload (HEIC → JPEG, ~1600px),
       for event images and venue cover photos
-- [ ] **[Me]** "Send feedback" in Settings — opens an email to the support
+- [x] **[Me]** "Send feedback" in Settings — opens an email to the support
       address with app version and platform filled in
-- [ ] **[Me]** Show the app version in Settings, so testers can say which
+- [x] **[Me]** Show the app version in Settings, so testers can say which
       build they are on
 - [ ] **[Me]** Native Google sign-in in the apps, so Google's screen stops
       saying "supabase.co"

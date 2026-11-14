@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase.js'
 import { getUser } from './authStore.js'
 import { isNative } from '../lib/platform.js'
+import { shrinkImage } from '../lib/shrinkImage.js'
 
 // Roughly Wandsworth to Streatham, west to east and river to Tooting Broadway,
 // as left,top,right,bottom. Used to bias results rather than restrict them:
@@ -439,15 +440,17 @@ export async function deleteEvent(eventId) {
 
 // ── Event images (Supabase Storage) ─────────────────────────────────────────
 
-// Upload a file to the public `event-images` bucket and return its public URL
-export async function uploadEventImage(file) {
+// Upload a file to the public `event-images` bucket and return its public URL.
+// Phone photos are shrunk and converted to JPEG first (see shrinkImage).
+export async function uploadEventImage(original) {
   const user = getUser()
   if (!user) throw new Error('Not logged in')
+  const file = await shrinkImage(original)
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase()
   const path = `${user.id}/${Date.now()}.${ext}`
   const { error } = await supabase.storage
     .from('event-images')
-    .upload(path, file, { cacheControl: '3600', upsert: false })
+    .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type || undefined })
   if (error) throw error
   const { data } = supabase.storage.from('event-images').getPublicUrl(path)
   return data.publicUrl

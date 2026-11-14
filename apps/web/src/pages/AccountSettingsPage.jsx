@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getUser, getPreferredMode, setPreferredMode, signOut, deleteAccount } from '../data/authStore.js'
 import { clearLocalSaves } from '../data/savedStore.js'
 import { getTheme, setTheme } from '../data/themeStore.js'
 import Header from '../components/Header.jsx'
+import { getAppVersionLabel } from '../lib/appVersion.js'
+
+const SUPPORT_EMAIL = 'hello@whatsonapp.uk'
 import './AccountSettingsPage.css'
 
 export default function AccountSettingsPage() {
@@ -15,6 +18,20 @@ export default function AccountSettingsPage() {
   const [typed, setTyped] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState(null)
+  const [version, setVersion] = useState('')
+
+  useEffect(() => {
+    let active = true
+    getAppVersionLabel().then(v => { if (active) setVersion(v) })
+    return () => { active = false }
+  }, [])
+
+  // Opens the phone's mail app with the build already filled in, so a report
+  // arrives saying which version and platform it is about.
+  const feedbackHref = `mailto:${SUPPORT_EMAIL}?` + new URLSearchParams({
+    subject: 'WhatsOn? feedback',
+    body: `\n\n\n—\nVersion: ${version}\nDevice: ${navigator.userAgent}`,
+  }).toString().replace(/\+/g, '%20')
 
   function handleTheme(t) {
     setTheme(t)
@@ -127,12 +144,16 @@ export default function AccountSettingsPage() {
         {/* About */}
         <section className="settings-section">
           <h2 className="settings-section-title">About</h2>
+          <a className="settings-link-row" href={feedbackHref}>
+            <span>Send feedback</span><span className="settings-chevron">›</span>
+          </a>
           <button className="settings-link-row" onClick={() => navigate('/privacy')}>
             <span>Privacy Policy</span><span className="settings-chevron">›</span>
           </button>
           <button className="settings-link-row" onClick={() => navigate('/terms')}>
             <span>Terms of Service</span><span className="settings-chevron">›</span>
           </button>
+          {version && <p className="settings-version">WhatsOn? {version}</p>}
         </section>
 
         {/* Actions */}

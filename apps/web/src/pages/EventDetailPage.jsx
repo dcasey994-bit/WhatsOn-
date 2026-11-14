@@ -8,6 +8,7 @@ import { fetchEventById, recordEventView } from '../data/eventsStore.js'
 import { isSaved, toggleSaved, isGoing, toggleGoing, subscribe } from '../data/savedStore.js'
 import { useUserLocation, distanceKm, formatDistance } from '../data/location.js'
 import { ensureSignedIn } from '../data/authGate.js'
+import { shareLink } from '../lib/share.js'
 import './detail-shared.css'
 import './EventDetailPage.css'
 
@@ -85,10 +86,8 @@ export default function EventDetailPage() {
   async function handleShare() {
     const url = `https://whatsonapp.uk/event/${id}`
     const text = `${event.name} at ${event.venue} — ${event.date}, ${event.time}`
-    if (navigator.share) {
-      await navigator.share({ title: event.name, text, url })
-    } else {
-      await navigator.clipboard.writeText(url)
+    const outcome = await shareLink({ title: event.name, text, url }).catch(() => null)
+    if (outcome === 'copied') {
       setShared(true)
       setTimeout(() => setShared(false), 2000)
     }
