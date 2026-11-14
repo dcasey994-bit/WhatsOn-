@@ -10,9 +10,11 @@ too, and overrides these files.
 | `android-version` | Android release bundle | signed `.aab` in the run's Artifacts — upload it in Play Console |
 | `ios-version` | iOS release build | uploaded to App Store Connect → appears in TestFlight |
 
-- One line, the version users see, e.g. `1.1.0`. Bump it for every release:
-  the build number (Android versionCode / iOS build) comes from the run number
-  and goes up on its own, but the version name should move too.
+- The one non-comment line is the version users see, e.g. `1.1.0`. Bump it
+  for every real release; the build number (Android versionCode / iOS build)
+  comes from the run number and goes up on its own.
+- To build the same version again (say, after fixing the setup), edit a
+  comment line instead.
 - iOS builds run on macOS at 10× the Actions minutes. Only change
   `ios-version` when an iPhone build is wanted.
 - Change only the file for the platform you mean to build. Editing anything
