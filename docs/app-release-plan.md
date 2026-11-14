@@ -51,7 +51,6 @@ into testers' hands.
       real inbox. Until then, mail to it bounces: the in-app "Send feedback",
       Privacy, Terms and delete-account pages all use it. Must exist before
       testers outside your own circle are invited.
-      and tell me what it is
 
 **Done when:** all of the above is merged, the web deploy is checked on a
 phone browser, and nothing on the phone-sized pages has changed by accident.
