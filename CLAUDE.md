@@ -16,6 +16,13 @@
   too — see Netlify → Usage & billing for the live balance. Push meaningful
   batches of changes, not single fixes; put `[skip netlify]` in a commit
   message to push without building.
+- **App releases start from a commit.** Changing `release/android-version` or
+  `release/ios-version` and pushing runs that platform's release workflow
+  (Claude cannot press "Run workflow" — the GitHub App has no Actions
+  permission). Android gives a signed `.aab` to upload to Play by hand; iOS
+  uploads to TestFlight. iOS runs on macOS at 10× the minutes, so bump it only
+  when an iPhone build is wanted. Use `[skip ci]` to push those files without
+  building. See `release/README.md`.
 - Live URL: https://whatsonapp.uk
 - Netlify fallback URL: https://monumental-hamster-c09097.netlify.app
 - Base directory: `apps/web` · Build command: `npm run build` · Publish directory: `dist`

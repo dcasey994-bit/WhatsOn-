@@ -8,12 +8,16 @@ name: Android release bundle
 # Play Console under the track you are releasing to.
 
 on:
+  # Also started by a push that changes release/android-version — the way
+  # Claude starts a release, as it cannot use the Run workflow button.
+  push:
+    branches: [claude/live-events-map-vRHxH]
+    paths: ['release/android-version']
   workflow_dispatch:
     inputs:
       version_name:
-        description: 'Version name shown to users (e.g. 1.0.0)'
-        required: true
-        default: '1.0.0'
+        description: 'Version name shown to users (e.g. 1.0.0) — leave blank to use release/android-version'
+        required: false
       version_code:
         description: 'versionCode override — leave blank to use the run number'
         required: false
@@ -28,6 +32,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # The version comes from the "Run workflow" form when started by hand, or
+      # from release/android-version when a push changed that file (see
+      # release/README.md).
+      - name: Resolve version
+        run: |
+          VERSION="${{ inputs.version_name }}"
+          [ -z "$VERSION" ] && VERSION="$(tr -d '[:space:]' < release/android-version)"
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version '$VERSION' is not like 1.2.3 (from release/android-version or the form)"
+            exit 1
+          fi
+          echo "VERSION_NAME=$VERSION" >> "$GITHUB_ENV"
+          echo "Building version $VERSION"
 
       - uses: actions/setup-node@v4
         with:
@@ -118,7 +136,7 @@ jobs:
           # versionCode. The override exists for the case where Play has
           # already seen a higher one and the run number would be rejected.
           ANDROID_VERSION_CODE: ${{ inputs.version_code || github.run_number }}
-          ANDROID_VERSION_NAME: ${{ inputs.version_name }}
+          ANDROID_VERSION_NAME: ${{ env.VERSION_NAME }}
         run: ./gradlew bundleRelease --no-daemon
 
       - name: Confirm the bundle is signed
@@ -137,7 +155,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: whatson-release-${{ inputs.version_name }}-${{ github.run_number }}
+          name: whatson-release-${{ env.VERSION_NAME }}-${{ github.run_number }}
           path: apps/web/android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 90
@@ -146,7 +164,7 @@ jobs:
         run: |
           echo "### Release bundle ready" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- versionName: \`${{ inputs.version_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- versionName: \`${{ env.VERSION_NAME }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- versionCode: \`${{ inputs.version_code || github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Download it from Artifacts below and upload in the Play Console." >> $GITHUB_STEP_SUMMARY

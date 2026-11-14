@@ -57,13 +57,15 @@ phone browser, and nothing on the phone-sized pages has changed by accident.
 
 ## Stage 3 — Build 1.1.0
 
-- [ ] **[You]** Actions → **Android release bundle** → Run workflow →
-      version `1.1.0` → download the `.aab`
-- [ ] **[You]** Actions → **iOS release build** → Run workflow → version
-      `1.1.0`, upload ticked → appears in App Store Connect → TestFlight in
-      ~15 min
+- [ ] **[Me]** Push `release/android-version` and `release/ios-version` at
+      `1.1.0` (once Stage 1 is done) — that starts both release builds
+- [ ] **[Me]** Watch both runs and fix anything that fails
+- [ ] **[You]** Android: download the `.aab` from the run's Artifacts and
+      upload it in Play Console → Testing → Closed testing
+- [ ] **[You]** iOS: wait for the build to finish processing in App Store
+      Connect → TestFlight
 - [ ] **[You]** Install both on your own phones and run the test checklist
-      below. Anything wrong → back to Stage 2, then rebuild as 1.1.1.
+      below. Anything wrong → back to Stage 2, then I release 1.1.1.
 
 ### Test checklist (each platform)
 
