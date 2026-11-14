@@ -12,7 +12,7 @@ into testers' hands.
 ## Stage 1 — Unblock the builds (today)
 
 - [x] **[Me]** Fix the Android CI failure (withdrawn SDK `tools` package)
-- [ ] **[Me]** Confirm the Android debug build passes again
+- [x] **[Me]** Confirm the Android debug build passes again
 - [ ] **[You]** GitHub → repo Settings → Secrets and variables → Actions →
       **Variables** → `VITE_CARTO_KEY` = `cb1_58m7_1_17cb36f5782f25c561c47d7d`
 - [ ] **[You]** Apple Developer → Identifiers → `uk.whatsonapp.app` → tick
